@@ -7,14 +7,13 @@ package db.migration;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
 import cwms.units.ConversionGraph;
 import cwms.units.Loader;
 import cwms.units.Unit;
-import cwms.units.UnitException;
 
 import org.opendcs.jas.core.Mode;
 import net.hobbyscience.SimpleInfixCalculator;
@@ -75,11 +74,13 @@ class UnitConversionTest {
 
         log.finest(()->"Forward conversion " + conversion.toString());
         double forward = SimpleInfixCalculator.calculate(infix, in);
-        assertEquals(expected,forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
+        assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
+        assertEquals(expected, forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
 
         log.finest(()->"Inverse conversion " + inverseConversion.toString());
-        double inverse = SimpleInfixCalculator.calculate(inverseInfix, expected);
-        assertEquals(in,inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
+        double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
+        assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
+        assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
         update_conversion_count(from, to);
     }
 
