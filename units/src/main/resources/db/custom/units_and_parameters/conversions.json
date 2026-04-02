@@ -266,7 +266,7 @@
 	//["g/l",         "lbm/ft3",     "function: (i/unit_per_kilo/kg_per_lbm)*l_per_m3*(m_per_ft^3)"],
     ["kg/l",         "lbm/l",      "function: i/kg_per_lbm"],
 	["kg/l",         "lbm/ft3",    "function: (i/kg_per_lbm)*l_per_m3*(m_per_ft^3)"],
-	["lbm/m3",       "lbm/l",      "linear: 0.001 0"],
+	["lbm/m3",       "lbm/l",      "function: (i/l_per_m3)"],
 	["lbm/m3",       "lbm/ft3",    "function: i * (m_per_ft)^3"],
 	["g/l",          "mg/l",       "linear: milli_per_unit 0.0"],
 	["kg/l",         "g/l",        "linear: milli_per_unit 0.0"],
