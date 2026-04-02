@@ -1,0 +1,23 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+    id 'java-library'
+}
+
+
+
+dependencies {
+    implementation(libs.net.objecthunter.exp4j)
+    implementation(libs.bundles.jackson)
+    implementation(libs.org.apache.commons.io)
+    implementation(libs.org.opendcs.java.algebra.system)
+    implementation(libs.args4j)
+    implementation(libs.org.slf4j.api)
+
+
+}
+
+test {
+    useJUnitPlatform()
+}
+

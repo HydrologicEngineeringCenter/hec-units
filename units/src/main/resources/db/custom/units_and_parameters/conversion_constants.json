@@ -1,0 +1,91 @@
+{
+	//
+	//	English from NIST (http://physics.nist.gov/cuu/pdf/sp811.pdf)
+	//
+	"ftUS_per_ft"  		   	: "0.999998",         // pg 42-3
+	"ftUS_per_miUS"   		: "5280",            // pg 42-3 (not used)
+	//
+	//	English
+	//
+	"ft_per_mile"	  		: "5280",
+	"in_per_ft"   	 		: "12",
+	"ft2_per_acre"     		: "43560", // technically incorrect - 1 acre == 43560 ftUS
+	"lbm_per_ton"      		: "2000",
+	//
+	//
+	//	SI
+	//
+	"l_per_m3"         : "1000",
+	"m2_per_ha"        : "10000",
+	"C_per_K"          : "1",
+	"kg_per_tonne"     : "1000", // pg 63
+
+	//
+	//	English-->SI from NIST (http://physics.nist.gov/cuu/pdf/sp811.pdf)
+	//
+	"J_per_m2_per_langley" : "4.184E4",              // pg 51
+	"J_per_Wh"         : "3.6E3",                // pg 55
+	"J_per_cal"        : "4.184E00",             // pg 47 calorie_thermochemical
+	"kg_per_lbm"       : "4.5359237E-1",         // pg 53 (footnote)
+	"m_per_s_per_knot"     : "(1852/3600)", 		// pg 10
+	"m3_per_gal"       : "3.785412E-3",          // pg 50
+	"m_per_ft"         : "3.048E-1",             // pg 49
+	"Pa_per_bar"       : "1E5",                  // pg 45
+	"Pa_per_in-hg"     : "3.386389E3",           // pg 50
+	"Pa_per_mm-hg"     : "1.333224E2",           // pg 52
+	"Pa_per_psi"       : "6.894757E3",           // pg 53
+	"C_per_F"          : "(1/1.8)",     // pg 48
+	"rad_per_deg"      : "1.745329E-2",          // pg 48
+
+
+	"micro_per_unit"        : "1000000",  // micro-
+	"milli_per_unit"        : "1000",  // milli-
+	"centi_per_unit"        : "100",  // centi-
+	"deci_per_unit"         : "10", // deci-
+	"unit_per_kilo"         : "1000",  // kilo-
+	"unit_per_mega"			: "1000000", // mega-
+	"unit_per_giga"         : "1000000000",  // giga-
+	"unit_per_tera"         : "1000000000000", // tera-	
+
+	"day_per_mon"      : "30.4375",              // nominal
+	"hr_per_day"       : "24",                   // pg 8
+	"min_per_hr"       : "60",                   // pg 8
+	"s_per_min"        : "60",                   // pg 8
+	"s_per_hr"		   : "3600"
+}
+/*
+	
+	
+	//
+	//	energy
+	//
+		"J_per_Wh"         : Decimal("3.6e3"),                // pg 55
+		"J_per_cal"        : Decimal("4.184e00"),             // pg 47 calorie_thermochemical
+	//
+	//	gravitational acceleration
+	//
+		"m/s2_per_g"       : Decimal("9.80665"),              // pg 53 (footnote)
+	//
+	//	time
+	//
+			"day_per_mon"      : Decimal("30.4375"),              // nominal
+		"hr_per_day"       : Decimal("24"),                   // pg 8
+		"min_per_hr"       : Decimal("60"),                   // pg 8
+		"s_per_min"        : Decimal("60"),                   // pg 8
+	//
+	//	angle
+	//
+		"deg_per_rev"      : Decimal("360"),
+	//
+	//	scale
+	//
+		"u*_per_*"         : Decimal("1e6"),  // micro-
+		"m*_per_*"         : Decimal("1e3"),  // milli-
+		"c*_per_*"         : Decimal("1e2"),  // centi-
+		"*_per_k*"         : Decimal("1e3"),  // kilo-
+		"*_per_M*"         : Decimal("1e6"),  // mega-
+		"*_per_G*"         : Decimal("1e9"),  // giga-
+		"*_per_T*"         : Decimal("1e12"), // tera-
+	}
+	
+*/

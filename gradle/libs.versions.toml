@@ -1,0 +1,37 @@
+[versions]
+junit="5.9"
+mockito="4.6.1"
+junit-launcher = "1.11.2"
+exp4j="0.4.8"
+jackson = "2.17.1"
+commons-io = "2.11.0"
+java-algebra-system = "0.0.2"
+slf4j = "2.0.16"
+args4j = "2.32"
+
+[libraries]
+org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+org-mockito-mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+net-objecthunter-exp4j = { module = "net.objecthunter:exp4j", version.ref="exp4j" }
+org-apache-commons-io = { module = "commons-io:commons-io", version.ref="commons-io" }
+org-opendcs-java-algebra-system = { module ="io.github.opendcs:java-algebra-system", version.ref= "java-algebra-system" }
+org-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+org-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+args4j = {module = "args4j:args4j", version.ref = "args4j"}
+
+# test
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-launcher" }
+
+
+
+[bundles]
+junit = ["junit-jupiter-api", "junit-jupiter-params", "junit-jupiter-engine", "junit-platform-launcher"]
+jackson = ["jackson-core", "jackson-dataformat-csv", "jackson-dataformat-xml", "jackson-datatype-jsr310" ]
