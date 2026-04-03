@@ -6,6 +6,10 @@ This library contains our defined Unit definitions and conversion values.
 
 Formal contributing documents to be created soon. For the moment, open pull request, wait for review.
 
+Please observe that the project is primarily a Gradle java project. If you are contributing for a language that isn't java, that's Okay, however expect the generated output from the units project and put
+the library in an appropriate folder (e.g. javascript/hec-units-ts, or golang/hec-units, etc) and setup the require build tools. If you understand how to integrate those within gradle please do so, otherwise just
+let us know you don't and we'll assist - just to be clear your non-java project, expected for depending on some output files *should* be able to run standalone.
+
 ## WARNINGS
 
 1. This is an initial move of this data and code out of a cwms-database branch. It is not complete, the tests correctly fail as not all conversions are tested. 
