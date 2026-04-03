@@ -1,0 +1,37 @@
+---
+name: Build And Test Units Data
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test Units
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v5.0.0
+      - name: setup java
+        uses: actions/setup-java@v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+      - name: Build units Only
+        run: ./gradlew units:compileJava --info
+      - name: test
+        run: ./gradlew units:test --info
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v6
+        # For non-java projects, either provide output in the naming format below
+        # (all language output should be able to output 'xUnit' or OpenTest Xml)
+        # or all additional paths as required.
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          annotate_only: true
+          include_passed: true
+          report_paths: '**/TEST-*.xml'
