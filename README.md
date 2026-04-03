@@ -2,6 +2,10 @@
 
 This library contains our defined Unit definitions and conversion values.
 
+# Status
+
+[![Build And Test Units Data](https://github.com/HydrologicEngineeringCenter/hec-units/actions/workflows/ci.yaml/badge.svg)](https://github.com/HydrologicEngineeringCenter/hec-units/actions/workflows/ci.yaml)
+
 ## CONTRIBUTING
 
 Formal contributing documents to be created soon. For the moment, open pull request, wait for review.
