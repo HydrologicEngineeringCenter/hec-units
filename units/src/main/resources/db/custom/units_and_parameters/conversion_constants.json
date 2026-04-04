@@ -27,6 +27,8 @@
 	"J_per_Wh"         : "3.6E3",                // pg 55
 	"J_per_cal"        : "4.184E00",             // pg 47 calorie_thermochemical
 	"kg_per_lbm"       : "4.5359237E-1",         // pg 53 (footnote)
+	"g_per_lbm"        : "453.59237",            // kg_per_lbm * 1000, avoids function+linear chain failures
+	"mg_per_lbm"       : "453592.37",           // g_per_lbm * 1000, direct seed to avoid multi-hop reducer error
 	"m_per_s_per_knot"     : "(1852/3600)", 		// pg 10
 	"m3_per_gal"       : "3.785412E-3",          // pg 50
 	"m_per_ft"         : "3.048E-1",             // pg 49
