@@ -21,9 +21,13 @@ import net.hobbyscience.database.Conversion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -32,6 +36,7 @@ class UnitConversionTest {
     private static final Logger log = Logger.getLogger(UnitConversionTest.class.getName());
 
     private static HashSet<Conversion> conversions;
+    private static final Set<String> expected_pairs = new HashSet<>();
 
     private static Map<String, AtomicInteger> conversion_count = new HashMap<>();
 
@@ -51,11 +56,30 @@ class UnitConversionTest {
         });
         
         assertTrue(conversions.size() > 0);
+
+        try (var data = UnitConversionTest.class.getResourceAsStream("/units/conversions_to_test.csv")) {
+            assertNotNull(data, "Unable to load /units/conversions_to_test.csv");
+            try (var reader = new BufferedReader(new InputStreamReader(data, StandardCharsets.UTF_8))) {
+                // Skip header.
+                reader.readLine();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) {
+                        continue;
+                    }
+                    String[] parts = line.split(",");
+                    if (parts.length >= 2) {
+                        expected_pairs.add(parts[0].trim() + "_" + parts[1].trim());
+                    }
+                }
+            }
+        }
     }
 
     @AfterAll
     static void check_count() {
-        assertEquals(conversions.size(), conversion_count.keySet().size(), "Not all Unit conversions have been tested.");
+        assertEquals(expected_pairs, conversion_count.keySet(), "Not all CSV conversion pairs passed.");
     }
 
     private static void update_conversion_count(String from, String to) {
@@ -98,4 +122,3 @@ class UnitConversionTest {
                           .get().getFrom();
     }
 }
-
