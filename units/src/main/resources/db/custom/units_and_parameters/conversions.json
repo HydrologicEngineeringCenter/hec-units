@@ -32,7 +32,7 @@
 	// ["B",           "kHz",         "function[Hz]/[B] | [kHz]/*_per_k*[Hz]"],
 	["C",           "F",           "function: (i * 9/5) + 32"],
 	["C",           "K",           "linear: 1 273.15"],
-	//["C-day",       "F-day",       "[F-day]/C_per_F[C-day]"],
+	["C-day",       "F-day",       "function: i / C_per_F"],
 	//["F-day",       "C-day",       "C_per_F[C-day]/[F-day]"],	
 	// The various forms of this in each direction will also be determined
 	[ "kW",          "W",          "linear: unit_per_kilo 0"],
@@ -346,7 +346,7 @@
 	// ["in/day",      "mm/day",      "[ft]/in_per_ft[in] | m_per_ft[m]/[ft] | m*_per_*[mm]/[m]"],
 	// ["in/day",      "mm/hr",       "[ft]/in_per_ft[in] | m_per_ft[m]/[ft] | m*_per_*[mm]/[m] | [day]/hr_per_day[hr]"],
 	// ["in/day",      "mph",         "[ft]/in_per_ft[in] | [mi]/ft_per_mile[ft] | [day]/hr_per_day[hr] | [mph]/[mi/hr]"],
-	// ["in/deg-day",  "mm/deg-day",  "[ft]/in_per_ft[in] | m_per_ft[m]/[ft] | m*_per_*[mm]/[m] | [deg-day]/C_per_F[deg-day]"],
+	["in/deg-day",  "mm/deg-day",  "function: i / in_per_ft * m_per_ft * milli_per_unit / C_per_F"],
 	// ["in/hr",       "cm/day",      "[ft]/in_per_ft[in] | m_per_ft[m]/[ft] | c*_per_*[cm]/[m] | hr_per_day[hr]/[day]"],
 	// ["in/hr",       "ft/hr",       "[ft]/in_per_ft[in]"],
 	// ["in/hr",       "ft/s",        "[ft]/in_per_ft[in] | [hr]/s_per_hr[s]"],
