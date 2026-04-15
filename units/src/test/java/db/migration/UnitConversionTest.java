@@ -5,8 +5,8 @@
 
 package db.migration;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -21,19 +21,15 @@ import net.hobbyscience.database.Conversion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 
 class UnitConversionTest {
     private static final Logger log = Logger.getLogger(UnitConversionTest.class.getName());
+    private static final double ROUND_TRIP_INPUT = 1.23456789d;
 
     private static HashSet<Conversion> conversions;
-
-    private static Map<String, AtomicInteger> conversion_count = new HashMap<>();
 
     @BeforeAll
     static void setup() throws Exception {
@@ -53,15 +49,6 @@ class UnitConversionTest {
         assertTrue(conversions.size() > 0);
     }
 
-    @AfterAll
-    static void check_count() {
-        assertEquals(conversions.size(), conversion_count.keySet().size(), "Not all Unit conversions have been tested.");
-    }
-
-    private static void update_conversion_count(String from, String to) {
-        conversion_count.computeIfAbsent(from + "_" + to, k -> new AtomicInteger(0)).incrementAndGet();
-    }
-
     @ParameterizedTest /*(name="[{index}] {arguments}")*/
     @CsvFileSource(resources = "/units/conversions_to_test.csv", useHeadersInDisplayName = false, numLinesToSkip = 1)
     void test_units(String from, String to, double in, double expected, double delta, double inverseDelta) {
@@ -69,19 +56,24 @@ class UnitConversionTest {
         var toUnit = getUnit(to);
         var conversion = getConversion(fromUnit,toUnit);
         var inverseConversion = getConversion(toUnit, fromUnit);
-        var infix = conversion.getMethod().getPostfix();
-        var inverseInfix = inverseConversion.getMethod().getPostfix();
-
-        log.finest(()->"Forward conversion " + conversion.toString());
-        double forward = SimpleInfixCalculator.calculate(infix, in);
-        assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
+        double forward = evaluateConversion(conversion, in, "Forward");
         assertEquals(expected, forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
 
-        log.finest(()->"Inverse conversion " + inverseConversion.toString());
-        double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
-        assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
+        double inverse = evaluateConversion(inverseConversion, forward, "Inverse");
         assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
-        update_conversion_count(from, to);
+    }
+
+    @Test
+    void test_all_generated_conversions_evaluate() {
+        int exercisedConversions = 0;
+        for (var conversion : conversions) {
+            var inverseConversion = getConversion(conversion.getTo(), conversion.getFrom());
+            double forward = evaluateConversion(conversion, ROUND_TRIP_INPUT, "Forward");
+            evaluateConversion(inverseConversion, forward, "Inverse");
+            exercisedConversions++;
+        }
+
+        assertEquals(conversions.size(), exercisedConversions, "Not all Unit conversions have been exercised.");
     }
 
     private Conversion getConversion(Unit from, Unit to) {
@@ -91,6 +83,14 @@ class UnitConversionTest {
                           .findFirst().get();
     }
 
+    private double evaluateConversion(Conversion conversion, double input, String direction) {
+        var infix = conversion.getMethod().getPostfix();
+        log.finest(() -> direction + " conversion " + conversion.toString());
+        double output = SimpleInfixCalculator.calculate(infix, input);
+        assertTrue(Double.isFinite(output), () -> direction + " conversion produced non-finite value using " + conversion.toString());
+        return output;
+    }
+
     private Unit getUnit(String unit) {
         return conversions.stream()
                           .filter(c -> c.getFrom().getAbbreviation().equals(unit))
@@ -98,4 +98,3 @@ class UnitConversionTest {
                           .get().getFrom();
     }
 }
-
