@@ -53,7 +53,8 @@
 	"hr_per_day"       : "24",                   // pg 8
 	"min_per_hr"       : "60",                   // pg 8
 	"s_per_min"        : "60",                   // pg 8
-	"s_per_hr"		   : "3600"
+	"s_per_hr"		   : "3600",
+	"ft3_per_dsf"      : "86400"                 // 1 dsf = 1 cfs × 86400 sec/day
 }
 /*
 	
