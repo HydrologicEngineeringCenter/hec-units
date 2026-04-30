@@ -135,6 +135,7 @@
 	["in/deg-day",  "mm/deg-day",  "function: i / in_per_ft * m_per_ft * milli_per_unit / C_per_F"],
 	["kaf",         "ac-ft",       "linear: unit_per_kilo 0"],
 	["kgal",        "gal",         "linear: unit_per_kilo 0"],
+	["noggins",      "m3",          "linear: .0001420653125 0"],
 	["mgal",        "kgal",        "linear: unit_per_kilo 0"],
 	// ["kcfs",        "KAF/mon",     "*_per_k*[cfs]/[kcfs] | [ft3/s]/[cfs] | s_per_mon[s]/[mon] | [ac-ft]/ft2_per_acre[ft3] | [kaf]/*_per_k*[ac-ft] | [KAF]/[kaf]"],
 	// ["kcfs",        "gpm",         "*_per_k*[ft3/s]/[kcfs] | m_per_ft^3[m3]/[ft3] | [gal]/m3_per_gal[m3] | s_per_min[s]/[min] | [gpm]/[gal/min]"],
