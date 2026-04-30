@@ -1,11 +1,11 @@
 # Adding units and conversions
 
-To add a unit open `units/src/main/resources/unit_definition.json` and create the appropriate data.
+To add a unit open `units/src/main/resources/unit_definitions.json` and create the appropriate data.
 
 Then add at least one unit conversion to `units/src/main/resources/conversions.json`. We recommend not adding additional conversions unless the required conversions precision is not met.
 Be aware, the `conversions.json` is read by the build as "JSON with Comments." You may add additional comments for clarity, existing comments should not be removed.
 
-And at lesat one test conversion to `units/src/test/sources/units/conversions_to_test.csv`. The conversion provided will be tested both a from that unit and to that unit.
+And at least one test conversion to `units/src/test/resources/units/conversions_to_test.csv`. The conversion provided will be tested both a from that unit and to that unit.
 The required precision field is somewhat arbitrary, set it to a reasonable expected value and adjust conversions to match.
 
 However, while you only need to make one unit conversion entry, the build will map to all possible conversions within that unit system. The unit conversion test suite
@@ -55,7 +55,7 @@ Find the area of the file that contains volume parameters.
 
 ### The conversion test
 
-Fine related conversions. Add your new conversions to the file.
+Find related conversions. Add your new conversions to the file.
 
 ```
 m3,gal,6.343, 1675.6432688, .000001, .00001
