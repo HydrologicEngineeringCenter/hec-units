@@ -547,6 +547,13 @@
     },
     {
         "abstract-parameter": "Volume",
+        "abbr": "noggins",
+        "system": "EN",
+        "name": "Noggins",
+        "description": "An odd, but valid, unit equivalent to 1/4 of a pint "
+    },
+    {
+        "abstract-parameter": "Volume",
         "abbr": "ac-ft",
         "system": "EN",
         "name": "Acre-feet",
