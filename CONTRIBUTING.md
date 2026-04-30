@@ -45,7 +45,15 @@ Find the area of the file that contains volume parameters.
     },
 ```
 
+
 ### The conversion
+
+```
+    ["kgal",        "gal",         "linear: unit_per_kilo 0"],
+	["noggins",      "m3",          "linear: .0001420653125 0"],
+```
+
+### The conversion test
 
 Fine related conversions. Add your new conversions to the file.
 
