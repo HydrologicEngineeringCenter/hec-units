@@ -38,6 +38,7 @@
 	"Pa_per_psi"       : "6.894757E3",           // pg 53
 	"C_per_F"          : "(1/1.8)",     // pg 48
 	"rad_per_deg"      : "1.745329E-2",          // pg 48
+	"deg_per_rev"      : "360",
 
 
 	"micro_per_unit"        : "1000000",  // micro-
