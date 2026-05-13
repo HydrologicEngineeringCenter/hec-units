@@ -1,0 +1,37 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+}
+
+configurations {
+    unitGen
+}
+
+def resourceDir = project.layout.buildDir.dir("generated/resources")
+
+sourceSets {
+    main {
+        resources {
+            srcDir resourceDir 
+        }
+    }
+}
+
+dependencies {
+    implementation(project(":units"))
+}
+
+
+
+def genUnits = tasks.register('generateUnitsDef', JavaExec) {
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.GenUnitDefinitions'
+    args = [resourceDir.get()]
+
+    outputs.dir(resourceDir)
+
+}
+
+jar.dependsOn genUnits
+sourcesJar.dependsOn genUnits
