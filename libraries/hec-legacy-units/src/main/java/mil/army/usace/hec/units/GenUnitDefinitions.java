@@ -36,8 +36,8 @@ public final class GenUnitDefinitions {
             int maxUnitAbbrLen = 0;
 
             for (var parameter: parameters) {
-                if (parameter.parameter().length() > maxParamNameLen) {
-                    maxParamNameLen = parameter.parameter().length();
+                if (parameter.id().length() > maxParamNameLen) {
+                    maxParamNameLen = parameter.id().length();
                 }
 
                 if (parameter.siUnit().length() > maxUnitAbbrLen) {
@@ -46,9 +46,8 @@ public final class GenUnitDefinitions {
             }
 
             final var fmt = "%-Xs: %-Ys : %s".replace("X", "" + maxParamNameLen).replace("Y", "" + maxUnitAbbrLen);
-
             for (var parameter: parameters) {
-                writer.println(String.format(fmt, parameter.parameter(), parameter.siUnit(), parameter.usUnit()));
+                writer.println(String.format(fmt, parameter.id(), parameter.siUnit(), parameter.usUnit()));
             }
         }
     }
