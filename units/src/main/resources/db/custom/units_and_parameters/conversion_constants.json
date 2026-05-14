@@ -36,6 +36,7 @@
 	"Pa_per_in-hg"     : "3.386389E3",           // pg 50
 	"Pa_per_mm-hg"     : "1.333224E2",           // pg 52
 	"Pa_per_psi"       : "6.894757E3",           // pg 53
+	"N_per_lb"         : "4.4482216152605",      // 1 lbf at standard gravity (9.80665 m/s2 * 0.45359237 kg)
 	"C_per_F"          : "(1/1.8)",     // pg 48
 	"rad_per_deg"      : "1.745329E-2",          // pg 48
 	"deg_per_rev"      : "360",
