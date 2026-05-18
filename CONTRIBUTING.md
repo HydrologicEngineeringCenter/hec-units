@@ -70,7 +70,7 @@ run `./gradlew :units:test --info`
 If tests pass you are done, submit the Pull request for the change.
 If tests fail determine if:
 
-1. Precision is invalid for some conversions, if so consider adding additional direct conversions. (NOTE: this is usually only required with units that contain extremely small values that get mapps to larger units.)
+1. Precision is invalid for some conversions, if so consider adding additional direct conversions. (NOTE: this is usually only required with units that contain extremely small values that get mapped  to larger units.)
 2. Add additional conversion tests.
 
 
