@@ -545,13 +545,13 @@
         "name": "Thousands of cubic meters",
         "description": "Volume of 1E+03 cubic meters"
     },
-    {
+/*    {
         "abstract-parameter": "Volume",
         "abbr": "noggins",
         "system": "EN",
-        "name": "Noggins",
+        "name": "Noggins (US)",
         "description": "An odd, but valid, unit equivalent to 1/4 of a pint "
-    },
+    }, */
     {
         "abstract-parameter": "Volume",
         "abbr": "ac-ft",

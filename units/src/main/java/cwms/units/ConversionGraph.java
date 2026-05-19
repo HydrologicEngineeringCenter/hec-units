@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import net.hobbyscience.database.Conversion;
-import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.exceptions.BadMathExpression;
 import net.hobbyscience.database.exceptions.NoConversionFound;
 import net.hobbyscience.database.methods.ForDB;
@@ -233,7 +232,7 @@ public class ConversionGraph {
         HashSet<Conversion> retVal = new HashSet<>();
         Set<String> unitClasses = initialConversions.stream().map( c -> c.getFrom().getAbstractParameter() ).distinct().collect(Collectors.toSet());
         for( String unitClass: unitClasses){
-            System.out.println ("Expanding unit conversions for unit class " + unitClass);
+            log.fine(() -> "Expanding unit conversions for unit class " + unitClass);
             Set<Conversion> _conversions = 
                 initialConversions.stream()
                             .filter( c -> c.getFrom().getAbstractParameter().equalsIgnoreCase(unitClass) == true )

@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -36,7 +35,8 @@ class UnitConversionTest {
     private static final Logger log = Logger.getLogger(UnitConversionTest.class.getName());
 
     private static HashSet<Conversion> conversions;
-    private static final Set<String> expected_pairs = new HashSet<>();
+    private static final HashSet<String> expected_conversion_pairs = new HashSet<>();
+    private static final HashSet<String> expected_test_pairs = new HashSet<>();
 
     private static Map<String, AtomicInteger> conversion_count = new HashMap<>();
 
@@ -57,6 +57,10 @@ class UnitConversionTest {
         
         assertTrue(conversions.size() > 0);
 
+        for (var conversion: conversions) {
+            expected_conversion_pairs.add(toConversionKey(conversion.getFrom(), conversion.getTo()));
+            expected_conversion_pairs.add(toConversionKey(conversion.getTo(), conversion.getFrom()));
+        }
         try (var data = UnitConversionTest.class.getResourceAsStream("/units/conversions_to_test.csv")) {
             assertNotNull(data, "Unable to load /units/conversions_to_test.csv");
             try (var reader = new BufferedReader(new InputStreamReader(data, StandardCharsets.UTF_8))) {
@@ -70,7 +74,7 @@ class UnitConversionTest {
                     }
                     String[] parts = line.split(",");
                     if (parts.length >= 2) {
-                        expected_pairs.add(parts[0].trim() + "_" + parts[1].trim());
+                        expected_test_pairs.add(toConversionKey(parts[0].trim(),parts[1].trim()));
                     }
                 }
             }
@@ -78,12 +82,57 @@ class UnitConversionTest {
     }
 
     @AfterAll
-    static void check_count() {
-        assertEquals(expected_pairs, conversion_count.keySet(), "Not all CSV conversion pairs passed.");
+    static void check_provided_tests_passed() {
+        final HashSet<String> conversionKeySet = new HashSet<>(conversion_count.keySet());
+        
+        boolean failedConversions = false;
+        final var sb = new StringBuilder();
+        sb.append("Not all CSV conversion pairs passed.").append(System.lineSeparator());
+        sb.append("The following tests did not register as successful:").append(System.lineSeparator());
+        for(var expected_test: expected_test_pairs) {
+            if (!conversionKeySet.contains(expected_test)) {
+                final var parts = expected_test.split("_");
+                sb.append("\t")
+                    .append(parts[0])
+                    .append(" -> ")
+                    .append(parts[1])
+                    ;
+                failedConversions = true;
+            }
+        }
+        
+        if (failedConversions) {
+            fail(() -> sb.toString());
+        }
+        
+    }
+
+    @AfterAll
+    static void check_all_conversions_have_test() {
+        boolean missingTestConversion = false;
+        
+        final var sb = new StringBuilder();
+        sb.append("Not all possible conversions were performed.").append(System.lineSeparator());
+        sb.append("The following conversions have no test:").append(System.lineSeparator());
+        final var actualConversions = conversion_count.keySet();
+        for (var expected_conversion: expected_conversion_pairs) {
+            if (!actualConversions.contains(expected_conversion)) {
+                var parts = expected_conversion.split("_");
+                sb.append("\t")
+                    .append(parts[0])
+                    .append(" -> ")
+                    .append(parts[1])
+                    .append(System.lineSeparator());
+                missingTestConversion = true;
+            }
+        }
+        if (missingTestConversion) {
+            fail(() -> sb.toString());
+        }
     }
 
     private static void update_conversion_count(String from, String to) {
-        conversion_count.computeIfAbsent(from + "_" + to, k -> new AtomicInteger(0)).incrementAndGet();
+        conversion_count.computeIfAbsent(toConversionKey(from, to), k -> new AtomicInteger(0)).incrementAndGet();
     }
 
     @ParameterizedTest /*(name="[{index}] {arguments}")*/
@@ -100,12 +149,13 @@ class UnitConversionTest {
         double forward = SimpleInfixCalculator.calculate(infix, in);
         assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
         assertEquals(expected, forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
+        update_conversion_count(from, to);
 
         log.finest(()->"Inverse conversion " + inverseConversion.toString());
         double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
         assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
         assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
-        update_conversion_count(from, to);
+        update_conversion_count(to, from);
     }
 
     private Conversion getConversion(Unit from, Unit to) {
@@ -120,5 +170,14 @@ class UnitConversionTest {
                           .filter(c -> c.getFrom().getAbbreviation().equals(unit))
                           .findFirst()
                           .get().getFrom();
+    }
+
+
+    private static String toConversionKey(Unit from, Unit to) {
+        return toConversionKey(from.getAbbreviation(), to.getAbbreviation());
+    }
+
+    private static String toConversionKey(String from, String to) {
+        return from + "_" + to;
     }
 }

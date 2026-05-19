@@ -18,10 +18,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Loader {
-    
+    private static final Logger log = Logger.getLogger(Loader.class.getName());    
 
     private ArrayList<String> abstractParameters = new ArrayList<>();
     private Map<String,Unit> unitDefinitions = null;
@@ -62,7 +63,7 @@ public class Loader {
             getData("db/custom/units_and_parameters/conversions.json"));
         HashSet<String> existing = new HashSet<>();
         tmpConversions.forEach(conversion -> {
-            System.out.println(conversion.toPrettyString());
+            log.fine(() -> conversion.toPrettyString());
             Unit from = unitDefinitions.get(conversion.get(0).asText());
             Unit to = unitDefinitions.get(conversion.get(1).asText());
             if (from != null && to != null) {
