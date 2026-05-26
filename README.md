@@ -1,0 +1,1 @@
+Branch exists to hold generated badges and other build information as required.
