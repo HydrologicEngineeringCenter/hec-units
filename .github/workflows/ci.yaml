@@ -92,7 +92,7 @@ jobs:
           find . -type f
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add build/**/*.svg
+          git add build/*.svg
           git status
           git commit --allow-empty -m "Update Badge for build of ${{ github.sha }}"
           git push origin badges -f
