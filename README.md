@@ -5,6 +5,8 @@ This library contains our defined Unit definitions and conversion values.
 # Status
 
 [![Build And Test Units Data](https://github.com/HydrologicEngineeringCenter/hec-units/actions/workflows/ci.yaml/badge.svg)](https://github.com/HydrologicEngineeringCenter/hec-units/actions/workflows/ci.yaml)
+[![Unit Conversions Tested]](https://raw.githubusercontent.com/HydrologicEngineeringCenter/hec-units/refs/heads/badges/build/unit_conversions.svg)
+[![Unit Generation Coverage]](https://raw.githubusercontent.com/HydrologicEngineeringCenter/hec-units/refs/heads/badges/build/unit_converage.svg)
 
 ## CONTRIBUTING
 

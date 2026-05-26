@@ -26,7 +26,7 @@ jobs:
       - name: test
         run: ./gradlew units:test --info
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v6
+        uses: mikepenz/action-junit-report@v6        
         # For non-java projects, either provide output in the naming format below
         # (all language output should be able to output 'xUnit' or OpenTest Xml)
         # or all additional paths as required.
@@ -35,3 +35,64 @@ jobs:
           annotate_only: true
           include_passed: true
           report_paths: '**/TEST-*.xml'
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+      - name: Get Unit conversion percentage
+        id: conversions-percent
+        if: success() || failure() # always run even if the previous step fails
+        run: |
+          PERCENT_TESTED=`xmllint --xpath "string(/unit-conversions/@percent-tested)" units/build/reports/unit_conversion_report.xml`
+          echo "percent=${PERCENT_TESTED}" >> $GITHUB_OUTPUT
+      - name: Unit conversion Badge
+        if: success() || failure() # always run even if the previous step fails
+        uses: ./.github/actions/badge
+        with:
+          label: 'Unit Conversions Tested'
+          status: ${{ steps.conversions-percent.outputs.percent }} %
+          file: unit_conversions.svg
+          run_id: ${{ github.run_id }}
+
+      - name: Unit Generation Coverage
+        id: unit-coverage
+        run: |
+          MISSED_LINES=`xmllint --xpath "string(/report/counter[@type='COMPLEXITY']/@missed)"   units/build/reports/jacoco/test/jacocoTestReport.xml`
+          COVERED_LINES=`xmllint --xpath "string(/report/counter[@type='COMPLEXITY']/@covered)" units/build/reports/jacoco/test/jacocoTestReport.xml`
+          PERCENT=`echo "scale=1; (${COVERED_LINES} / (${COVERED_LINES} + ${MISSED_LINES})) * 100" | bc`
+          echo "Coverage from missed $MISSED_LINES and covered $COVERED_LINES is $PRECENT"
+          echo "coverage=$PERCENT %" >> $GITHUB_OUTPUT
+      - name: Unit Generatation Coverage
+        if: success() || failure() # always run even if the previous step fails
+        uses: ./.github/actions/badge
+        with:
+          label: 'Unit Generation Coverage'
+          status: ${{ steps.unit-coverage.outputs.coverage }}
+          file: unit_coverage.svg
+          run_id: ${{ github.run_id }}
+
+
+  badges:
+    needs: build
+    runs-on: ubuntu-latest
+    # we are reporing build state so always run, but only on builds on the main branch
+    if: always() && (github.ref_name == 'main')
+    steps:
+      - name: Badge Branch
+        uses: actions/checkout@v5.0.0
+        with:
+          ref: badges
+          fetch-depth: 1
+      - name: Download badges
+        uses: actions/download-artifact@v4
+        with:
+          pattern: badges_${{ github.run_id }}_*
+          path: ./build  # directory to download artifacts into
+          merge-multiple: true  # downloaded artifacts will be in the same directory specified by path
+      - name: Apply Badge
+        run: |
+          find . -type f
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add build/**/*.svg
+          git status
+          git commit --allow-empty -m "Update Badge for build of ${{ github.sha }}"
+          git push origin badges -f

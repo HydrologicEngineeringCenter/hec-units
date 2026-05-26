@@ -142,7 +142,7 @@ class UnitConversionTest {
 
         writer.writeAttribute("expected", "" + totalExpected);
         writer.writeAttribute("actual", "" + totalActual);
-        writer.writeAttribute("precent-tested", String.format("%.01f", percentTested));
+        writer.writeAttribute("percent-tested", String.format("%.01f", percentTested));
         writer.writeStartElement("missing-conversions");
         for (var expected_conversion: expected_conversion_pairs) {
             if (!actualConversions.contains(expected_conversion)) {
