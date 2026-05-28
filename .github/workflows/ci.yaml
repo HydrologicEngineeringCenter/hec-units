@@ -50,6 +50,7 @@ jobs:
           echo "expected=${EXPECTED}" >> $GITHUB_OUTPUT
       - name: Save values
         run: |
+          mkdir -p badges
           echo "${{steps.conversions-percent.outputs.percent}}" > badges/unit-conversions-percent.txt
           echo "${{steps.conversions-percent.outputs.actual}}" > badges/unit-conversions-actual.txt
           echo "${{steps.conversions-percent.outputs.expected}}" > badges/unit-conversions-expected.txt
