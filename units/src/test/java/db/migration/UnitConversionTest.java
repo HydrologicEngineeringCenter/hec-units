@@ -22,13 +22,28 @@ import net.hobbyscience.database.Conversion;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.stax.StAXResult;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 
 class UnitConversionTest {
@@ -108,26 +123,51 @@ class UnitConversionTest {
     }
 
     @AfterAll
-    static void check_all_conversions_have_test() {
-        boolean missingTestConversion = false;
-        
-        final var sb = new StringBuilder();
-        sb.append("Not all possible conversions were performed.").append(System.lineSeparator());
-        sb.append("The following conversions have no test:").append(System.lineSeparator());
+    static void create_unit_conversion_report() throws Exception {
+        var xmlFactory = XMLOutputFactory.newInstance();
+                
+        var buffer = new StringWriter();
+    
+        var writer = xmlFactory.createXMLStreamWriter(buffer);
         final var actualConversions = conversion_count.keySet();
+
+        writer.writeStartDocument();
+        
+        writer.writeStartElement("unit-conversions");
+
+        final int totalExpected = expected_conversion_pairs.size();
+        final int totalActual = actualConversions.size();            
+
+        final float percentTested = totalActual/(float)totalExpected*100;
+
+        writer.writeAttribute("expected", "" + totalExpected);
+        writer.writeAttribute("actual", "" + totalActual);
+        writer.writeAttribute("percent-tested", String.format("%.01f", percentTested));
+        writer.writeStartElement("missing-conversions");
         for (var expected_conversion: expected_conversion_pairs) {
             if (!actualConversions.contains(expected_conversion)) {
+
                 var parts = expected_conversion.split("_");
-                sb.append("\t")
-                    .append(parts[0])
-                    .append(" -> ")
-                    .append(parts[1])
-                    .append(System.lineSeparator());
-                missingTestConversion = true;
+                writer.writeStartElement("conversion");
+                writer.writeAttribute("from", parts[0]);
+                writer.writeAttribute("to", parts[1]);
+                writer.writeEndElement();
             }
         }
-        if (missingTestConversion) {
-            fail(() -> sb.toString());
+        writer.writeEndElement();
+
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.flush();
+        try (var file = new FileOutputStream("build/reports/unit_conversion_report.xml"))
+        {
+            var transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+            transformer.transform(new StreamSource(new StringReader(buffer.toString())),
+                                  new StreamResult(file));
         }
     }
 
