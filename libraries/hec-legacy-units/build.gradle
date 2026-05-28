@@ -8,30 +8,33 @@ configurations {
 }
 
 def resourceDir = project.layout.buildDir.dir("generated/resources")
+def outputDir = project.layout.buildDir.dir("generated/resources/hec/util")
 
 sourceSets {
-    main {
-        resources {
-            srcDir resourceDir 
-        }
+    generated {
+        // first make the name known
     }
 }
+
 
 dependencies {
     implementation(project(":units"))
 }
 
-
+jar {
+    exclude('**/*.class')
+    from sourceSets.generated.output
+}
 
 def genUnits = tasks.register('generateUnitsDef', JavaExec) {
     dependsOn classes
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'mil.army.usace.hec.units.GenUnitDefinitions'
-    args = [resourceDir.get()]
+    args = [outputDir.get()]
 
     outputs.dir(resourceDir)
 
 }
 
-jar.dependsOn genUnits
-sourcesJar.dependsOn genUnits
+// then link it to the task.
+sourceSets.generated.resources.srcDir(genUnits)
