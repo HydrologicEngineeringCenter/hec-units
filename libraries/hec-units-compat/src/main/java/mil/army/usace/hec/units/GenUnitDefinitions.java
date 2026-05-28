@@ -38,7 +38,7 @@ public final class GenUnitDefinitions {
         try (PrintWriter writer = new PrintWriter(new File(outputDir, "parameters_units.def"))) {
             writer.println();
             writer.println("=PARAMETER/UNIT");
-            writer.println("#position=100");
+            writer.println("#position=1000");
             writer.println();
 
 

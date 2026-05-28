@@ -41,18 +41,18 @@ public final class Parameters {
         final var data = mapper.readTree(parameterStream);
         for (var node: data) {
             final var dbCode = node.get(0).asLong();
-            final var param = node.get(0).asText();
+            final var param = node.get(1).asText();
             final var paramId = node.get(2).asText();
             map.put(paramId,
                     new Parameter(
                         dbCode,
                         param, // parameter
                         paramId, // id
-                        node.get(2).asText(), // friendly name
-                        node.get(3).asText(), // storage unit
-                        node.get(4).asText(), // si default unit
-                        node.get(5).asText(), // us default unit
-                        node.get(6).asText() // description
+                        node.get(3).asText(), // friendly name
+                        node.get(4).asText(), // storage unit
+                        node.get(5).asText(), // si default unit
+                        node.get(6).asText(), // us default unit
+                        node.get(7).asText() // description
                     )
                 );
         }
