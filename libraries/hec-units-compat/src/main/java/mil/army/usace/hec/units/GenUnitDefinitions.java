@@ -68,7 +68,13 @@ public final class GenUnitDefinitions {
         try(var writer = new PrintWriter(new File(outputDir, "unitConversions.def"))) {
             writer.println("// Generated from hec-units" );
             writer.println("// UNIT DEFINITIONS");
-            writer.println("//  UnitSystem;UnitName;UnitAliases...;...;");
+writer.println("// ';'-delimited; '//' and blank lines ignored.");
+  writer.println("// A line with '>' is a conversion, otherwise a unit definition:");
+  writer.println("//   Definition:  System;CanonicalName[;Alias;Alias;...]        (System = SI|English)");
+  writer.println("//   Conversion:  FromSys;FromUnit>ToSys;ToUnit;Function");
+  writer.println("//     Function = scale factor or RPN expression");
+  writer.println("//                        where \"ARG 0\" is the input  (e.g. ARG 0|1.8|*|32|+)");
+
 
 
             final var units = loader.getUnits().values();
