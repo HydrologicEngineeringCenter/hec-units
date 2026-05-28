@@ -1,11 +1,11 @@
 /**
  * Derived from code at https://github.com/MikeNeilson/housedb/blob/main/database/src/main/java/db/migration/java/units/R__unit_conversions.java
- *  
+ *
  * Copyright 2022 Michael Neilson
  * Licensed Under MIT License. https://github.com/MikeNeilson/housedb/LICENSE.md
  * For original checkin. Fu
  */
- 
+
 package cwms.units;
 
 import java.util.ArrayDeque;
@@ -30,7 +30,7 @@ import net.hobbyscience.math.Equations;
 
 public class ConversionGraph {
     private static Logger log = Logger.getLogger(ConversionGraph.class.getName());
-    
+
     private Set<Conversion> initialConversions;
 
     public ConversionGraph(Set<Conversion> conversions) {
@@ -39,7 +39,7 @@ public class ConversionGraph {
 
     private Set<Conversion> expandConversions(Set<String> unitClasses,
             Set<Conversion> conversions) {
-        HashSet<Conversion> newConversions = new HashSet<>();        
+        HashSet<Conversion> newConversions = new HashSet<>();
         List<Unit> units = conversions.stream().map( Conversion::getFrom ).distinct().collect( Collectors.toList() );
         units.addAll( conversions.stream().map( Conversion::getTo ).distinct().collect( Collectors.toList() ) );
         units = units.stream()
@@ -51,10 +51,10 @@ public class ConversionGraph {
         var unitChain = new ArrayDeque<Conversion>(10);
         units.forEach( u -> log.fine("*"+u+"*"));
         for( Unit from: units ){
-            for( Unit to: units ){                
+            for( Unit to: units ){
                 if( from.equals(to) ) continue;
 
-                
+
                 log.fine(() -> String.format("Finding conversion from %s to %s",from,to));
                 var steps = new ArrayDeque<>(findConversion(from,to,conversions));
                 if( steps.isEmpty() ){
@@ -64,7 +64,7 @@ public class ConversionGraph {
                 unitChainStr.setLength(0);
 
                 log.fine("Reducing/combining conversion steps");
-                var conversion = steps.pollLast();                
+                var conversion = steps.pollLast();
                 unitChain.push(conversion);
                 String postfix = conversion.getMethod().getPostfix();
                 Conversion step = null;
@@ -81,7 +81,7 @@ public class ConversionGraph {
 
                 try {
                     var reduced = EquationReducer.reduce(postfix);
-                    newConversions.add( 
+                    newConversions.add(
                         new Conversion(
                             from,
                             to,
@@ -96,11 +96,11 @@ public class ConversionGraph {
                                       from.getAbbreviation(),
                                       to.getAbbreviation()),bme);
                 }
-                
-                
-                
+
+
+
             }
-        }        
+        }
 
         return newConversions;
     }
@@ -118,56 +118,56 @@ public class ConversionGraph {
             this.dir = dir;
         }
 
-        public void findConversions( Set<Conversion> conversions){            
+        public void findConversions( Set<Conversion> conversions){
             var remaining = conversions.stream().filter( c -> !c.equals(this.conversion)  ).collect(Collectors.toSet());
-            
-            if( remaining.size() == 0 ) return;        
 
-            remaining.forEach( conv -> {                
+            if( remaining.size() == 0 ) return;
+
+            remaining.forEach( conv -> {
                 Unit unit = dir == INV ? conversion.getFrom() : conversion.getTo();
 
-                if( conv.getFrom().equals(unit) ){                    
+                if( conv.getFrom().equals(unit) ){
                     children.add( new Node(conv,FWD));
-                } else if ( conv.getTo().equals(unit) ){                    
+                } else if ( conv.getTo().equals(unit) ){
                     children.add( new Node(conv,INV));
                 }
             });
-            
+
             children.forEach( child -> {
                 var for_next = new HashSet<Conversion>();
                 for_next.addAll(remaining);
-                child.findConversions(for_next); 
+                child.findConversions(for_next);
             });
-            
+
         }
 
         public Optional<Queue<Conversion>> queue( Unit to, Queue<Conversion> queue ){
-            Queue<Conversion> q = queue == null ? new LinkedList<Conversion>() : queue;                        
-            
+            Queue<Conversion> q = queue == null ? new LinkedList<Conversion>() : queue;
+
             var conv = dir == FWD ? conversion : conversion.getInverse();
 
-            if( conv.getTo().equals(to) ){                
+            if( conv.getTo().equals(to) ){
                 // we've found our destination
                 q.add( conv );
                 return Optional.of(q);
-            } else if ( !conv.getTo().equals(to) && children.isEmpty() ){                
+            } else if ( !conv.getTo().equals(to) && children.isEmpty() ){
                 return Optional.empty();
             } else {
-                
+
                 q.add(conv);
                 Set<Queue<Conversion>> queues = new HashSet<>();
 
-                // build paths for each child            
+                // build paths for each child
                 children.forEach( child -> {
                     Queue<Conversion> tmp = new LinkedList<>();
-            
+
                     tmp.addAll(q);
-            
+
                     var q2 = child.queue(to,tmp);
                     if( q2.isPresent() ){
                         queues.add(q2.get());
-                    }                    
-                });                
+                    }
+                });
                 // return the shortest path
                 return Optional.ofNullable(queues.stream().sorted( (l,r) -> {
                     if( l.size() < r.size() ) return -1;
@@ -175,11 +175,11 @@ public class ConversionGraph {
                     else return 1;
                 }).findFirst().orElseGet( () -> null ));
 
-            }                        
+            }
         }
     }
 
-    private Queue<Conversion> findConversion(Unit from, Unit to, Set<Conversion> conversions) {                
+    private Queue<Conversion> findConversion(Unit from, Unit to, Set<Conversion> conversions) {
         Set<Node> roots = new HashSet<>();
 
         // find the roots
@@ -205,7 +205,7 @@ public class ConversionGraph {
                 queues.add(steps.get());
             }
         });
-        if( queues.isEmpty() ) throw new NoConversionFound("No conversion found from " + from + " to " + to );        
+        if( queues.isEmpty() ) throw new NoConversionFound("No conversion found from " + from + " to " + to );
         // got through each path and select the shortest.
         final AtomicInteger shortestLength = new AtomicInteger(-1);
         Comparator<Queue<Conversion>> sorter = (var l, var r) -> {
@@ -233,10 +233,10 @@ public class ConversionGraph {
         Set<String> unitClasses = initialConversions.stream().map( c -> c.getFrom().getAbstractParameter() ).distinct().collect(Collectors.toSet());
         for( String unitClass: unitClasses){
             log.fine(() -> "Expanding unit conversions for unit class " + unitClass);
-            Set<Conversion> _conversions = 
+            Set<Conversion> _conversions =
                 initialConversions.stream()
                             .filter( c -> c.getFrom().getAbstractParameter().equalsIgnoreCase(unitClass) == true )
-                            .collect( Collectors.toSet() );                        
+                            .collect( Collectors.toSet() );
             retVal.addAll( expandConversions(unitClasses, _conversions));
         }
         return retVal;
