@@ -49,10 +49,12 @@ runs:
         label: ${{inputs.label}}
         status: ${{inputs.status}}
         color: ${{ steps.vars.outputs.color }}
-        path: badges/${{inputs.file}}
+        path: badges/${{inputs.file}}.svg
     - name: Upload badge
       uses: actions/upload-artifact@v4
       with:
         name: badges_${{ inputs.run_id }}_${{ steps.vars.outputs.safe_file }}
-        path: badges/**/*.svg
+        path: |
+          badges/**/*.svg
+          badges/**/*.txt
         overwrite: true
