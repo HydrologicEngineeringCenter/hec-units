@@ -25,7 +25,7 @@
     {
         "abstract-parameter": "Area",
         "abbr": "acre",
-        "system": "EN",
+        "system": "English",
         "name": "Acre",
         "description": "Area of 1 acre",
         "aliases": ["acres","ACRES","ACRE"]
@@ -33,14 +33,14 @@
     {
         "abstract-parameter": "Area",
         "abbr": "1000 acre",
-        "system": "EN",
+        "system": "English",
         "name": "1000 Acre",
         "description": "Area of 1000 acres"
     },
     {
         "abstract-parameter": "Area",
         "abbr": "ft2",
-        "system": "EN",
+        "system": "English",
         "name": "Square feet",
         "description": "Area of 1 square foot",
         "aliases": ["sq ft","square feet"]
@@ -72,7 +72,7 @@
     {
         "abstract-parameter": "Area",
         "abbr": "mile2",
-        "system": "EN",
+        "system": "English",
         "name": "Square miles",
         "description": "Area of 1 square mile",
         "aliases": ["mi2","sq mi","sq mile","sq miles","square miles"]
@@ -80,7 +80,7 @@
     {
         "abstract-parameter": "Areal Volume Rate",
         "abbr": "cfs/mi2",
-        "system": "EN",
+        "system": "English",
         "name": "Cfs per square mile",
         "description": "Volume rate of 1 cfs per area of 1 square mile"
     },
@@ -216,7 +216,7 @@
     {
         "abstract-parameter": "Force",
         "abbr": "lb",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds",
         "description": "Force of 1 pound",
         "aliases": ["lbf", "lbs", "pounds", "POUNDS"]
@@ -267,7 +267,7 @@
     {
         "abstract-parameter": "Length",
         "abbr": "ft",
-        "system": "EN",
+        "system": "English",
         "name": "Feet",
         "description": "Length of 1 foot",
         "aliases": ["FEET","feet","foot","FT","Feet"]
@@ -275,7 +275,7 @@
     {
         "abstract-parameter": "Length",
         "abbr": "in",
-        "system": "EN",
+        "system": "English",
         "name": "Inches",
         "description": "Length of 1 inch",
         "aliases": ["IN","inch","inches","INCHES","Inch"]
@@ -299,7 +299,7 @@
     {
         "abstract-parameter": "Length",
         "abbr": "mi",
-        "system": "EN",
+        "system": "English",
         "name": "Miles",
         "description": "Length of 1 mile",
         "aliases": ["mile","miles","Mile"]
@@ -315,7 +315,7 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "ft/s",
-        "system": "EN",
+        "system": "English",
         "name": "Feet per second",
         "description": "Velocity of 1 foot per second",
         "aliases": ["fps","ft/sec","FT/S"]
@@ -323,14 +323,14 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "in/day",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per day",
         "description": "Velocity of 1 inch per day"
     },
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "in/hr",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per hour",
         "description": "Velocity of 1 inch per hour"
     },
@@ -366,7 +366,7 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "mph",
-        "system": "EN",
+        "system": "English",
         "name": "Miles per hour",
         "description": "Velocity of 1 mile per hour",
         "aliases": ["MPH","miles per hour","MILES PER HOUR"]
@@ -421,7 +421,7 @@
     {
         "abstract-parameter": "Phase Change Rate Index",
         "abbr": "in/deg-day",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per degree-day",
         "description": "Phase change of 1 inch per day per Fahrenheit degree",
         "aliases": ["in/deg-d"]
@@ -473,7 +473,7 @@
     {
         "abstract-parameter": "Pressure",
         "abbr": "in-hg",
-        "system": "EN",
+        "system": "English",
         "name": "Inches of mercury",
         "description": "Barometric pressure"
     },
@@ -503,7 +503,7 @@
     {
         "abstract-parameter": "Pressure",
         "abbr": "psi",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds per square inch",
         "description": "Pressure of 1 pound per square inch",
         "aliases": ["lbs/sqin"]
@@ -519,7 +519,7 @@
     {
         "abstract-parameter": "Temperature",
         "abbr": "F",
-        "system": "EN",
+        "system": "English",
         "name": "Fahrenheit",
         "description": "Fahrenheit Degree",
         "aliases": ["DEG F","deg F","deg f","DEG-F","Deg-F","DegF","degF","Fahrenheit","FAHRENHEIT","fahrenheit","DEGF"]
@@ -551,7 +551,7 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "cfs",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic feet per second",
         "description": "Volume rate of 1 cubic foot per second",
         "aliases": ["CFS","cu-ft/sec","cuft/sec","cusecs","ft3/sec","ft^3/s","FT3/S","FT3/SEC","ft3/s"]
@@ -567,7 +567,7 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "gpm",
-        "system": "EN",
+        "system": "English",
         "name": "Gallons per minute",
         "description": "Volume rate of 1 gallon per minute",
         "aliases": ["Gal/min","gallons per minute","GPM"]
@@ -575,7 +575,7 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "kcfs",
-        "system": "EN",
+        "system": "English",
         "name": "Kilo-cubic feet per second",
         "description": "Volume rate of 1E+03 cfs",
         "aliases": ["1000 cfs","1000 cu-ft/sec","1000 ft3/sec","KCFS"]
@@ -583,7 +583,7 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "mgd",
-        "system": "EN",
+        "system": "English",
         "name": "Millions of gallons per day",
         "description": "Volume rate of 1E+06 gallons per day",
         "aliases": ["MGD","million gallons/day"]
@@ -599,14 +599,14 @@
 /*    {
         "abstract-parameter": "Volume",
         "abbr": "noggins",
-        "system": "EN",
+        "system": "English",
         "name": "Noggins (US)",
         "description": "An odd, but valid, unit equivalent to 1/4 of a pint "
     }, */
     {
         "abstract-parameter": "Volume",
         "abbr": "ac-ft",
-        "system": "EN",
+        "system": "English",
         "name": "Acre-feet",
         "description": "Volume equal to the area of 1 acre times the length of 1 foot",
         "aliases": ["AC-FT","ACFT","acft","acre-feet","acre-ft"]
@@ -614,7 +614,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "dsf",
-        "system": "EN",
+        "system": "English",
         "name": "day-second-foot",
         "description": "Volume of water accumulated in one day by a flow of one cfs",
         "aliases": ["DSF","SFD","cfs-day","second-foot-day","sfd"]
@@ -622,7 +622,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "gal",
-        "system": "EN",
+        "system": "English",
         "name": "Gallons",
         "description": "Volume of 1 United States Gallon",
         "aliases": ["GAL","gallon","gallons"]
@@ -630,7 +630,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "ft3",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic feet",
         "description": "Volume of 1 cubic foot",
         "aliases": ["cu ft","cubic feet"]
@@ -638,7 +638,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "kaf",
-        "system": "EN",
+        "system": "English",
         "name": "Kiloacre-feet",
         "description": "Volume equal to the area of 1E+03 acres times the length of 1 foot",
         "aliases": ["1000 ac-ft","KAF"]
@@ -646,7 +646,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "kgal",
-        "system": "EN",
+        "system": "English",
         "name": "Kilogallons",
         "description": "Volume of 1E+03 gallons",
         "aliases": ["1000 gallon","1000 gallons","KGAL","TGAL","tgal"]
@@ -670,7 +670,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "mgal",
-        "system": "EN",
+        "system": "English",
         "name": "Millions of gallons",
         "description": "Volume of 1E+06 gallons",
         "aliases": ["MGAL","million gallon","millon gallons"]
@@ -678,7 +678,7 @@
     {
         "abstract-parameter": "Volume",
         "abbr": "mile3",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic miles",
         "description": "Volume of 1 cubic mile",
         "aliases": ["cu mile","cu miles"]
@@ -709,7 +709,7 @@
     {
         "abstract-parameter": "Length",
         "abbr": "ftUS",
-        "system": "EN",
+        "system": "English",
         "name": "Survey Feet",
         "description": "Length of 1 US survey foot",
         "aliases": ["survey foot", "survey feet", "SURVEY FOOT", "SURVEY FEET"]
@@ -756,7 +756,7 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "knot",
-        "system": "EN",
+        "system": "English",
         "name": "Knots",
         "description": "Velocity of 1 nautical mile per hour",
         "aliases": ["knots","kt"]
@@ -787,7 +787,7 @@
     {
         "abstract-parameter": "Currency Per Volume",
         "abbr": "$/kaf",
-        "system": "EN",
+        "system": "English",
         "name": "Dollars per 1000 acre-feet",
         "description": "Monetary Value of 1 United States dollar Per 1E+03 acre feet",
         "aliases": ["$/KAF"]
@@ -834,7 +834,7 @@
     {
         "abstract-parameter": "Energy",
         "abbr": "cal",
-        "system": "EN",
+        "system": "English",
         "name": "Calories",
         "description": "Energy of 1 thermochemical calorie (vs International Table calorie)",
         "aliases": ["calorie", "calories"]
@@ -849,7 +849,7 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "ft/hr",
-        "system": "EN",
+        "system": "English",
         "name": "Feet per hour",
         "description": "Velocity of 1 foot per hour"
     },
@@ -871,7 +871,7 @@
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "lbm/ft3",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds per cubic feet",
         "description": "Mass of 1 pound per volume of 1 cubic foot",
         "aliases": ["lb/ft3", "lbs/ft3"]
@@ -879,7 +879,7 @@
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "kg/l",
-        "system": "EN",
+        "system": "English",
         "name": "Kilograms per cubic meter",
         "description": "Mass of 1 kilogram per volume of 1 cubic meter"
     },
@@ -900,7 +900,7 @@
     {
         "abstract-parameter": "Mass Rate",
         "abbr": "ton/day",
-        "system": "EN",
+        "system": "English",
         "name": "Tons per day",
         "description": "Mass rate of 1 ton per day"
     },
@@ -929,7 +929,7 @@
     {
         "abstract-parameter": "Mass",
         "abbr": "lbm",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds",
         "description": "Mass of 1 pound"
     },
@@ -943,7 +943,7 @@
     {
         "abstract-parameter": "Mass",
         "abbr": "ton",
-        "system": "EN",
+        "system": "English",
         "name": "Tons",
         "description": "Mass of 1 ton"
     },
@@ -957,7 +957,7 @@
     {
         "abstract-parameter": "Quantity Per Length",
         "abbr": "1/ft",
-        "system": "EN",
+        "system": "English",
         "name": "Per foot",
         "description": "Quanitity per 1 foot"
     },
@@ -979,7 +979,7 @@
     {
         "abstract-parameter": "Temerature Index",
         "abbr": "F-day",
-        "system": "EN",
+        "system": "English",
         "name": "Fahrenheit degree day",
         "description": "Temperature index of 1 F degree-day",
         "aliases": ["degF-day","DEGF-D"]
@@ -987,7 +987,7 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "KAF/mon",
-        "system": "EN",
+        "system": "English",
         "name": "1000 acre-feet per month",
         "description": "Volume rate of 1E+03 acre-feet per month",
         "aliases": ["1000 ac-ft/mon"]
@@ -1003,14 +1003,14 @@
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "mcm/mon",
-        "system": "EN",
+        "system": "English",
         "name": "Million cubic meters per month",
         "description": "Volume rate of 1E+06 cubic meters per month"
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "kdsf",
-        "system": "EN",
+        "system": "English",
         "name": "Kilo-day-second-foot",
         "description": "Volume of 1E+03 dsf",
         "aliases": ["KDSF","KSFD","ksfd","ksecond-foot-day","kcfs-day","1000 sfd","1000 dsf","1000 cfs-day"]
@@ -1033,7 +1033,7 @@
     {
         "abstract-parameter": "Depth Velocity",
         "abbr": "ft2/s",
-        "system": "EN",
+        "system": "English",
         "name": "Depth times velocity",
         "description": "Depth of 1 feet and Velocity of 1 feet/second"
     },

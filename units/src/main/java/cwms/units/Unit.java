@@ -36,14 +36,14 @@ public class Unit {
         this.description = description;
         this.aliases = Collections.unmodifiableList(aliases != null ? aliases : List.of());
         if( ! /* not */
-            (system.equalsIgnoreCase("EN")
+            (system.equalsIgnoreCase("English")
             ||
             system.equalsIgnoreCase("SI")
             ||
             system.equalsIgnoreCase("NULL"))) {
                 throw new UnitException(String.format("Invalid Unit System (%s) set for unit %s/%s",system,abstractParameter,abbreviation));
         }
-        this.system = system.toUpperCase();
+        this.system = system;
     }
 
     @Override

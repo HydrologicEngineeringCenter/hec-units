@@ -3,10 +3,15 @@ package mil.army.usace.hec.units;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cwms.units.Loader;
 import cwms.units.Unit;
+import net.hobbyscience.database.Conversion;
+import net.hobbyscience.database.methods.Linear;
 
 
 public final class GenUnitDefinitions {
@@ -68,6 +73,7 @@ public final class GenUnitDefinitions {
 
             final var units = loader.getUnits().values();
             final var abstractParameters = loader.getAbstractParameters();
+            final var conversions = loader.getConversions();
 
             var systems = units.stream()
                                .map(u -> u.getSystem())
@@ -83,30 +89,63 @@ public final class GenUnitDefinitions {
             for (var abstractParameter: abstractParameters) {
                 writer.println();
 
-                writer.println("// " + abstractParameter);
+                writer.println("//" + abstractParameter);
 
 
-                var currentUnits = units.stream()
+                final var currentUnits = units.stream()
                                         .filter(u -> u.getAbstractParameter().equals(abstractParameter))
                                         .toList();
 
+                final Map<String, List<Unit>> unitsToRender = new HashMap<>();
+
                 for (var system: systems) {
-                    var systemUnits = currentUnits.stream()
+                    final var systemUnits = currentUnits.stream()
                                                   .filter(u -> u.getSystem().equals(system))
                                                   .toList();
                     for (var unit: systemUnits) {
                         if (allSystems.contains(system)) {
-                            renderUnit(writer, system, unit);
+                            unitsToRender.computeIfAbsent(system, s -> new ArrayList<>()).add(unit);
                         } else {
                             for (var namedSystem: allSystems) {
-                                renderUnit(writer, namedSystem, unit);
+                                unitsToRender.computeIfAbsent(namedSystem, s -> new ArrayList<>()).add(unit);
                             }
                         }
                     }
-                    writer.println();
                 }
 
-                writer.println("// " + abstractParameter + " Conversions");
+                unitsToRender.forEach((system, unitsList) -> {
+                    for (var unit: unitsList) {
+                        renderUnit(writer, system, unit);
+                    }
+                });
+
+                writer.println();
+                writer.println("//" + abstractParameter + " Conversions");
+
+                unitsToRender.forEach((system, fromUnitsList) -> {
+                    final var currentConversions = conversions.stream()
+                                                              .filter(c -> fromUnitsList.contains(c.getFrom()))
+                                                              .toList();
+                    for (var conversion: currentConversions) {
+                        renderConversion(writer, conversion, system);
+                    }
+                    if (currentConversions.isEmpty()) { // render a simple 1.0 conversion
+                        for (var otherSystem: allSystems) {
+                            if (!otherSystem.equals(system)) {
+                                for (var unit: fromUnitsList) {
+                                    writer.print(system + ";" + unit.getAbbreviation());
+                                    writer.print(">");
+                                    writer.print(otherSystem + ";" + unit.getAbbreviation());
+                                    writer.println(";1.0");
+                                }
+                            }
+                        }
+                    }
+                });
+
+                
+                
+                writer.println();
 
                 writer.println();
             }
@@ -114,12 +153,48 @@ public final class GenUnitDefinitions {
         }
     }
 
-
     private static void renderUnit(PrintWriter writer, String system, Unit unit) {
         writer.print(system + ";" + unit.getAbbreviation());
         for (var alias: unit.getAliases()) {
             writer.print(";" + alias);
         }
         writer.println();
+    }
+
+    private static void renderConversion(PrintWriter writer, Conversion conversion, String system) {
+        final var from = conversion.getFrom();
+        final var to = conversion.getTo();
+
+        final var fromSystemToUse = from.getSystem().equalsIgnoreCase("NULL") ? system : from.getSystem();
+        final var toSystemToUse = to.getSystem().equalsIgnoreCase("NULL") ? system : to.getSystem();
+
+        writer.print(fromSystemToUse + ";" + from.getAbbreviation());
+        writer.print(">");
+        writer.print(toSystemToUse + ";" + to.getAbbreviation());
+
+        final var conv = conversion.getMethod();
+
+        String convStr = "";
+        if (conv instanceof Linear linearConv) {
+            if (linearConv.getB() == 0.0) {
+                convStr = "" + linearConv.getA();
+            } else {
+                convStr = convertPostfix(linearConv.getPostfix());
+            }
+        } else {
+            convStr = convertPostfix(conv.getPostfix());
+        }
+        
+        writer.print(";" + convStr);    
+        writer.println();
+    }
+
+    /**
+     * Converts the generic postfix format to the expected units def format.
+     * @param postfix
+     * @return
+     */
+    private static String convertPostfix(String postfix) {
+        return postfix.replaceAll("\\s+", "|").replace("i", "ARG 0");
     }
 }
