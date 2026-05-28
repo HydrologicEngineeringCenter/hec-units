@@ -10,18 +10,18 @@ import java.util.Map;
 
 import cwms.units.Loader;
 import cwms.units.Unit;
+import mil.army.usace.hec.units.Parameter;
+import mil.army.usace.hec.units.Parameters;
 import net.hobbyscience.database.Conversion;
 import net.hobbyscience.database.methods.Linear;
 
 
 public final class GenUnitDefinitions {
     public static void main(String[] args) {
-        System.out.println("Hello wil use " + args[0]);
         final var outputDir = new File(args[0]);
 
-
-
         try {
+            outputDir.mkdirs();
             final var loader = new Loader();
             final var parameters = Parameters.load();
 

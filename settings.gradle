@@ -1,5 +1,5 @@
 rootProject.name = 'HEC Units'
 include 'units'
 
-include 'hec-legacy-units'
-project(":hec-legacy-units").projectDir = file("libraries/hec-legacy-units")
+include 'hec-units-compat'
+project(":hec-units-compat").projectDir = file("libraries/hec-units-compat")

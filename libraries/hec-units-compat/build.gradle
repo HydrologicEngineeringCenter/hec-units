@@ -38,3 +38,5 @@ def genUnits = tasks.register('generateUnitsDef', JavaExec) {
 
 // then link it to the task.
 sourceSets.generated.resources.srcDir(genUnits)
+jar.mustRunAfter tasks.processGeneratedResources
+tasks.processGeneratedResources.dependsOn genUnits
