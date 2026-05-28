@@ -11,68 +11,76 @@
         "abbr": "rpm",
         "system": "NULL",
         "name": "Revolutions per minute",
-        "description": "Angular speed of 1 revolution per minute"
+        "description": "Angular speed of 1 revolution per minute",
+        "aliases": ["rev/min","revolutions per minute"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "1000 m2",
         "system": "SI",
         "name": "Thousands of square meters",
-        "description": "Area of 1E+03 square meters"
+        "description": "Area of 1E+03 square meters",
+        "aliases": ["1000 sq m","1000 sq meters","1000 M2"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "acre",
-        "system": "EN",
+        "system": "English",
         "name": "Acre",
-        "description": "Area of 1 acre"
+        "description": "Area of 1 acre",
+        "aliases": ["acres","ACRES","ACRE"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "1000 acre",
-        "system": "EN",
+        "system": "English",
         "name": "1000 Acre",
         "description": "Area of 1000 acres"
     },
     {
         "abstract-parameter": "Area",
         "abbr": "ft2",
-        "system": "EN",
+        "system": "English",
         "name": "Square feet",
-        "description": "Area of 1 square foot"
+        "description": "Area of 1 square foot",
+        "aliases": ["sq ft","square feet"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "ha",
         "system": "SI",
         "name": "Hectares",
-        "description": "Area of 1 hectare"
+        "description": "Area of 1 hectare",
+        "aliases": ["hectare","hectares"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "km2",
         "system": "SI",
         "name": "Square kilometers",
-        "description": "Area of a square kilometer"
+        "description": "Area of a square kilometer",
+        "aliases": ["sq km", "sq.km", "sqkm"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "m2",
         "system": "SI",
         "name": "Square meters",
-        "description": "Area of 1 square meter"
+        "description": "Area of 1 square meter",
+        "aliases": ["sq m","sq meter","sq meters","square meters","M2"]
     },
     {
         "abstract-parameter": "Area",
         "abbr": "mile2",
-        "system": "EN",
+        "system": "English",
         "name": "Square miles",
-        "description": "Area of 1 square mile"
+        "description": "Area of 1 square mile",
+        "aliases": ["mi2","sq mi","sq mile","sq miles","square miles"]
     },
     {
         "abstract-parameter": "Areal Volume Rate",
         "abbr": "cfs/mi2",
-        "system": "EN",
+        "system": "English",
         "name": "Cfs per square mile",
         "description": "Volume rate of 1 cfs per area of 1 square mile"
     },
@@ -116,7 +124,8 @@
         "abbr": "umho/cm",
         "system": "NULL",
         "name": "Micro-mhos per centimeter",
-        "description": "Conductivity of 1 micro-mho per centimeter"
+        "description": "Conductivity of 1 micro-mho per centimeter",
+        "aliases": ["umhos/cm","UMHO/CM","UMHOS/CM"]
     },
     {
         "abstract-parameter": "Count",
@@ -137,70 +146,80 @@
         "abbr": "hr",
         "system": "NULL",
         "name": "Hours",
-        "description": "Time span of 1 hour"
+        "description": "Time span of 1 hour",
+        "aliases": ["hour","hours","HR","HOUR","HOURS"]
     },
     {
         "abstract-parameter": "Elapsed Time",
         "abbr": "min",
         "system": "NULL",
         "name": "Minutes",
-        "description": "Time span of 1 minute"
+        "description": "Time span of 1 minute",
+        "aliases": ["minute","minutes","MIN","MINUTE","MINUTES"]
     },
     {
         "abstract-parameter": "Elapsed Time",
         "abbr": "sec",
         "system": "NULL",
         "name": "Seconds",
-        "description": "Time span of 1 second"
+        "description": "Time span of 1 second",
+        "aliases": ["second","seconds","SEC","SECOND","SECONDS"]
     },
     {
         "abstract-parameter": "Electromotive Potential",
         "abbr": "volt",
         "system": "NULL",
         "name": "Volts",
-        "description": "Electromotive Potential of 1 volt"
+        "description": "Electromotive Potential of 1 volt",
+        "aliases": ["Volt","VOLT","Volts","volts","VOLTS"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "GWh",
         "system": "NULL",
         "name": "Gigawatt-hours",
-        "description": "Energy of 1E+09 watt-hours"
+        "description": "Energy of 1E+09 watt-hours",
+        "aliases": ["GWH"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "kWh",
         "system": "NULL",
         "name": "Kilowatt-hours",
-        "description": "Energy of 1E+03 watt-hours"
+        "description": "Energy of 1E+03 watt-hours",
+        "aliases": ["KWH"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "MWh",
         "system": "NULL",
         "name": "Megawatt-hours",
-        "description": "Energy of 1E+06 watt-hours"
+        "description": "Energy of 1E+06 watt-hours",
+        "aliases": ["MWH"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "TWh",
         "system": "NULL",
         "name": "Terawatt-hour",
-        "description": "Energy of 1E+12 watt-hours"
+        "description": "Energy of 1E+12 watt-hours",
+        "aliases": ["TWH"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "Wh",
         "system": "NULL",
         "name": "Watt-hours",
-        "description": "Energy of 3.6E+03 Kilogram-square meter per square second"
+        "description": "Energy of 3.6E+03 Kilogram-square meter per square second",
+        "aliases": ["WH"]
     },
     {
         "abstract-parameter": "Force",
         "abbr": "lb",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds",
-        "description": "Force of 1 pound"
+        "description": "Force of 1 pound",
+        "aliases": ["lbf", "lbs", "pounds", "POUNDS"]
     },
     {
         "abstract-parameter": "Hydrogen Ion Concentration Index",
@@ -242,68 +261,76 @@
         "abbr": "cm",
         "system": "SI",
         "name": "Centimeters",
-        "description": "Length of 1E-02 meter"
+        "description": "Length of 1E-02 meter",
+        "aliases": ["centimeter","centimeters"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "ft",
-        "system": "EN",
+        "system": "English",
         "name": "Feet",
-        "description": "Length of 1 foot"
+        "description": "Length of 1 foot",
+        "aliases": ["FEET","feet","foot","FT","Feet"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "in",
-        "system": "EN",
+        "system": "English",
         "name": "Inches",
-        "description": "Length of 1 inch"
+        "description": "Length of 1 inch",
+        "aliases": ["IN","inch","inches","INCHES","Inch"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "km",
         "system": "SI",
         "name": "Kilometers",
-        "description": "Length of 1E+03 meters"
+        "description": "Length of 1E+03 meters",
+        "aliases": ["kilometer","kilometers"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "m",
         "system": "SI",
         "name": "Meters",
-        "description": "Length of 1 meter"
+        "description": "Length of 1 meter",
+        "aliases": ["meter","meters","metre","metres","METERS","METRES","METRE","METER"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "mi",
-        "system": "EN",
+        "system": "English",
         "name": "Miles",
-        "description": "Length of 1 mile"
+        "description": "Length of 1 mile",
+        "aliases": ["mile","miles","Mile"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "mm",
         "system": "SI",
         "name": "Millimeters",
-        "description": "Length of 1 millimeter"
+        "description": "Length of 1 millimeter",
+        "aliases": ["millimeter","millimeters","MM"]
     },
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "ft/s",
-        "system": "EN",
+        "system": "English",
         "name": "Feet per second",
-        "description": "Velocity of 1 foot per second"
+        "description": "Velocity of 1 foot per second",
+        "aliases": ["fps","ft/sec","FT/S"]
     },
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "in/day",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per day",
         "description": "Velocity of 1 inch per day"
     },
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "in/hr",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per hour",
         "description": "Velocity of 1 inch per hour"
     },
@@ -319,7 +346,8 @@
         "abbr": "m/s",
         "system": "SI",
         "name": "Meters per second",
-        "description": "Velocity of 1 meter per second"
+        "description": "Velocity of 1 meter per second",
+        "aliases": ["MPS","mps","meters per second","M/S","METERS PER SECOND"]
     },
     {
         "abstract-parameter": "Linear Speed",
@@ -338,30 +366,34 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "mph",
-        "system": "EN",
+        "system": "English",
         "name": "Miles per hour",
-        "description": "Velocity of 1 mile per hour"
+        "description": "Velocity of 1 mile per hour",
+        "aliases": ["MPH","miles per hour","MILES PER HOUR"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "g/l",
         "system": "SI",
         "name": "Grams per liter",
-        "description": "Mass concentration of 1 gram per liter"
+        "description": "Mass concentration of 1 gram per liter",
+        "aliases": ["gm/l","grams per liter","grams/liter"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "gm/cm3",
         "system": "SI",
         "name": "Grams per cubic centimeters",
-        "description": "Mass concentration of 1 gram per cubic centimeter"
+        "description": "Mass concentration of 1 gram per cubic centimeter",
+        "aliases": ["g/cm3"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "mg/l",
         "system": "SI",
         "name": "Milligrams per liter",
-        "description": "Mass concentration of 1E-03 gram per liter"
+        "description": "Mass concentration of 1E-03 gram per liter",
+        "aliases": ["millgrams/liter","milligrams per liter","mg/L","MG/L"]
     },
     {
         "abstract-parameter": "Mass Concentration",
@@ -375,7 +407,9 @@
         "abbr": "%",
         "system": "NULL",
         "name": "Percent",
-        "description": "Ratio of 1E-02"
+        "description": "Ratio of 1E-02",
+        "aliases": ["percent","PERCENT"]
+
     },
     {
         "abstract-parameter": "None",
@@ -387,16 +421,18 @@
     {
         "abstract-parameter": "Phase Change Rate Index",
         "abbr": "in/deg-day",
-        "system": "EN",
+        "system": "English",
         "name": "Inches per degree-day",
-        "description": "Phase change of 1 inch per day per Fahrenheit degree"
+        "description": "Phase change of 1 inch per day per Fahrenheit degree",
+        "aliases": ["in/deg-d"]
     },
     {
         "abstract-parameter": "Phase Change Rate Index",
         "abbr": "mm/deg-day",
         "system": "SI",
         "name": "Millimeters per degree-day",
-        "description": "Phase change of 1 millimeter per day per Celsius degree"
+        "description": "Phase change of 1 millimeter per day per Celsius degree",
+        "aliases": ["mm/deg-d"]
     },
     {
         "abstract-parameter": "Power",
@@ -410,7 +446,8 @@
         "abbr": "kW",
         "system": "NULL",
         "name": "Kilowatts",
-        "description": "Power of 1E+03 watts"
+        "description": "Power of 1E+03 watts",
+        "aliases": ["KW"]
     },
     {
         "abstract-parameter": "Power",
@@ -436,7 +473,7 @@
     {
         "abstract-parameter": "Pressure",
         "abbr": "in-hg",
-        "system": "EN",
+        "system": "English",
         "name": "Inches of mercury",
         "description": "Barometric pressure"
     },
@@ -445,14 +482,16 @@
         "abbr": "kPa",
         "system": "SI",
         "name": "Kilopascals",
-        "description": "Pressure of 1 kilonewton per square meter"
+        "description": "Pressure of 1 kilonewton per square meter",
+        "aliases": ["kN/m2"]
     },
     {
         "abstract-parameter": "Pressure",
         "abbr": "mb",
         "system": "SI",
         "name": "Millibars",
-        "description": "Pressure of 1E-03 bar"
+        "description": "Pressure of 1E-03 bar",
+        "aliases": ["mbar","mbars","millibar","millibars"]
     },
     {
         "abstract-parameter": "Pressure",
@@ -464,163 +503,185 @@
     {
         "abstract-parameter": "Pressure",
         "abbr": "psi",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds per square inch",
-        "description": "Pressure of 1 pound per square inch"
+        "description": "Pressure of 1 pound per square inch",
+        "aliases": ["lbs/sqin"]
     },
     {
         "abstract-parameter": "Temperature",
         "abbr": "C",
         "system": "SI",
         "name": "Centigrade",
-        "description": "Celsius Degree"
+        "description": "Celsius Degree",
+        "aliases": ["Celsius","celsius","CELSIUS","Centigrade","CENTIGRADE","DEG C","deg C","DEG-C","Deg-C","DegC","degC","deg c"]
     },
     {
         "abstract-parameter": "Temperature",
         "abbr": "F",
-        "system": "EN",
+        "system": "English",
         "name": "Fahrenheit",
-        "description": "Fahrenheit Degree"
+        "description": "Fahrenheit Degree",
+        "aliases": ["DEG F","deg F","deg f","DEG-F","Deg-F","DegF","degF","Fahrenheit","FAHRENHEIT","fahrenheit","DEGF"]
     },
     {
         "abstract-parameter": "Turbidity",
         "abbr": "JTU",
         "system": "NULL",
         "name": "Jackson Turbitiy Unit",
-        "description": "Jackson Turbidity Unit (approximates nephelometric turbidity unit)"
+        "description": "Jackson Turbidity Unit (approximates nephelometric turbidity unit)",
+        "aliases": ["jtu"]
     },
     {
         "abstract-parameter": "Turbidity",
         "abbr": "NTU",
         "system": "NULL",
         "name": "Nephelometric Turbidity Unit",
-        "description": "Measure of scattered light (90+/-30 deg) from a white light (540+/-140nm)"
+        "description": "Measure of scattered light (90+/-30 deg) from a white light (540+/-140nm)",
+        "aliases": ["ntu"]
     },
     {
         "abstract-parameter": "Turbidity",
         "abbr": "FNU",
         "system": "NULL",
         "name": "Formazin Nephelometric Unit",
-        "description": "Measure of scattered light (90+/-2.5 deg) from monochrome light (860+/-60 nm)"
+        "description": "Measure of scattered light (90+/-2.5 deg) from monochrome light (860+/-60 nm)",
+        "aliases": ["fnu"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "cfs",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic feet per second",
-        "description": "Volume rate of 1 cubic foot per second"
+        "description": "Volume rate of 1 cubic foot per second",
+        "aliases": ["CFS","cu-ft/sec","cuft/sec","cusecs","ft3/sec","ft^3/s","FT3/S","FT3/SEC","ft3/s"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "cms",
         "system": "SI",
         "name": "Cubic meters per second",
-        "description": "Volume rate of 1 cubic meter per second"
+        "description": "Volume rate of 1 cubic meter per second",
+        "aliases": ["CMS","cu-meters/sec","M3/S","m3/s","m3/sec","M3/SEC"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "gpm",
-        "system": "EN",
+        "system": "English",
         "name": "Gallons per minute",
-        "description": "Volume rate of 1 gallon per minute"
+        "description": "Volume rate of 1 gallon per minute",
+        "aliases": ["Gal/min","gallons per minute","GPM"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "kcfs",
-        "system": "EN",
+        "system": "English",
         "name": "Kilo-cubic feet per second",
-        "description": "Volume rate of 1E+03 cfs"
+        "description": "Volume rate of 1E+03 cfs",
+        "aliases": ["1000 cfs","1000 cu-ft/sec","1000 ft3/sec","KCFS"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "mgd",
-        "system": "EN",
+        "system": "English",
         "name": "Millions of gallons per day",
-        "description": "Volume rate of 1E+06 gallons per day"
+        "description": "Volume rate of 1E+06 gallons per day",
+        "aliases": ["MGD","million gallons/day"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "1000 m3",
         "system": "SI",
         "name": "Thousands of cubic meters",
-        "description": "Volume of 1E+03 cubic meters"
+        "description": "Volume of 1E+03 cubic meters",
+        "aliases": ["1000 cu m","1000 M3"]
     },
 /*    {
         "abstract-parameter": "Volume",
         "abbr": "noggins",
-        "system": "EN",
+        "system": "English",
         "name": "Noggins (US)",
         "description": "An odd, but valid, unit equivalent to 1/4 of a pint "
     }, */
     {
         "abstract-parameter": "Volume",
         "abbr": "ac-ft",
-        "system": "EN",
+        "system": "English",
         "name": "Acre-feet",
-        "description": "Volume equal to the area of 1 acre times the length of 1 foot"
+        "description": "Volume equal to the area of 1 acre times the length of 1 foot",
+        "aliases": ["AC-FT","ACFT","acft","acre-feet","acre-ft"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "dsf",
-        "system": "EN",
+        "system": "English",
         "name": "day-second-foot",
-        "description": "Volume of water accumulated in one day by a flow of one cfs"
+        "description": "Volume of water accumulated in one day by a flow of one cfs",
+        "aliases": ["DSF","SFD","cfs-day","second-foot-day","sfd"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "gal",
-        "system": "EN",
+        "system": "English",
         "name": "Gallons",
-        "description": "Volume of 1 United States Gallon"
+        "description": "Volume of 1 United States Gallon",
+        "aliases": ["GAL","gallon","gallons"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "ft3",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic feet",
-        "description": "Volume of 1 cubic foot"
+        "description": "Volume of 1 cubic foot",
+        "aliases": ["cu ft","cubic feet"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "kaf",
-        "system": "EN",
+        "system": "English",
         "name": "Kiloacre-feet",
-        "description": "Volume equal to the area of 1E+03 acres times the length of 1 foot"
+        "description": "Volume equal to the area of 1E+03 acres times the length of 1 foot",
+        "aliases": ["1000 ac-ft","KAF"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "kgal",
-        "system": "EN",
+        "system": "English",
         "name": "Kilogallons",
-        "description": "Volume of 1E+03 gallons"
+        "description": "Volume of 1E+03 gallons",
+        "aliases": ["1000 gallon","1000 gallons","KGAL","TGAL","tgal"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "km3",
         "system": "SI",
         "name": "Cubic kilometers",
-        "description": "Volume of a cubic kilometer"
+        "description": "Volume of a cubic kilometer",
+        "aliases": ["cu km"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "m3",
         "system": "SI",
         "name": "Cubic meters",
-        "description": "Volume of 1 cubic meter"
+        "description": "Volume of 1 cubic meter",
+        "aliases": ["cu m","cu meter","cu meters","cubic meters","M3"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "mgal",
-        "system": "EN",
+        "system": "English",
         "name": "Millions of gallons",
-        "description": "Volume of 1E+06 gallons"
+        "description": "Volume of 1E+06 gallons",
+        "aliases": ["MGAL","million gallon","millon gallons"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "mile3",
-        "system": "EN",
+        "system": "English",
         "name": "Cubic miles",
-        "description": "Volume of 1 cubic mile"
+        "description": "Volume of 1 cubic mile",
+        "aliases": ["cu mile","cu miles"]
     },
     {
         "abstract-parameter": "Angle",
@@ -634,21 +695,24 @@
         "abbr": "ampere",
         "system": "NULL",
         "name": "Ampere",
-        "description": "Current of 6.241E+18 electrons (1 coulomb) per second"
+        "description": "Current of 6.241E+18 electrons (1 coulomb) per second",
+        "aliases": ["amp","AMP","Amp","AMPERE","Ampere","Amperes","AMPERES","amperes","AMPS","amps","Amps"]
     },
     {
         "abstract-parameter": "Force",
         "abbr": "N",
         "system": "SI",
         "name": "Newtons",
-        "description": "Force of 1 Newton"
+        "description": "Force of 1 Newton",
+        "aliases": ["newton", "newtons"]
     },
     {
         "abstract-parameter": "Length",
         "abbr": "ftUS",
-        "system": "EN",
+        "system": "English",
         "name": "Survey Feet",
-        "description": "Length of 1 US survey foot"
+        "description": "Length of 1 US survey foot",
+        "aliases": ["survey foot", "survey feet", "SURVEY FOOT", "SURVEY FEET"]
     },
     {
         "abstract-parameter": "Angle",
@@ -662,49 +726,56 @@
         "abbr": "Hz",
         "system": "NULL",
         "name": "Hertz",
-        "description": "Frequency of 1 occurrence or cycle per second"
+        "description": "Frequency of 1 occurrence or cycle per second",
+        "aliases": ["cycles/s", "cycles/sec", "hz", "HZ"]
     },
     {
         "abstract-parameter": "Frequency",
         "abbr": "kHz",
         "system": "NULL",
         "name": "kiloHertz",
-        "description": "Frequency of 1E+03 occurrences or cycles per second"
+        "description": "Frequency of 1E+03 occurrences or cycles per second",
+        "aliases": ["khz", "KHZ", "KHz"]
     },
     {
         "abstract-parameter": "Frequency",
         "abbr": "MHz",
         "system": "NULL",
         "name": "MegaHertz",
-        "description": "Frequency of 1E+06 occurrences or cycles per second"
+        "description": "Frequency of 1E+06 occurrences or cycles per second",
+        "aliases": ["mhz", "mHz", "MHZ"]
     },
     {
         "abstract-parameter": "Frequency",
         "abbr": "B",
         "system": "NULL",
         "name": "B-unit",
-        "description": "Frequency in Hz^2/1000, used by vibrating wire piezometers"
+        "description": "Frequency in Hz^2/1000, used by vibrating wire piezometers",
+        "aliases": ["b", "b_unit", "b-unit", "B_UNIT", "B-UNIT"]
     },
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "knot",
-        "system": "EN",
+        "system": "English",
         "name": "Knots",
-        "description": "Velocity of 1 nautical mile per hour"
+        "description": "Velocity of 1 nautical mile per hour",
+        "aliases": ["knots","kt"]
     },
     {
         "abstract-parameter": "Temperature",
         "abbr": "K",
         "system": "SI",
         "name": "Kelvins",
-        "description": "Temperature in Kelvins"
+        "description": "Temperature in Kelvins",
+        "aliases": ["k", "KELVIN", "kelvin", "KELVINS", "kelvins"]
     },
     {
         "abstract-parameter": "Pressure",
         "abbr": "bar",
         "system": "NULL",
         "name": "Bars",
-        "description": "Pressure of 1 standard atmosphere"
+        "description": "Pressure of 1 standard atmosphere",
+        "aliases": ["BAR", "bars", "BARS","atm", "ATM","atmosphere", "ATMOSPHERE", "atmospheres", "ATMOSPHERES"]
     },
     {
         "abstract-parameter": "Area",
@@ -716,9 +787,10 @@
     {
         "abstract-parameter": "Currency Per Volume",
         "abbr": "$/kaf",
-        "system": "EN",
+        "system": "English",
         "name": "Dollars per 1000 acre-feet",
-        "description": "Monetary Value of 1 United States dollar Per 1E+03 acre feet"
+        "description": "Monetary Value of 1 United States dollar Per 1E+03 acre feet",
+        "aliases": ["$/KAF"]
     },
     {
         "abstract-parameter": "Currency Per Volume",
@@ -732,35 +804,40 @@
         "abbr": "k$",
         "system": "NULL",
         "name": "1000 Dollars",
-        "description": "Monetary value of 1E+03 United States dollar"
+        "description": "Monetary value of 1E+03 United States dollar",
+        "aliases": ["K$"]
     },
     {
         "abstract-parameter": "Elapsed Time",
         "abbr": "day",
         "system": "NULL",
         "name": "Days",
-        "description": "Time span of 1 day"
+        "description": "Time span of 1 day",
+        "aliases": ["DAY","day","DAYS","days"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "J",
         "system": "SI",
         "name": "Joules",
-        "description": "Energy of one Joule"
+        "description": "Energy of one Joule",
+        "aliases": ["joule", "joules", "JOULE", "JOULES"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "MJ",
         "system": "SI",
         "name": "Megajoules",
-        "description": "Energy of one 1E+06 Joules"
+        "description": "Energy of one 1E+06 Joules",
+        "aliases": ["megajoule", "megajoules", "MEGAJOULE", "MEGAJOULES"]
     },
     {
         "abstract-parameter": "Energy",
         "abbr": "cal",
-        "system": "EN",
+        "system": "English",
         "name": "Calories",
-        "description": "Energy of 1 thermochemical calorie (vs International Table calorie)"
+        "description": "Energy of 1 thermochemical calorie (vs International Table calorie)",
+        "aliases": ["calorie", "calories"]
     },
     {
         "abstract-parameter": "Linear Speed",
@@ -772,7 +849,7 @@
     {
         "abstract-parameter": "Linear Speed",
         "abbr": "ft/hr",
-        "system": "EN",
+        "system": "English",
         "name": "Feet per hour",
         "description": "Velocity of 1 foot per hour"
     },
@@ -788,19 +865,21 @@
         "abbr": "g/m3",
         "system": "SI",
         "name": "Grams per cubic meter",
-        "description": "Mass of 1 gram per volume of 1 cubic meter"
+        "description": "Mass of 1 gram per volume of 1 cubic meter",
+        "aliases": ["gm/m3"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "lbm/ft3",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds per cubic feet",
-        "description": "Mass of 1 pound per volume of 1 cubic foot"
+        "description": "Mass of 1 pound per volume of 1 cubic foot",
+        "aliases": ["lb/ft3", "lbs/ft3"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "kg/l",
-        "system": "EN",
+        "system": "English",
         "name": "Kilograms per cubic meter",
         "description": "Mass of 1 kilogram per volume of 1 cubic meter"
     },
@@ -821,7 +900,7 @@
     {
         "abstract-parameter": "Mass Rate",
         "abbr": "ton/day",
-        "system": "EN",
+        "system": "English",
         "name": "Tons per day",
         "description": "Mass rate of 1 ton per day"
     },
@@ -837,7 +916,8 @@
         "abbr": "g",
         "system": "SI",
         "name": "Grams",
-        "description": "Mass of 1 gram"
+        "description": "Mass of 1 gram",
+        "aliases": ["gm"]
     },
     {
         "abstract-parameter": "Mass",
@@ -849,7 +929,7 @@
     {
         "abstract-parameter": "Mass",
         "abbr": "lbm",
-        "system": "EN",
+        "system": "English",
         "name": "Pounds",
         "description": "Mass of 1 pound"
     },
@@ -863,7 +943,7 @@
     {
         "abstract-parameter": "Mass",
         "abbr": "ton",
-        "system": "EN",
+        "system": "English",
         "name": "Tons",
         "description": "Mass of 1 ton"
     },
@@ -877,7 +957,7 @@
     {
         "abstract-parameter": "Quantity Per Length",
         "abbr": "1/ft",
-        "system": "EN",
+        "system": "English",
         "name": "Per foot",
         "description": "Quanitity per 1 foot"
     },
@@ -893,49 +973,55 @@
         "abbr": "C-day",
         "system": "SI",
         "name": "Celsius degree day",
-        "description": "Temperature index of 1 C degree-day"
+        "description": "Temperature index of 1 C degree-day",
+        "aliases": ["degC-day","DEGC-D"]
     },
     {
         "abstract-parameter": "Temerature Index",
         "abbr": "F-day",
-        "system": "EN",
+        "system": "English",
         "name": "Fahrenheit degree day",
-        "description": "Temperature index of 1 F degree-day"
+        "description": "Temperature index of 1 F degree-day",
+        "aliases": ["degF-day","DEGF-D"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "KAF/mon",
-        "system": "EN",
+        "system": "English",
         "name": "1000 acre-feet per month",
-        "description": "Volume rate of 1E+03 acre-feet per month"
+        "description": "Volume rate of 1E+03 acre-feet per month",
+        "aliases": ["1000 ac-ft/mon"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "kcms",
         "system": "SI",
         "name": "Kilo-cubic meters per second",
-        "description": "Volume rate of 1E+03 cms"
+        "description": "Volume rate of 1E+03 cms",
+        "aliases": ["1000 cms","KCMS"]
     },
     {
         "abstract-parameter": "Volume Rate",
         "abbr": "mcm/mon",
-        "system": "EN",
+        "system": "English",
         "name": "Million cubic meters per month",
         "description": "Volume rate of 1E+06 cubic meters per month"
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "kdsf",
-        "system": "EN",
+        "system": "English",
         "name": "Kilo-day-second-foot",
-        "description": "Volume of 1E+03 dsf"
+        "description": "Volume of 1E+03 dsf",
+        "aliases": ["KDSF","KSFD","ksfd","ksecond-foot-day","kcfs-day","1000 sfd","1000 dsf","1000 cfs-day"]
     },
     {
         "abstract-parameter": "Volume",
         "abbr": "mcm",
         "system": "SI",
         "name": "Millions of cubic meters",
-        "description": "Volume of 1E+06 cubic meters"
+        "description": "Volume of 1E+06 cubic meters",
+        "aliases": ["1000000 m3"]
     },
     {
         "abstract-parameter": "Depth Velocity",
@@ -947,7 +1033,7 @@
     {
         "abstract-parameter": "Depth Velocity",
         "abbr": "ft2/s",
-        "system": "EN",
+        "system": "English",
         "name": "Depth times velocity",
         "description": "Depth of 1 feet and Velocity of 1 feet/second"
     },
@@ -956,13 +1042,15 @@
         "abbr": "ug",
         "system": "SI",
         "name": "micrograms",
-        "description": "Mass of 1 microgram"
+        "description": "Mass of 1 microgram",
+        "aliases": ["micrograms"]
     },
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "ug/l",
         "system": "SI",
         "name": "micrograms per liter",
-        "description": "Mass concentration of 1E-06 gram per liter"
+        "description": "Mass concentration of 1E-06 gram per liter",
+        "aliases": ["micrograms/l","micrograms/L"]
     }
 ]

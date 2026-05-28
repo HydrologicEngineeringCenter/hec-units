@@ -14,25 +14,28 @@ import net.hobbyscience.database.methods.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Loader {
-    private static final Logger log = Logger.getLogger(Loader.class.getName());    
+    private static final Logger log = Logger.getLogger(Loader.class.getName());
 
     private ArrayList<String> abstractParameters = new ArrayList<>();
     private Map<String,Unit> unitDefinitions = null;
     private HashSet<Conversion> conversions = new HashSet<>();
     private Map<String,String> constants = null;
-   
+
 
     public Loader() throws IOException {
         this.loadData();
-    }    
+    }
 
     private void loadData() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -41,7 +44,7 @@ public class Loader {
         abstractParameters = mapper.readValue(
             getData("db/custom/units_and_parameters/abstract_parameters.json"),
             new TypeReference<ArrayList<String>>(){});
-        
+
 
         unitDefinitions = mapper.readValue(
             getData("db/custom/units_and_parameters/unit_definitions.json"),
@@ -70,7 +73,7 @@ public class Loader {
                 final String tracker = from.getAbbreviation() + "_" + to.getAbbreviation();
                 if (existing.contains(tracker)) {
                     throw new UnitException(
-                        "Found duplication conversion from " + from.getAbbreviation() + " to " + to.getAbbreviation() + 
+                        "Found duplication conversion from " + from.getAbbreviation() + " to " + to.getAbbreviation() +
                         ". To reduce confusion remove one of the entries."
                     );
                 }
@@ -98,7 +101,7 @@ public class Loader {
         });
     }
 
- 
+
 
     private String substituteVariables(String conversion) {
         String tmp = conversion;
@@ -108,8 +111,16 @@ public class Loader {
         return tmp;
     }
 
-    public HashSet<Conversion> getConversions() {
-        return conversions;
+    public List<String> getAbstractParameters() {
+        return Collections.unmodifiableList(abstractParameters);
+    }
+
+    public Set<Conversion> getConversions() {
+        return Collections.unmodifiableSet(conversions);
+    }
+
+    public Map<String, Unit> getUnits() {
+        return Collections.unmodifiableMap(unitDefinitions);
     }
 
     private InputStream getData(String resourceName) {

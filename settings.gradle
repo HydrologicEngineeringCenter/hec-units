@@ -1,3 +1,5 @@
 rootProject.name = 'HEC Units'
 include 'units'
 
+include 'hec-units-compat'
+project(":hec-units-compat").projectDir = file("libraries/hec-units-compat")
