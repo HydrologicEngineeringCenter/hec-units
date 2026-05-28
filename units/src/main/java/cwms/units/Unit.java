@@ -1,43 +1,49 @@
 package cwms.units;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Unit {
     private String abstractParameter;
-    private String abbreviation;        
+    private String abbreviation;
     private String system;
     private String name;
     private String description;
+    private List<String> aliases;
 
     public String getAbstractParameter() { return abstractParameter; }
     public String getAbbreviation() { return abbreviation; }
     public String getSystem() { return system; }
     public String getName() { return name; }
     public String getDescription() { return description; }
-    
+    public List<String> getAliases() { return aliases; }
+
     @JsonCreator(mode=JsonCreator.Mode.PROPERTIES)
-    public Unit(@JsonProperty(value="abstract-parameter",required = true) String abstractParameter, 
+    public Unit(@JsonProperty(value="abstract-parameter",required = true) String abstractParameter,
                           @JsonProperty(value="abbr", required = true) String abbreviation,
                           @JsonProperty(value="system", required = true) String system,
                           @JsonProperty(value="name", required = true) String name,
-                          @JsonProperty(value="description", required = true) String description                                     
+                          @JsonProperty(value="description", required = true) String description,
+                          @JsonProperty(value="aliases", required = false) List<String> aliases
                     ) throws UnitException {
         this.abstractParameter = abstractParameter;
         this.abbreviation = abbreviation;
-        
+
         this.name = name;
         this.description = description;
-        
+        this.aliases = Collections.unmodifiableList(aliases != null ? aliases : List.of());
         if( ! /* not */
-            (system.equalsIgnoreCase("EN") 
-            || 
-            system.equalsIgnoreCase("SI") 
-            || 
+            (system.equalsIgnoreCase("English")
+            ||
+            system.equalsIgnoreCase("SI")
+            ||
             system.equalsIgnoreCase("NULL"))) {
                 throw new UnitException(String.format("Invalid Unit System (%s) set for unit %s/%s",system,abstractParameter,abbreviation));
         }
-        this.system = system.toUpperCase();
+        this.system = system;
     }
 
     @Override
@@ -47,7 +53,9 @@ public class Unit {
           .append("{param=").append(abstractParameter).append(",")
           .append("unit=").append(abbreviation).append(",")
           .append("system=").append(system).append(",")
-          .append("description=").append(description).append("}");
+          .append("description=").append(description)
+          .append("alaises=[").append(String.join(",", aliases)).append("]")
+          .append("}");
         return sb.toString();
     }
 

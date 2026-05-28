@@ -69,6 +69,14 @@ public class Linear implements ConversionMethod{
           .append(getPostfix());
         return sb.toString();
     }
+
+    public double getA() {
+        return a;
+    }
+
+    public double getB() {
+        return b;
+    }
 }
 
     
