@@ -36,6 +36,7 @@ jobs:
           include_passed: true
           report_paths: '**/TEST-*.xml'
       - name: Install xmllint
+        if: success() || failure()
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: Get Unit conversion percentage
         id: conversions-percent
