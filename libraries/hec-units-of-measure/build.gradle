@@ -1,0 +1,55 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+    id 'java-library'
+}
+
+def outputDir = project.layout.buildDir.dir("generated/sources/units")
+
+configurations {
+    unitGen
+    generator
+}
+
+sourceSets {
+    generator {
+    }
+
+    generatedUnits {
+        java {
+            srcDir outputDir
+        }
+    }
+}
+
+jar {
+    from sourceSets.generatedUnits.output
+}
+
+
+dependencies {
+    unitGen(project(":units"))
+    generatorImplementation(project(":units"))
+    generatedUnitsImplementation(libs.tech.units.indriya)
+    implementation(sourceSets.generatedUnits.output)
+    implementation(libs.tech.units.indriya)
+}
+
+def genUnitsOfMeasure = tasks.register('generateUnitsOfMeasure', JavaExec) {
+    dependsOn compileGeneratorJava
+    classpath = sourceSets.generator.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.GenUnitsOfMeasure'
+    args = [outputDir.get()]
+    outputs.dir(outputDir)
+}
+
+tasks.named("compileGeneratedUnitsJava") {
+    dependsOn(genUnitsOfMeasure)
+}
+
+tasks.named("compileJava") {
+     dependsOn("compileGeneratorJava")
+}
+
+
+compileJava.dependsOn genUnitsOfMeasure

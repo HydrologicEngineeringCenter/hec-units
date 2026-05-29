@@ -8,6 +8,7 @@ commons-io = "2.11.0"
 java-algebra-system = "0.0.2"
 slf4j = "2.0.16"
 args4j = "2.32"
+indriya = "2.2.4" # JSR-385 units-of-measure API
 
 [libraries]
 org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
@@ -21,7 +22,8 @@ org-apache-commons-io = { module = "commons-io:commons-io", version.ref="commons
 org-opendcs-java-algebra-system = { module ="io.github.opendcs:java-algebra-system", version.ref= "java-algebra-system" }
 org-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 org-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
-args4j = {module = "args4j:args4j", version.ref = "args4j"}
+args4j = { module = "args4j:args4j", version.ref = "args4j" }
+tech-units-indriya = { module = "tech.units:indriya", version.ref="indriya" }
 
 # test
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }

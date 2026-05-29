@@ -3,3 +3,6 @@ include 'units'
 
 include 'hec-units-compat'
 project(":hec-units-compat").projectDir = file("libraries/hec-units-compat")
+
+include 'hec-units-of-measure'
+project(":hec-units-of-measure").projectDir = file("libraries/hec-units-of-measure")
