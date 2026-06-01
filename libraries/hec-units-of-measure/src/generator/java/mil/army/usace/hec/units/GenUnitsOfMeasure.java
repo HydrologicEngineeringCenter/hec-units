@@ -10,6 +10,31 @@ import cwms.units.Loader;
 import cwms.units.Unit;
 import mil.army.usace.hec.units.Parameters;
 
+
+/**
+ * TODO: What needs to happen with the units of measure.
+ * 
+ * 1. Extract out Dimensions, the root level of "what are we measuring"
+ * 2. Extract Root dimensions (our abstract parameter include things like "rate of change")
+ * 3. Map Quanities from javax.measure.quantity or tech.units.indriya.quantity to our parameters
+ *   a. Create additional Quantities as required?
+ * 4. For all Units (by system?)
+ *   1. Get all "root" units (e.g. meters, feet are "root", "m/s" is a product)*   
+ *   2. Get all product units
+ *   3. Get all "derived" units
+ *   4. Extract the dimension from abstract parameter
+ * 
+ * 5. For each system
+ *   Create instance of each root unit
+ *   Create instance of each product unit
+ *   Create appropriate composite units
+ *   Map unit to System
+ * 
+ * 6. Create the unit conversions
+ *  
+ * 
+ * 7. Cleanup the packinging and figure out how to even organization all this generation code.
+ */
 public class GenUnitsOfMeasure {
     public static void main(String[] args) {
         final var outputDir = new File(args[0]);
