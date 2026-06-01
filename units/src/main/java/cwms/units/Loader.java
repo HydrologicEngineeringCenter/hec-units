@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import mil.army.usace.hec.units.AbstractParameter;
 import net.hobbyscience.database.Conversion;
 import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.methods.*;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class Loader {
     private static final Logger log = Logger.getLogger(Loader.class.getName());
 
-    private ArrayList<String> abstractParameters = new ArrayList<>();
+    private ArrayList<AbstractParameter> abstractParameters = new ArrayList<>();
     private Map<String,Unit> unitDefinitions = null;
     private HashSet<Conversion> conversions = new HashSet<>();
     private Map<String,String> constants = null;
@@ -43,7 +44,7 @@ public class Loader {
 
         abstractParameters = mapper.readValue(
             getData("db/custom/units_and_parameters/abstract_parameters.json"),
-            new TypeReference<ArrayList<String>>(){});
+            new TypeReference<ArrayList<AbstractParameter>>(){});
 
 
         unitDefinitions = mapper.readValue(
@@ -111,7 +112,7 @@ public class Loader {
         return tmp;
     }
 
-    public List<String> getAbstractParameters() {
+    public List<AbstractParameter> getAbstractParameters() {
         return Collections.unmodifiableList(abstractParameters);
     }
 

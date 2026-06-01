@@ -95,11 +95,11 @@ writer.println("// ';'-delimited; '//' and blank lines ignored.");
             for (var abstractParameter: abstractParameters) {
                 writer.println();
 
-                writer.println("//" + abstractParameter);
+                writer.println("//" + abstractParameter.name());
 
 
                 final var currentUnits = units.stream()
-                                        .filter(u -> u.getAbstractParameter().equals(abstractParameter))
+                                        .filter(u -> u.getAbstractParameter().equals(abstractParameter.name()))
                                         .toList();
 
                 final Map<String, List<Unit>> unitsToRender = new HashMap<>();
@@ -126,7 +126,7 @@ writer.println("// ';'-delimited; '//' and blank lines ignored.");
                 });
 
                 writer.println();
-                writer.println("//" + abstractParameter + " Conversions");
+                writer.println("//" + abstractParameter.name() + " Conversions");
 
                 unitsToRender.forEach((system, fromUnitsList) -> {
                     final var currentConversions = conversions.stream()
