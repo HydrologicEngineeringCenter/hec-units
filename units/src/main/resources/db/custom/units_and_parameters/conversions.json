@@ -68,7 +68,7 @@
 	// ["cm2",         "km2",         "[m2]/c*_per_*^2[cm2] | [km2]/*_per_k*^2[m2]"],
 	// ["cm2",         "mile2",       "[m2]/c*_per_*^2[cm2] | [ft2]/m_per_ft^2[m2] | [mile2]/ft_per_mile^2[ft2]"],
 	["m2",         "cm2",          "linear: 10000 0"],
-	["km2",        "m2",           "linear: 1000000 0"],
+	["km2",        "m2",           "linear: unit_per_mega 0"],
 	["mile2",      "ft2",          "function: i * (ft_per_mile^2)"],
 	// ["cms",         "KAF/mon",     "[m3/s]/[cms] | [ft3]/m_per_ft^3[m3] | s_per_mon[s]/[mon] | [ac-ft]/ft2_per_acre[ft3] | [kaf]/*_per_k*[ac-ft] | [KAF]/[kaf]"],
 	// ["cms",         "gpm",         "[m3/s]/[cms] | [gal]/m3_per_gal[m3] | s_per_min[s]/[min] | [gpm]/[gal/min]"],
