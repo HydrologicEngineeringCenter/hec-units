@@ -42,15 +42,26 @@ jobs:
         id: conversions-percent
         if: success() || failure() # always run even if the previous step fails
         run: |
+          EXPECTED=`xmllint --xpath "string(/unit-conversions/@expected)" units/build/reports/unit_conversion_report.xml`
+          ACTUAL=`xmllint --xpath "string(/unit-conversions/@actual)" units/build/reports/unit_conversion_report.xml`
           PERCENT_TESTED=`xmllint --xpath "string(/unit-conversions/@percent-tested)" units/build/reports/unit_conversion_report.xml`
           echo "percent=${PERCENT_TESTED}" >> $GITHUB_OUTPUT
+          echo "actual=${ACTUAL}" >> $GITHUB_OUTPUT
+          echo "expected=${EXPECTED}" >> $GITHUB_OUTPUT
+      - name: Save values
+        run: |
+          mkdir -p badges
+          echo "${{steps.conversions-percent.outputs.percent}}" > badges/unit-conversions-percent.txt
+          echo "${{steps.conversions-percent.outputs.actual}}" > badges/unit-conversions-actual.txt
+          echo "${{steps.conversions-percent.outputs.expected}}" > badges/unit-conversions-expected.txt
+      # will also upload current value files
       - name: Unit conversion Badge
         if: success() || failure() # always run even if the previous step fails
         uses: ./.github/actions/badge
         with:
           label: 'Unit Conversions Tested'
           status: ${{ steps.conversions-percent.outputs.percent }} %
-          file: unit_conversions.svg
+          file: unit_conversions
           run_id: ${{ github.run_id }}
 
       - name: Unit Generation Coverage
@@ -67,7 +78,7 @@ jobs:
         with:
           label: 'Unit Generation Coverage'
           status: ${{ steps.unit-coverage.outputs.coverage }}
-          file: unit_coverage.svg
+          file: unit_coverage
           run_id: ${{ github.run_id }}
 
 
