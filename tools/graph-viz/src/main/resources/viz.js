@@ -15,9 +15,19 @@
   var odetail = document.getElementById('odetail');
 
   var HINT = '<div class="empty">Hover a cell to preview its conversion. '
-           + '<b>Click</b> to keep it here while you look around.</div>';
+           + '<b>Click</b> to pin it, click the same cell again to release it.</div>';
 
-  // The cell whose detail stays on screen after the mouse moves away.
+  /*
+   * The pinned cell, or null in "free mode".
+   *
+   * These are two genuinely different modes rather than a preference:
+   *   free   - the panel follows the cursor
+   *   pinned - the panel holds one conversion and ignores the cursor entirely
+   *
+   * The second is what makes the equations usable. If hovering kept overwriting
+   * the panel there would be no way to read a conversion while moving the mouse
+   * to compare it against another cell.
+   */
   var pinned = null;
 
   if (!overlay || !stage) {
@@ -72,6 +82,9 @@
 
   function show(html) {
     odetail.innerHTML = html;
+    // Drives the "pinned" badge in CSS, so the panel says why it is not
+    // responding to the cursor.
+    odetail.classList.toggle('locked', pinned !== null);
   }
 
   function open(card) {
@@ -160,15 +173,19 @@
     if (!cell) {
       return;
     }
+    // The ring always follows the cursor - that is just position feedback. The
+    // panel only follows it in free mode.
     highlight(cell);
-    show(detailFor(cell));
+    if (!pinned) {
+      show(detailFor(cell));
+    }
   });
 
-  // Leaving the matrix reverts to the pinned cell if there is one, so a
-  // deliberate selection is never lost by moving the mouse.
   stage.addEventListener('mouseleave', function () {
     clearHover();
-    show(pinned ? detailFor(pinned) : HINT);
+    if (!pinned) {
+      show(HINT);
+    }
   });
 
   stage.addEventListener('click', function (event) {
@@ -176,9 +193,19 @@
     if (!cell) {
       return;
     }
-    stage.querySelectorAll('.pin').forEach(function (element) {
-      element.classList.remove('pin');
-    });
+
+    // Clicking the pinned cell again releases it, so one control both locks and
+    // unlocks and there is no separate button to hunt for.
+    if (pinned === cell) {
+      pinned = null;
+      cell.classList.remove('pin');
+      show(detailFor(cell));   // cursor is still here, so free mode shows this cell
+      return;
+    }
+
+    if (pinned) {
+      pinned.classList.remove('pin');
+    }
     pinned = cell;
     cell.classList.add('pin');
     show(detailFor(cell));
