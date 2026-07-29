@@ -5,6 +5,8 @@ package mil.army.usace.hec.graph.viz.formula;
  * the operators + - * / ^, and parentheses - at a given value of `i`.
  *
  * Simple expression evaluator, basic version of eval() in python
+ * 
+ * For the Units Graph Visualizer, this will be used in the visualizer to help see mathmatical results of symbolic equations.
  */
 public final class ExpressionEvaluator {
 
