@@ -1,0 +1,54 @@
+:root {
+  --passed:   #2e7d32;   /* differs from failed in lightness too, not just hue */
+  --failed:   #c62828;
+  --untested: #b0bec5;   /* recedes - "absent", not a third kind of result */
+  --missing:  #f2f4f5;   /* quieter still - usually correct and expected */
+  --present:  #1565c0;   /* seed edges, which carry no status at all */
+  --line:     #dde3e7;
+  --ink:      #1b2429;
+  --muted:    #55636c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  max-width: 1200px;
+  font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: #fff;
+}
+
+h1 { font-size: 1.4rem; margin: 0 0 1rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem;
+          font-size: 12px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: .4rem; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--line); }
+
+.dimension { margin-bottom: 2.5rem; }
+.dimension h2 { font-size: 1rem; margin: 0 0 .6rem;
+                display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; }
+
+.tally { display: inline-flex; gap: .35rem; font-size: 11px; font-weight: 400; }
+.tally b { color: #fff; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+.tally b.missing, .tally b.untested { color: var(--muted); }  /* light bg needs dark text */
+
+/* Only the offending table scrolls, so headings never drift off-screen. */
+.scroll { overflow-x: auto; }
+
+table.matrix { border-collapse: collapse; }
+table.matrix th { font-weight: 500; font-size: 11px; color: var(--muted);
+                  padding: 3px 6px; text-align: right; white-space: nowrap; }
+table.matrix thead th { text-align: center; }
+table.matrix td { width: 20px; height: 20px; border: 1px solid #fff; }
+
+.passed   { background: var(--passed); }
+.failed   { background: var(--failed); }
+.untested { background: var(--untested); }
+.missing  { background: var(--missing); }
+.present  { background: var(--present); }
+
+/* Hatching, not a colour, so the diagonal cannot be mistaken for a result. */
+.self { background: repeating-linear-gradient(45deg, #fff, #fff 3px, #eceff1 3px, #eceff1 6px); }

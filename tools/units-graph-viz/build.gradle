@@ -13,10 +13,11 @@ def outputDir = layout.buildDirectory.dir("reports/viz")
 tasks.register('visualize', JavaExec) {
     group = 'documentation'
     description = 'Generate the conversion-graph visualization'
-    dependsOn classes
+    dependsOn classes, ':units:test'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'mil.army.usace.hec.units.viz.GenerateVisualization'
-    args = [outputDir.get().asFile.absolutePath]
+    args = [outputDir.get().asFile.absolutePath,
+            rootProject.file('units/build/reports/unit_conversion_report.xml').absolutePath]
     outputs.dir(outputDir)
 }
 
