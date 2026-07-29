@@ -12,6 +12,42 @@ public final class FormulaRenderer {
 
     /** Inputs used to check that the extracted (a, b) really describe the whole formula. */
     private static final double[] VERIFY_AT = {2.0, -3.0, 0.5, 137.0, 1.0e6};
+    private static final String SUPERSCRIPT_DIGITS =
+    "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079";
+
+    /**
+     * Conversions a conversions.json row into a symbolic equation
+     */
+    public static String symbolic(String method) {
+        int colon = method.indexOf(':');
+        if (colon < 0) {
+            return method.trim();
+        }
+        String kind = method.substring(0, colon).trim();
+        String body = method.substring(colon + 1).trim();
+
+        if (!kind.equalsIgnoreCase("linear")) {
+            return body;
+        }
+
+        String[] parts = body.split("\\s+");
+        if (parts.length != 2) {
+            return body;
+        }
+        String scale = parts[0];
+        String offset = parts[1];
+
+        var sb = new StringBuilder();
+        if (scale.equals("1") || scale.equals("1.0")) {
+            sb.append("i");
+        } else {
+            sb.append("i * ").append(scale);
+        }
+        if (!offset.equals("0") && !offset.equals("0.0")) {
+            sb.append(" + ").append(offset);
+        }
+        return sb.toString();
+    }
 
     /**
      * Resolves constant names to their values: "i * m_per_ft" with
@@ -69,6 +105,46 @@ public final class FormulaRenderer {
             }
         }
         return new AffineForm(m, b);
+    }
+
+    public static String formatNumber(double v) {
+        if (!Double.isFinite(v)) {
+            return Double.toString(v);
+        }
+        if (v == Math.rint(v) && Math.abs(v) < 1e15) {
+            return Long.toString((long) v);
+        }
+        if (v != 0 && (Math.abs(v) < 1e-4 || Math.abs(v) >= 1e9)) {
+            String[] parts = String.format("%.10e", v).split("e");
+            return stripTrailingZeros(parts[0]) + " \u00d7 10" + superscript(Integer.parseInt(parts[1]));
+        }
+
+        return stripTrailingZeros(String.format("%.12g", v));
+    }
+
+    private static String stripTrailingZeros(String s) {
+        if (s.indexOf('.') < 0) {
+            return s;          // no decimal point - "5280" must not become "528"
+        }
+        int end = s.length();
+        while (end > 0 && s.charAt(end - 1) == '0') {
+            end--;
+        }
+        if (end > 0 && s.charAt(end - 1) == '.') {
+            end--;
+        }
+        return s.substring(0, end);
+    }
+
+    private static String superscript(int value) {
+        var sb = new StringBuilder();
+        if (value < 0) {
+            sb.append('\u207b');
+        }
+        for (char c : Integer.toString(Math.abs(value)).toCharArray()) {
+            sb.append(SUPERSCRIPT_DIGITS.charAt(c - '0'));
+        }
+        return sb.toString();
     }
 
 }

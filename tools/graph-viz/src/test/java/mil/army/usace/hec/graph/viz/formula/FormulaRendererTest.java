@@ -12,6 +12,66 @@ import org.junit.jupiter.api.Test;
 class FormulaRendererTest {
 
     @Test
+    void passes_a_function_body_through_unchanged() {
+        assertEquals("i * m_per_ft^3", FormulaRenderer.symbolic("function: i * m_per_ft^3"));
+    }
+
+    @Test
+    void turns_a_linear_scale_into_an_expression() {
+        assertEquals("i * unit_per_kilo", FormulaRenderer.symbolic("linear: unit_per_kilo 0"));
+    }
+
+    @Test
+    void drops_a_scale_of_one_but_keeps_the_offset() {
+        assertEquals("i + 273.15", FormulaRenderer.symbolic("linear: 1 273.15"));
+    }
+
+    /** Some entries write the offset as "0.0" rather than "0". */
+    @Test
+    void treats_a_zero_offset_the_same_however_it_is_spelled() {
+        assertEquals("i * milli_per_unit", FormulaRenderer.symbolic("linear: milli_per_unit 0.0"));
+    }
+
+    @Test
+    void reduces_an_identity_conversion_to_the_variable() {
+        assertEquals("i", FormulaRenderer.symbolic("linear: 1 0"));
+    }
+
+    /** The whole chain, end to end, on a linear conversion. */
+    @Test
+    void a_linear_conversion_survives_the_full_pipeline() {
+        var expr = FormulaRenderer.symbolic("linear: 1 273.15");
+        var sub = FormulaRenderer.substitute(expr, Map.of());
+        var form = FormulaRenderer.affineOf(sub.expression());
+
+        assertEquals(1.0, form.m(), 1e-9);
+        assertEquals(273.15, form.b(), 1e-9);
+    }
+
+    @Test
+    void drops_the_decimal_point_on_whole_numbers() {
+        assertEquals("5280", FormulaRenderer.formatNumber(5280.0));
+        assertEquals("147197952000", FormulaRenderer.formatNumber(1.47197952E11));
+    }
+
+    @Test
+    void trims_floating_point_noise() {
+        assertEquals("1.8", FormulaRenderer.formatNumber(1.7999999999999972));
+        assertEquals("273.15", FormulaRenderer.formatNumber(273.15));
+    }
+
+    @Test
+    void keeps_the_significant_digits_of_a_conversion_factor() {
+        assertEquals("0.028316846592", FormulaRenderer.formatNumber(0.028316846592));
+    }
+
+    @Test
+    void uses_scientific_notation_only_for_extreme_values() {
+        assertEquals("2.3900573614 \u00d7 10\u207b\u2075",
+                    FormulaRenderer.formatNumber(2.390057361376673E-5));
+    }
+
+    @Test
     void substitutes_a_single_constant() {
         var result = FormulaRenderer.substitute("i * m_per_ft", Map.of("m_per_ft", "0.3048"));
 
@@ -70,5 +130,11 @@ class FormulaRendererTest {
     @Test
     void rejects_an_expression_it_cannot_evaluate() {
         assertNull(FormulaRenderer.affineOf("i * still_a_name"));
+    }
+
+    /** Collinear at 0, 1 and 2 - only the extra verification points reject it. */
+    @Test
+    void rejects_a_cubic_that_fools_a_three_point_probe() {
+        assertNull(FormulaRenderer.affineOf("i * (i - 1) * (i - 2)"));
     }
 }
