@@ -1,0 +1,30 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+}
+
+dependencies {
+    implementation project(':graph-viz')
+    implementation project(':units')
+}
+
+def outputDir = layout.buildDirectory.dir("reports/viz")
+
+tasks.register('visualize', JavaExec) {
+    group = 'documentation'
+    description = 'Generate the conversion-graph visualization'
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.viz.GenerateVisualization'
+    args = [outputDir.get().asFile.absolutePath]
+    outputs.dir(outputDir)
+}
+
+tasks.register('vizServe', JavaExec) {
+    group = 'documentation'
+    description = 'Serve the visualization on localhost'
+    dependsOn 'visualize'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.viz.VizServer'
+    args = [outputDir.get().asFile.absolutePath, '8080']
+}
