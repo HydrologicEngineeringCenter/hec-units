@@ -1,54 +1,156 @@
-:root {
-  --passed:   #2e7d32;   /* differs from failed in lightness too, not just hue */
-  --failed:   #c62828;
-  --untested: #b0bec5;   /* recedes - "absent", not a third kind of result */
-  --missing:  #f2f4f5;   /* quieter still - usually correct and expected */
-  --present:  #1565c0;   /* seed edges, which carry no status at all */
-  --line:     #dde3e7;
-  --ink:      #1b2429;
-  --muted:    #55636c;
+*{box-sizing:border-box}
+
+/* Slate palette and 15px/1.6 body text, carried over from the Python project.
+   The page is not white - the cards are, which is what makes them read as
+   separate objects sitting above it. */
+body{margin:0;padding:32px;background:#f8fafc;color:#0f172a;
+ font:15px/1.6 ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif}
+
+h1{margin:0 0 6px;font-size:26px}
+.lede{margin:0 0 8px;color:#475569;max-width:70ch}
+
+/* The legend is itself a card, so the key and the data share one visual language. */
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 16px;
+ background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
+.legend span{display:flex;align-items:center;gap:7px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:4px;border:1.5px solid #cbd5e1}
+
+/* auto-fill lets the browser pick the column count from the window width. The
+   440px minimum is sized so a wide screen lands on 4-5 cards per row rather
+   than cramming in 7 - each matrix needs room to be legible, and the largest
+   (13 columns at 22px) needs ~365px of it. */
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;
+ cursor:pointer;transition:transform .12s,box-shadow .12s}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 20px #0f172a1f}
+.card:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+
+.card header{display:flex;align-items:baseline;gap:10px;justify-content:space-between;
+ margin-bottom:10px;flex-wrap:wrap}
+.card h2{margin:0;font-size:16px}
+
+/* Counts as monospace pills - technical data, visually distinct from prose. */
+.tally{display:inline-flex;gap:5px;flex:none}
+.badge{font:11px ui-monospace,monospace;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.badge.passed{background:#dcfce7;color:#166534}
+.badge.failed{background:#fee2e2;color:#991b1b}
+.badge.untested{background:#f1f5f9;color:#64748b}
+.badge.missing{background:#f8fafc;color:#94a3b8}
+.badge.present{background:#e0e7ff;color:#3730a3}
+
+/* A wide matrix scrolls inside its own card rather than dragging the page sideways. */
+.scroll{overflow-x:auto}
+
+/* border-spacing plus rounded cells gives separated squares rather than a solid
+   block, so individual cells stay readable. */
+table.matrix{border-collapse:separate;border-spacing:2px}
+table.matrix th{font:11px ui-monospace,monospace;font-weight:400;color:#64748b;
+ padding:0 5px;text-align:right;white-space:nowrap}
+table.matrix thead th{text-align:center}
+table.matrix td{width:22px;height:22px;border-radius:3px}
+
+/* passed and failed are saturated because they are results you must notice.
+   untested and missing recede - they are the background state, not findings. */
+td.passed{background:#22c55e}
+td.failed{background:#ef4444}
+td.untested{background:#e2e8f0}
+td.missing{background:#f8fafc;box-shadow:inset 0 0 0 1px #f1f5f9}
+td.present{background:#6366f1}
+td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#f1f5f9 3px,#f1f5f9 6px)}
+
+.sw.passed{background:#22c55e}
+.sw.failed{background:#ef4444}
+.sw.untested{background:#e2e8f0}
+.sw.missing{background:#f8fafc}
+
+/* ---- enlarged view ----
+   A 22px cell is fine for scanning a wall of matrices but too small to work in.
+   Clicking a card reuses the same table at 34px on a dark backdrop, so one
+   dimension gets the whole screen. */
+#overlay{position:fixed;inset:0;background:#0f172ae6;display:none;z-index:50;
+ backdrop-filter:blur(3px);padding:24px 28px}
+#overlay.open{display:flex;flex-direction:column}
+
+#obar{display:flex;align-items:center;gap:16px;padding:0 2px 14px;color:#e2e8f0;
+ border-bottom:1px solid #ffffff1f;flex:none;flex-wrap:wrap}
+#obar h3{margin:0;font-size:18px}
+#odetail{margin-left:auto;font:12.5px ui-monospace,monospace;color:#94a3b8}
+#oclose{background:#ffffff1a;border:1px solid #ffffff2e;color:#e2e8f0;border-radius:6px;
+ padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif;flex:none}
+#oclose:hover{background:#ffffff2e}
+
+#ostagewrap{flex:1;min-height:0;display:flex}
+
+#ostage{flex:1;min-width:0;overflow:auto;padding:22px;
+ display:flex;justify-content:center;align-items:flex-start}
+
+/* --cell is set by script, not here: a 2x2 matrix and a 13x13 matrix need very
+   different cell sizes to fill the same screen, and only the browser knows how
+   much room there actually is. The value here is just the fallback. */
+#ostage table.matrix td{width:var(--cell,34px);height:var(--cell,34px);border-radius:5px}
+#ostage table.matrix th{font-size:13px;color:#cbd5e1;padding:0 10px}
+
+#ostage td.untested{background:#334155}
+#ostage td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
+#ostage td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 4px,#334155 4px,#334155 8px)}
+
+/* These must come after the status colours above: same specificity, so source
+   order is what lets a highlight win over the cell's own background.
+   The hovered cell fills completely rather than gaining an outline - at a glance
+   an outline reads as a border, not as "this is the one you are pointing at".
+   Slate rather than a bright accent: it has to stand out from green and red
+   without competing with them for attention. */
+#ostage td.hi{background:#94a3b8;box-shadow:0 0 0 2px #cbd5e1}
+#ostage th.hi{color:#e2e8f0;font-weight:600}
+
+/* A pinned cell keeps an amber ring even while you hover elsewhere, so you can
+   compare against it without losing your place. */
+#ostage td.pin{box-shadow:0 0 0 3px #f59e0b}
+#ostage td.pin.hi{background:#94a3b8;box-shadow:0 0 0 3px #f59e0b}
+
+/* ---- detail panel ----
+   The equations live in a fixed side panel rather than a tooltip, because a
+   tooltip vanishes the moment you move the mouse - and the whole request here is
+   to be able to keep reading the conversion while looking at the matrix. */
+#opanel{width:400px;flex:none;overflow-y:auto;background:#0f172acc;color:#e2e8f0;
+ border-left:1px solid #ffffff1f;padding:20px 22px;font-size:13px}
+#opanel .empty{color:#94a3b8;line-height:1.6}
+#opanel .empty b{color:#e2e8f0}
+
+/* Typeset formula styling, ported from the Python project. Serif italics for
+   unit symbols is what makes these read as equations rather than as code. */
+.fx{font-size:14px;line-height:1.5}
+.fx i{font-style:italic;font-size:1.06em;
+ font-family:'Cambria Math','STIX Two Math','Times New Roman',Georgia,serif}
+.fx sup{font-size:.72em}
+.fx-head{font-family:'Cambria Math','Times New Roman',Georgia,serif;font-size:17px;
+ padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid #ffffff1f;color:#f1f5f9}
+.fx-head .arrow{margin:0 10px;color:#94a3b8}
+.fx-body{border-collapse:collapse;margin:0}
+.fx-body td{padding:2px 0;vertical-align:baseline}
+.fx-body .lhs{text-align:right;padding-right:8px}
+.fx-body .eq{padding:0 8px;color:#94a3b8}
+.fx-body .rhs{text-align:left;word-break:break-word}
+.fx-body .warn{color:#fbbf24}
+.fx-where{margin-top:13px;font-size:12.5px;color:#94a3b8;word-break:break-word}
+.fx-where .kw{font-style:italic;margin-right:8px;
+ font-family:'Cambria Math','Times New Roman',Georgia,serif}
+.fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid #ffffff14;
+ font:11.5px ui-monospace,monospace;color:#64748b;word-break:break-all}
+
+@media(prefers-color-scheme:dark){
+ body{background:#0f172a;color:#e2e8f0}
+ .card,.legend{background:#1e293b;border-color:#334155}
+ .lede{color:#94a3b8}
+ .sw{border-color:#475569}
+ table.matrix th{color:#94a3b8}
+ .badge.passed{background:#14532d;color:#86efac}
+ .badge.failed{background:#7f1d1d;color:#fca5a5}
+ .badge.untested{background:#334155;color:#cbd5e1}
+ .badge.missing{background:#1e293b;color:#64748b}
+ td.untested{background:#334155}
+ td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
+ td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 3px,#334155 3px,#334155 6px)}
+ .card:hover{box-shadow:0 6px 20px #0006}
 }
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-  max-width: 1200px;
-  font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: var(--ink);
-  background: #fff;
-}
-
-h1 { font-size: 1.4rem; margin: 0 0 1rem; }
-
-.legend { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 2rem;
-          font-size: 12px; color: var(--muted); }
-.legend span { display: flex; align-items: center; gap: .4rem; }
-.legend i { width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--line); }
-
-.dimension { margin-bottom: 2.5rem; }
-.dimension h2 { font-size: 1rem; margin: 0 0 .6rem;
-                display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; }
-
-.tally { display: inline-flex; gap: .35rem; font-size: 11px; font-weight: 400; }
-.tally b { color: #fff; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
-.tally b.missing, .tally b.untested { color: var(--muted); }  /* light bg needs dark text */
-
-/* Only the offending table scrolls, so headings never drift off-screen. */
-.scroll { overflow-x: auto; }
-
-table.matrix { border-collapse: collapse; }
-table.matrix th { font-weight: 500; font-size: 11px; color: var(--muted);
-                  padding: 3px 6px; text-align: right; white-space: nowrap; }
-table.matrix thead th { text-align: center; }
-table.matrix td { width: 20px; height: 20px; border: 1px solid #fff; }
-
-.passed   { background: var(--passed); }
-.failed   { background: var(--failed); }
-.untested { background: var(--untested); }
-.missing  { background: var(--missing); }
-.present  { background: var(--present); }
-
-/* Hatching, not a colour, so the diagonal cannot be mistaken for a result. */
-.self { background: repeating-linear-gradient(45deg, #fff, #fff 3px, #eceff1 3px, #eceff1 6px); }

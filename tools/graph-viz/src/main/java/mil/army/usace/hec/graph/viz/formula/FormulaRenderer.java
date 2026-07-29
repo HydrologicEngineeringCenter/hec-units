@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,11 +75,15 @@ public final class FormulaRenderer {
 
     // Basically derive the slope and y-intercept from the expressian
     public static AffineForm affineOf(String expr) {
+        return affineOf(x -> ExpressionEvaluator.evaluate(expr, x));
+    }
+
+    public static AffineForm affineOf(DoubleUnaryOperator formula) {
         double f0;
         double f1;
         try {
-            f0 = ExpressionEvaluator.evaluate(expr, 0.0);
-            f1 = ExpressionEvaluator.evaluate(expr, 1.0);
+            f0 = formula.applyAsDouble(0.0);
+            f1 = formula.applyAsDouble(1.0);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -93,7 +98,7 @@ public final class FormulaRenderer {
         for (double x : VERIFY_AT) {
             double actual;
             try {
-                actual = ExpressionEvaluator.evaluate(expr, x);
+                actual = formula.applyAsDouble(x);
             } catch (IllegalArgumentException e) {
                 return null;
             }

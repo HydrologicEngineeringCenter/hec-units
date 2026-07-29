@@ -12,43 +12,43 @@ import mil.army.usace.hec.graph.viz.model.Node;
 
 /**
  * Renders a graph as one coverage matrix per node group.
- */
+*/
 public final class MatrixView {
 
+    private MatrixView() {
+    }
+
     public static String render(Graph graph) {
-        // separates nodes by their respective groups
         var byGroup = new TreeMap<String, List<Node>>();
         for (Node node : graph.nodes()) {
             byGroup.computeIfAbsent(node.group(), key -> new ArrayList<>()).add(node);
         }
 
-        var out = new StringBuilder();
+        var out = new StringBuilder("<div class=\"grid\">\n");
         for (var entry : byGroup.entrySet()) {
             List<Node> members = entry.getValue();
             if (members.size() < 2) {
-                continue;   // a lone unit has nothing to convert to, we can ignore
+                continue;   // skip lone units
             }
             members.sort(Comparator.comparing(Node::id));
             renderGroup(out, entry.getKey(), members, graph);
         }
-        return out.toString();
+        return out.append("</div>\n").toString();
     }
 
     private static void renderGroup(StringBuilder out, String group, List<Node> members, Graph graph) {
-        out.append("<section class=\"dimension\">\n<h2>")
+        out.append("<div class=\"card\">\n<header><h2>")
            .append(Html.escape(group))
+           .append("</h2>")
            .append(tally(members, graph))
-           .append("</h2>\n<div class=\"scroll\">\n<table class=\"matrix\">\n");
+           .append("</header>\n<div class=\"scroll\">\n<table class=\"matrix\">\n");
 
-        // Column headers: the "to" unit of every cell beneath them.
-        out.append("<thead><tr><th class=\"corner\"></th>");
+        out.append("<thead><tr><th></th>");
         for (Node to : members) {
             out.append("<th>").append(Html.escape(to.id())).append("</th>");
         }
         out.append("</tr></thead>\n<tbody>\n");
 
-        // One row per "from" unit, so reading across a row shows everything that
-        // unit can convert into.
         for (Node from : members) {
             out.append("<tr><th>").append(Html.escape(from.id())).append("</th>");
             for (Node to : members) {
@@ -57,23 +57,32 @@ public final class MatrixView {
             out.append("</tr>\n");
         }
 
-        out.append("</tbody>\n</table>\n</div>\n</section>\n");
+        out.append("</tbody>\n</table>\n</div>\n</div>\n");
     }
 
     private static void appendCell(StringBuilder out, Graph graph, Node from, Node to) {
         if (from.id().equals(to.id())) {
-            out.append("<td class=\"self\"></td>");   // the diagonal: nothing to convert
+            out.append("<td class=\"self\"></td>");
             return;
         }
-        String state = stateOf(graph.edge(from.id(), to.id()));
+        Edge edge = graph.edge(from.id(), to.id());
+        String state = stateOf(edge);
+
         out.append("<td class=\"").append(state).append("\" title=\"")
            .append(Html.escape(from.id() + " \u2192 " + to.id() + ": " + state))
-           .append("\"></td>");
+           .append("\"");
+
+        // The edge's own description travels with the cell, so the enlarged view
+        // needs no second copy of the graph data to look anything up in.
+        if (edge != null && edge.detail() != null) {
+            out.append(" data-detail=\"").append(Html.escape(edge.detail())).append("\"");
+        }
+        out.append("></td>");
     }
 
     private static String stateOf(Edge edge) {
         if (edge == null) {
-            return "missing";
+            return "missing";           // no conversion exists between this pair
         }
         if (edge.status() == EdgeStatus.PASSED) {
             return "passed";
@@ -84,10 +93,10 @@ public final class MatrixView {
         if (edge.status() == EdgeStatus.UNTESTED) {
             return "untested";
         }
-        return "present";  
+        return "present";               // a seed edge, which carries no status at all
     }
 
-    /** Counts beside the heading, so 28 matrices can be triaged by scanning headings. */
+    // Per group counts, shown beside the heading so you can rank dimensions by coverage.
     private static String tally(List<Node> members, Graph graph) {
         var counts = new TreeMap<String, Integer>();
         for (Node from : members) {
@@ -99,7 +108,8 @@ public final class MatrixView {
         }
         var out = new StringBuilder("<span class=\"tally\">");
         counts.forEach((state, n) ->
-            out.append("<b class=\"").append(state).append("\">").append(n).append("</b>"));
+            out.append("<span class=\"badge ").append(state).append("\">")
+               .append(n).append("</span>"));
         return out.append("</span>").toString();
     }
 }
