@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import cwms.units.Loader;
 import mil.army.usace.hec.graph.viz.view.MatrixView;
 import mil.army.usace.hec.graph.viz.view.PageRenderer;
 
@@ -13,23 +14,32 @@ import mil.army.usace.hec.graph.viz.view.PageRenderer;
  */
 public final class GenerateVisualization {
 
+    private static final int PORT = 8080;
+
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.err.println("usage: GenerateVisualization <output-dir> <test-report.xml>");
+            System.err.println("usage: GenerateVisualization <output-dir> <test-report.xml> [tests.csv]");
             System.exit(2);
         }
 
         Path outputDir = Path.of(args[0]);
         Path report = Path.of(args[1]);
+        Path testCsv = args.length > 2 ? Path.of(args[2]) : null;
 
         // A missing report is not an error here. The page is still worth having -
         // it just cannot say anything about coverage, so it says so instead of
         // quietly showing every conversion as untested.
         boolean covered = GeneratedGraphSource.hasReport(report);
 
-        var graph = GeneratedGraphSource.load(report);
-        String html = PageRenderer.render("Unit conversion coverage",
-                                          (covered ? "" : missingReportNotice()) + MatrixView.render(graph));
+        // One Loader, shared: constructing it parses three JSON files, and both
+        // the graph and the route data need the same parse.
+        var loader = new Loader();
+
+        var graph = GeneratedGraphSource.load(loader, report, testCsv);
+        String html = PageRenderer.render(
+            "Unit conversion coverage",
+            (covered ? "" : missingReportNotice()) + MatrixView.render(graph),
+            SeedPaths.script(loader));
 
         Files.createDirectories(outputDir);
         Path index = outputDir.resolve("index.html");
@@ -39,9 +49,17 @@ public final class GenerateVisualization {
             System.err.println("warning: no test report at " + report.toAbsolutePath()
                 + " - showing the algorithm's conversions with no coverage information.");
         }
-        System.out.println(graph.nodes().size() + " units, " + graph.edges().size() + " conversions"
-            + (covered ? "" : " (no coverage data)"));
-        System.out.println("Open: file://" + index.toAbsolutePath());
+
+        // Printed unconditionally, and last. When tests fail this is the output
+        // that matters most, and it is the easiest thing to lose in a wall of
+        // failure text.
+        System.out.println();
+        System.out.println("  " + graph.nodes().size() + " units, " + graph.edges().size()
+            + " conversions" + (covered ? "" : "  (no coverage data)"));
+        System.out.println("  view it:  ./gradlew :units-graph-viz:vizServe");
+        System.out.println("            http://localhost:" + PORT + "/");
+        System.out.println("  file:     " + index.toAbsolutePath());
+        System.out.println();
     }
 
     private static String missingReportNotice() {

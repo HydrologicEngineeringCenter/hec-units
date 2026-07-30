@@ -31,7 +31,8 @@ tasks.register('visualize', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'mil.army.usace.hec.units.viz.GenerateVisualization'
     args = [outputDir.get().asFile.absolutePath,
-            rootProject.file('units/build/reports/unit_conversion_report.xml').absolutePath]
+            rootProject.file('units/build/reports/unit_conversion_report.xml').absolutePath,
+            rootProject.file('units/src/test/resources/units/conversions_to_test.csv').absolutePath]
     outputs.dir(outputDir)
 }
 

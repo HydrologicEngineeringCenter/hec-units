@@ -13,6 +13,14 @@ public final class PageRenderer {
     }
 
     public static String render(String title, String body) throws IOException {
+        return render(title, body, "");
+    }
+
+    /**
+     * @param data a JavaScript snippet emitted before the page script, used to
+     *             hand the page any dataset it has to work with at runtime.
+     */
+    public static String render(String title, String body, String data) throws IOException {
         return "<!doctype html>\n<html lang=\"en\">\n<head>\n"
             + "<meta charset=\"utf-8\">\n"
             + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
@@ -21,21 +29,30 @@ public final class PageRenderer {
             + "</head>\n<body>\n"
             + "<h1>" + Html.escape(title) + "</h1>\n"
             + "<p class=\"lede\">Every conversion the algorithm can produce, one matrix per "
-            + "dimension. Rows convert to columns. Click any card to enlarge it; hover a "
-            + "cell for the pair and its status.</p>\n"
-            + legend()
+            + "dimension. <b>Each row converts into the columns.</b> Click a card to enlarge "
+            + "it, then click any cell for its equation and test results.</p>\n"
+            + legend("legend")
             + body
             + overlay()
+            + (data.isEmpty() ? "" : "<script>\n" + data + "</script>\n")
             + "<script>\n" + loadJs() + "\n</script>\n"
             + "</body>\n</html>\n";
     }
 
-    private static String legend() {
-        return "<div class=\"legend\">"
+    /**
+     * The colour key.
+     *
+     * Rendered twice - once on the page and once inside the enlarged view -
+     * because the enlarged view covers the page completely, and a key you have to
+     * close the thing you are reading to consult is no key at all.
+     */
+    private static String legend(String className) {
+        return "<div class=\"" + className + "\">"
             + "<span><i class=\"sw passed\"></i>passed</span>"
             + "<span><i class=\"sw failed\"></i>failed</span>"
             + "<span><i class=\"sw untested\"></i>reachable, not tested</span>"
             + "<span><i class=\"sw missing\"></i>no conversion</span>"
+            + "<span class=\"hint\">numbers are hops in the chosen route</span>"
             + "</div>\n";
     }
 
@@ -50,9 +67,11 @@ public final class PageRenderer {
         return "<div id=\"overlay\">\n"
             + "<div id=\"obar\">"
             + "<h3 id=\"otitle\"></h3>"
+            + "<span id=\"oaxis\">row → column</span>"
             + "<span id=\"otally\" class=\"tally\"></span>"
             + "<button id=\"oclose\" type=\"button\">Close</button>"
             + "</div>\n"
+            + legend("legend olegend")
             + "<div id=\"ostagewrap\">\n"
             + "<div id=\"ostage\"></div>\n"
             + "<aside id=\"opanel\"><div id=\"odetail\"></div></aside>\n"

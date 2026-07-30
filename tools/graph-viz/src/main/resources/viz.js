@@ -6,6 +6,10 @@
  * be drawn much larger. That means no graph data has to be serialised into the
  * page and no matrix-building logic exists twice. Each cell already carries its
  * own description in a data attribute, so selecting one needs no lookup either.
+ *
+ * The one thing that cannot be precomputed is "every route between these two
+ * units" - there are far too many to bake into the page - so the seed
+ * conversions are embedded instead (see SEED) and routes are walked on demand.
  */
 (function () {
   var overlay = document.getElementById('overlay');
@@ -16,6 +20,9 @@
 
   var HINT = '<div class="empty">Hover a cell to preview its conversion. '
            + '<b>Click</b> to pin it, click the same cell again to release it.</div>';
+
+  var MAX_ROUTES = 60;
+  var MAX_HOPS = 7;
 
   /*
    * The pinned cell, or null in "free mode".
@@ -34,14 +41,155 @@
     return;
   }
 
+  /* ---------------------------------------------------------------- routes */
+
+  // Adjacency built from the seed conversions, both ways round. Only the
+  // forward direction is embedded; inverting y = m*x + b gives the other.
+  var adjacency = null;
+
+  function graph() {
+    if (adjacency) {
+      return adjacency;
+    }
+    adjacency = {};
+    if (typeof SEED === 'undefined') {
+      return adjacency;
+    }
+    SEED.forEach(function (edge) {
+      link(edge[0], edge[1], edge[2], edge[3]);
+      if (edge[2] !== 0) {
+        link(edge[1], edge[0], 1 / edge[2], -edge[3] / edge[2]);
+      }
+    });
+    return adjacency;
+  }
+
+  function link(from, to, m, b) {
+    (adjacency[from] = adjacency[from] || []).push({to: to, m: m, b: b});
+  }
+
   /*
-   * Pick a cell size that fills the available space.
+   * Every simple route from one unit to another.
    *
-   * A fixed size cannot work: most dimensions have only 2-4 units, so a size
-   * chosen to keep the 13x13 matrix on screen leaves the small ones as a
-   * postage stamp in the middle of a large empty panel. So measure the stage
-   * and divide what is left after the labels.
+   * Depth-first, refusing to revisit a unit already on the path - a route that
+   * doubles back cannot be shorter and would make the search unbounded. The two
+   * caps keep a densely connected dimension from producing thousands of routes.
+   *
+   * Factors compose as you go: applying y = m2*x + b2 after y = m1*x + b1 gives
+   * m1*m2 for the scale and m2*b1 + b2 for the offset.
    */
+  function routes(from, to) {
+    var edges = graph();
+    var found = [];
+    var onPath = {};
+
+    function walk(node, path, m, b) {
+      if (found.length >= MAX_ROUTES || path.length > MAX_HOPS + 1) {
+        return;
+      }
+      if (node === to && path.length > 1) {
+        found.push({path: path.slice(), m: m, b: b});
+        return;
+      }
+      (edges[node] || []).forEach(function (edge) {
+        if (onPath[edge.to]) {
+          return;
+        }
+        onPath[edge.to] = true;
+        path.push(edge.to);
+        walk(edge.to, path, m * edge.m, edge.m * b + edge.b);
+        path.pop();
+        onPath[edge.to] = false;
+      });
+    }
+
+    onPath[from] = true;
+    walk(from, [from], 1, 0);
+    found.sort(function (a, b2) {
+      return a.path.length - b2.path.length;
+    });
+    return found;
+  }
+
+  function num(value) {
+    if (!isFinite(value)) {
+      return String(value);
+    }
+    if (value === Math.round(value) && Math.abs(value) < 1e15) {
+      return String(value);
+    }
+    return Number(value.toPrecision(12)).toString();
+  }
+
+  function renderRoutes(container, from, to, chosenHops) {
+    var found = routes(from, to);
+    if (!found.length) {
+      container.innerHTML = '<div class="more">No route found in the hand-written '
+                          + 'conversions.</div>';
+      return;
+    }
+
+    // The shortest route's factor is the reference. Any route that disagrees is
+    // worth seeing: two routes between the same units must give the same answer,
+    // so a mismatch means one of the conversions along the way is wrong.
+    var reference = found[0].m;
+    var html = '';
+
+    found.forEach(function (route) {
+      var hops = route.path.length - 1;
+      var chosen = hops === chosenHops;
+      var off = reference !== 0 ? Math.abs(route.m - reference) / Math.abs(reference) : 0;
+      var disagrees = off > 1e-9;
+
+      html += '<div class="rt' + (chosen ? ' chosen' : '') + '">'
+            + '<span class="hops">' + hops + (hops === 1 ? ' hop' : ' hops') + '</span>'
+            + '<span class="via">' + route.path.join(' → ') + '</span>'
+            + '<span class="fac' + (disagrees ? ' disagree' : '') + '">× ' + num(route.m)
+            + (route.b !== 0 ? (route.b > 0 ? ' + ' : ' − ') + num(Math.abs(route.b)) : '')
+            + (disagrees ? '   — disagrees with the shortest route' : '')
+            + '</span></div>';
+    });
+
+    if (found.length >= MAX_ROUTES) {
+      html += '<div class="more">Showing the first ' + MAX_ROUTES + ' routes.</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  /* ----------------------------------------------------------------- panel */
+
+  function detailFor(cell) {
+    var html = cell.dataset.detail
+            || '<div class="empty">' + cell.getAttribute('title') + '</div>';
+
+    if (cell.dataset.from && cell.dataset.to && typeof SEED !== 'undefined') {
+      html += '<div class="fx-paths">'
+            + '<button type="button" class="pathbtn">Show every route</button>'
+            + '<div class="routes"></div></div>';
+    }
+    return html;
+  }
+
+  function show(html) {
+    odetail.innerHTML = html;
+    // Drives the "pinned" badge in CSS, so the panel says why it is not
+    // responding to the cursor.
+    odetail.classList.toggle('locked', pinned !== null);
+  }
+
+  odetail.addEventListener('click', function (event) {
+    if (!event.target.classList.contains('pathbtn') || !pinned) {
+      return;
+    }
+    event.target.disabled = true;
+    event.target.textContent = 'Routes through the hand-written conversions';
+    renderRoutes(odetail.querySelector('.routes'),
+                 pinned.dataset.from, pinned.dataset.to,
+                 parseInt(pinned.querySelector('.lab') ? pinned.querySelector('.lab').textContent : '0', 10));
+  });
+
+  /* --------------------------------------------------------------- overlay */
+
   function fit() {
     var table = stage.querySelector('table.matrix');
     if (!table) {
@@ -57,8 +205,8 @@
     var box = stage.getBoundingClientRect();
     // Row labels sit to the left of every row and the header row sits above
     // every column, so neither is a square cell and both come off the top.
-    var forRowLabels = 160;
-    var forColumnLabels = 46;
+    var forRowLabels = 170;
+    var forColumnLabels = 80;
     var padding = 48;
 
     var perColumn = (box.width - forRowLabels - padding) / columns;
@@ -67,30 +215,23 @@
     // Minus the 2px border-spacing that sits between every pair of cells.
     var size = Math.floor(Math.min(perColumn, perRow)) - 3;
 
-    // Floor keeps a 13-column matrix legible on a small window (it scrolls
-    // instead of shrinking to nothing). Ceiling stops a 2x2 from becoming two
-    // absurd slabs filling half the screen.
+    // Floor keeps a wide matrix legible on a small window (it scrolls instead of
+    // shrinking to nothing). Ceiling stops a 2x2 becoming two absurd slabs.
     size = Math.max(20, Math.min(size, 120));
 
     table.style.setProperty('--cell', size + 'px');
-  }
-
-  function detailFor(cell) {
-    return cell.dataset.detail
-        || '<div class="empty">' + cell.getAttribute('title') + '</div>';
-  }
-
-  function show(html) {
-    odetail.innerHTML = html;
-    // Drives the "pinned" badge in CSS, so the panel says why it is not
-    // responding to the cursor.
-    odetail.classList.toggle('locked', pinned !== null);
   }
 
   function open(card) {
     otitle.textContent = card.querySelector('h2').textContent;
     otally.innerHTML = card.querySelector('.tally').innerHTML;
     stage.innerHTML = card.querySelector('table').outerHTML;
+
+    var corner = stage.querySelector('th.corner');
+    if (corner) {
+      corner.textContent = 'from ↓';
+    }
+
     pinned = null;
     show(HINT);
     overlay.classList.add('open');
@@ -144,6 +285,8 @@
     }
   });
 
+  /* ------------------------------------------------------------ highlights */
+
   function clearHover() {
     stage.querySelectorAll('.hi').forEach(function (element) {
       element.classList.remove('hi');
@@ -178,6 +321,31 @@
     highlight(cell);
     if (!pinned) {
       show(detailFor(cell));
+    }
+  });
+
+  /*
+   * Clearing on mouseout as well as mouseleave.
+   *
+   * mouseleave only fires at the edge of the stage, so leaving an edge or corner
+   * cell straight out of the table left it highlighted with nothing under the
+   * cursor. mouseout fires whenever a cell is left at all; the relatedTarget
+   * check makes sure moving between two cells is not treated as leaving.
+   */
+  stage.addEventListener('mouseout', function (event) {
+    var cell = event.target.closest('td[title]');
+    if (!cell) {
+      return;
+    }
+    var into = event.relatedTarget && event.relatedTarget.closest
+             ? event.relatedTarget.closest('td[title]')
+             : null;
+    if (into === cell) {
+      return;
+    }
+    clearHover();
+    if (!pinned && !into) {
+      show(HINT);
     }
   });
 

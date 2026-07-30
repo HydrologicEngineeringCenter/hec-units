@@ -22,10 +22,12 @@ import net.hobbyscience.database.Conversion;
 /**
  * Builds the post-algorithm graph.
  *
- * Two sources feed into it, because neither has everything:
+ * Three sources feed into it, because none has everything:
  *   ConversionGraph - every pair the algorithm can produce, what each computes,
  *                     and the chain of hops it went through
  *   the test report - which of those pairs were tested, and whether they passed
+ *   the test CSV    - the actual inputs and expected values, so a failing pair
+ *                     can show why it failed rather than just that it did
  *
  * Only the first is required. Without a report the graph is still built, just
  * with nothing known about coverage - a build whose tests could not finish still
@@ -41,9 +43,8 @@ public final class GeneratedGraphSource {
         return report != null && Files.isReadable(report);
     }
 
-    public static Graph load(Path report) throws IOException, XMLStreamException {
-        var loader = new Loader();
-
+    public static Graph load(Loader loader, Path report, Path testCsv)
+            throws IOException, XMLStreamException {
         var nodes = new ArrayList<Node>();
         var known = new HashSet<String>();
         loader.getUnits().forEach((abbreviation, unit) -> {
@@ -52,24 +53,25 @@ public final class GeneratedGraphSource {
         });
 
         var conversions = conversionsByPair(loader);
+        var tests = TestCaseReader.read(testCsv);
 
-        if (!hasReport(report)) {
-            return new Graph(nodes, withoutCoverage(conversions, known));
-        }
-        return new Graph(nodes, withCoverage(report, conversions, known));
+        List<Edge> edges = hasReport(report)
+            ? withCoverage(report, conversions, tests, known)
+            : withoutCoverage(conversions, tests, known);
+
+        return new Graph(nodes, edges);
     }
 
     /** Edges from the report, each carrying its status and its description. */
     private static List<Edge> withCoverage(Path report, Map<String, Conversion> conversions,
-                                           HashSet<String> known)
+                                           Map<String, List<TestCase>> tests, HashSet<String> known)
             throws IOException, XMLStreamException {
         var edges = new ArrayList<Edge>();
         var stale = new ArrayList<String>();
 
         for (Edge edge : TestReportReader.read(report)) {
             if (known.contains(edge.from()) && known.contains(edge.to())) {
-                edges.add(new Edge(edge.from(), edge.to(), edge.status(),
-                                   describe(conversions.get(pair(edge.from(), edge.to())))));
+                edges.add(build(edge.from(), edge.to(), edge.status(), conversions, tests));
             } else {
                 stale.add(edge.from() + " -> " + edge.to());
             }
@@ -87,24 +89,36 @@ public final class GeneratedGraphSource {
     /**
      * Edges straight from the algorithm, with every pair marked untested.
      *
-     * UNTESTED rather than null is the honest answer here: these conversions
-     * could have been tested, and we simply do not know whether they were.
+     * UNTESTED rather than null is the honest answer: these conversions could
+     * have been tested, and we simply do not know whether they were.
      */
     private static List<Edge> withoutCoverage(Map<String, Conversion> conversions,
+                                              Map<String, List<TestCase>> tests,
                                               HashSet<String> known) {
         var edges = new ArrayList<Edge>();
         for (Conversion conversion : conversions.values()) {
             String from = conversion.getFrom().getAbbreviation();
             String to = conversion.getTo().getAbbreviation();
             if (known.contains(from) && known.contains(to)) {
-                edges.add(new Edge(from, to, EdgeStatus.UNTESTED, describe(conversion)));
+                edges.add(build(from, to, EdgeStatus.UNTESTED, conversions, tests));
             }
         }
         return edges;
     }
 
-    private static String describe(Conversion conversion) {
-        return conversion == null ? null : ConversionDetail.of(conversion);
+    private static Edge build(String from, String to, EdgeStatus status,
+                              Map<String, Conversion> conversions,
+                              Map<String, List<TestCase>> tests) {
+        Conversion conversion = conversions.get(pair(from, to));
+        if (conversion == null) {
+            return new Edge(from, to, status);
+        }
+        List<TestCase> forward = tests.getOrDefault(TestCaseReader.key(from, to), List.of());
+        List<TestCase> reverse = tests.getOrDefault(TestCaseReader.key(to, from), List.of());
+
+        return new Edge(from, to, status,
+                        Integer.toString(ConversionDetail.hops(conversion)),
+                        ConversionDetail.of(conversion, status, forward, reverse));
     }
 
     /**

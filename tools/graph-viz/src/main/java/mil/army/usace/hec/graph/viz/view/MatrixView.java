@@ -43,7 +43,7 @@ public final class MatrixView {
            .append(tally(members, graph))
            .append("</header>\n<div class=\"scroll\">\n<table class=\"matrix\">\n");
 
-        out.append("<thead><tr><th></th>");
+        out.append("<thead><tr><th class=\"corner\"></th>");
         for (Node to : members) {
             out.append("<th>").append(Html.escape(to.id())).append("</th>");
         }
@@ -70,6 +70,8 @@ public final class MatrixView {
 
         out.append("<td class=\"").append(state).append("\" title=\"")
            .append(Html.escape(from.id() + " \u2192 " + to.id() + ": " + state))
+           .append("\" data-from=\"").append(Html.escape(from.id()))
+           .append("\" data-to=\"").append(Html.escape(to.id()))
            .append("\"");
 
         // The edge's own description travels with the cell, so the enlarged view
@@ -77,7 +79,15 @@ public final class MatrixView {
         if (edge != null && edge.detail() != null) {
             out.append(" data-detail=\"").append(Html.escape(edge.detail())).append("\"");
         }
-        out.append("></td>");
+        out.append(">");
+
+        // The label sits in the cell but is hidden by CSS at thumbnail size, where
+        // a 22px square has no room for a legible character. It appears once the
+        // cell is big enough to carry it.
+        if (edge != null && edge.label() != null) {
+            out.append("<span class=\"lab\">").append(Html.escape(edge.label())).append("</span>");
+        }
+        out.append("</td>");
     }
 
     private static String stateOf(Edge edge) {

@@ -7,18 +7,8 @@ body{margin:0;padding:32px;background:#f8fafc;color:#0f172a;
  font:15px/1.6 ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif}
 
 h1{margin:0 0 6px;font-size:26px}
-.lede{margin:0 0 8px;color:#475569;max-width:70ch}
+.lede{margin:0 0 8px;color:#475569;max-width:78ch}
 
-/* The legend is itself a card, so the key and the data share one visual language. */
-.legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 16px;
- background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
-.legend span{display:flex;align-items:center;gap:7px}
-.sw{display:inline-block;width:13px;height:13px;border-radius:4px;border:1.5px solid #cbd5e1}
-
-/* auto-fill lets the browser pick the column count from the window width. The
-   440px minimum is sized so a wide screen lands on 4-5 cards per row rather
-   than cramming in 7 - each matrix needs room to be legible, and the largest
-   (13 columns at 22px) needs ~365px of it. */
 /* Amber rather than red: this is "the page cannot tell you something", not
    "something is broken", and it must not be mistaken for a failing conversion. */
 .notice{margin:0 0 22px;padding:12px 16px;border-radius:8px;font-size:13px;
@@ -26,6 +16,16 @@ h1{margin:0 0 6px;font-size:26px}
 .notice code{font:12px ui-monospace,monospace;background:#00000014;
  padding:1px 6px;border-radius:4px}
 
+/* The legend is itself a card, so the key and the data share one visual language. */
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 16px;
+ background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend .hint{margin-left:auto;color:#64748b;font:11.5px ui-monospace,monospace}
+.sw{display:inline-block;width:13px;height:13px;border-radius:4px;border:1.5px solid #cbd5e1}
+
+/* auto-fill lets the browser pick the column count from the window width. The
+   440px minimum is sized so a wide screen lands on 4-5 cards per row rather
+   than cramming in 7 - each matrix needs room to be legible. */
 .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
 
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;
@@ -46,7 +46,6 @@ h1{margin:0 0 6px;font-size:26px}
 .badge.missing{background:#f8fafc;color:#94a3b8}
 .badge.present{background:#e0e7ff;color:#3730a3}
 
-/* A wide matrix scrolls inside its own card rather than dragging the page sideways. */
 .scroll{overflow-x:auto}
 
 /* border-spacing plus rounded cells gives separated squares rather than a solid
@@ -54,42 +53,64 @@ h1{margin:0 0 6px;font-size:26px}
 table.matrix{border-collapse:separate;border-spacing:2px}
 table.matrix th{font:11px ui-monospace,monospace;font-weight:400;color:#64748b;
  padding:0 5px;text-align:right;white-space:nowrap}
-table.matrix thead th{text-align:center}
-table.matrix td{width:22px;height:22px;border-radius:3px}
+table.matrix td{width:22px;height:22px;border-radius:3px;padding:0}
+
+/* Column headers run bottom-to-top rather than across.
+   A <th> can never be narrower than its own text, so a label like "1000 m3"
+   was forcing its whole column to ~60px and pushing a 13-unit matrix off the
+   side of its card - which is where the horizontal scrollbar came from.
+   Turned on its side a header takes one line-height of width, so the cells set
+   the column width again and every matrix fits without scrolling. */
+table.matrix thead th{writing-mode:vertical-rl;transform:rotate(180deg);
+ text-align:left;padding:5px 0;vertical-align:bottom}
+table.matrix thead th.corner{writing-mode:horizontal-tb;transform:none;padding:0}
+
+/* Hop counts live in the cell but are hidden at thumbnail size - a 22px square
+   has no room for a legible digit. They appear in the enlarged view. */
+table.matrix td .lab{display:none}
 
 /* passed and failed are saturated because they are results you must notice.
    untested and missing recede - they are the background state, not findings. */
 td.passed{background:#22c55e}
 td.failed{background:#ef4444}
-td.untested{background:#e2e8f0}
-td.missing{background:#f8fafc;box-shadow:inset 0 0 0 1px #f1f5f9}
+td.untested{background:#a8b6c5}
+td.missing{background:#f1f4f7;box-shadow:inset 0 0 0 1px #e6ebf0}
 td.present{background:#6366f1}
-td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#f1f5f9 3px,#f1f5f9 6px)}
+td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8edf2 6px)}
 
 .sw.passed{background:#22c55e}
 .sw.failed{background:#ef4444}
-.sw.untested{background:#e2e8f0}
-.sw.missing{background:#f8fafc}
+.sw.untested{background:#a8b6c5}
+.sw.missing{background:#f1f4f7}
 
-/* ---- enlarged view ----
-   A 22px cell is fine for scanning a wall of matrices but too small to work in.
-   Clicking a card reuses the same table at 34px on a dark backdrop, so one
-   dimension gets the whole screen. */
+/* ---- enlarged view ---- */
 #overlay{position:fixed;inset:0;background:#0f172ae6;display:none;z-index:50;
- backdrop-filter:blur(3px);padding:24px 28px}
+ backdrop-filter:blur(3px);padding:22px 26px}
 #overlay.open{display:flex;flex-direction:column}
 
-#obar{display:flex;align-items:center;gap:16px;padding:0 2px 14px;color:#e2e8f0;
+#obar{display:flex;align-items:center;gap:14px;padding:0 2px 12px;color:#e2e8f0;
  border-bottom:1px solid #ffffff1f;flex:none;flex-wrap:wrap}
-#obar h3{margin:0;font-size:18px}
-#odetail{margin-left:auto;font:12.5px ui-monospace,monospace;color:#94a3b8}
+#obar h3{margin:0;font-size:19px}
+
+/* Spelling out the reading direction, because a grid of squares gives no clue
+   which axis is the source and which the target. */
+#oaxis{font:11.5px ui-monospace,monospace;color:#cbd5e1;background:#ffffff14;
+ border:1px solid #ffffff1f;padding:2px 10px;border-radius:99px}
+
 #oclose{background:#ffffff1a;border:1px solid #ffffff2e;color:#e2e8f0;border-radius:6px;
- padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif;flex:none}
+ padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif;flex:none;margin-left:auto}
 #oclose:hover{background:#ffffff2e}
 
-#ostagewrap{flex:1;min-height:0;display:flex}
+/* The key again, on the dark backdrop. The enlarged view covers the page, so a
+   key you have to close it to read would be useless. */
+.olegend{background:transparent;border:none;margin:10px 0 0;padding:0 2px;
+ color:#94a3b8;font-size:12px;gap:16px}
+.olegend .sw{border-color:#ffffff2e}
+.olegend .hint{color:#64748b}
 
-#ostage{flex:1;min-width:0;overflow:auto;padding:22px;
+#ostagewrap{flex:1;min-height:0;display:flex;margin-top:12px}
+
+#ostage{flex:1;min-width:0;overflow:auto;padding:18px;
  display:flex;justify-content:center;align-items:flex-start}
 
 /* --cell is set by script, not here: a 2x2 matrix and a 13x13 matrix need very
@@ -97,29 +118,38 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#f1f5f9 3px,#f1
    much room there actually is. The value here is just the fallback. */
 #ostage table.matrix td{width:var(--cell,34px);height:var(--cell,34px);border-radius:5px}
 #ostage table.matrix th{font-size:13px;color:#cbd5e1;padding:0 10px}
+#ostage table.matrix thead th{padding:8px 0}
+#ostage table.matrix th.corner{font-size:10.5px;color:#64748b;text-align:right;
+ padding-right:10px;white-space:pre}
 
-#ostage td.untested{background:#334155}
+#ostage td.untested{background:#475569}
 #ostage td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
 #ostage td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 4px,#334155 4px,#334155 8px)}
 
-/* Hover marks where the cursor is and nothing more: a grey ring, with the cell's
-   own status colour left visible underneath. Filling the cell would hide the one
-   piece of information the grid exists to show. */
+/* Hop count, centred in the cell. Dark text on the saturated colours, light on
+   the recessive ones, so it stays legible on every cell type. */
+#ostage table.matrix td .lab{display:flex;align-items:center;justify-content:center;
+ width:100%;height:100%;font:600 12px ui-monospace,monospace;color:#0f172ab3}
+#ostage td.untested .lab{color:#cbd5e1}
+#ostage td.missing .lab{color:#475569}
+
+/* These must come after the status colours: same specificity, so source order is
+   what lets a highlight win. Hover marks where the cursor is and nothing more -
+   filling the cell would hide the status the grid exists to show. */
 #ostage td.hi{outline:2px solid #94a3b8;outline-offset:1px}
 #ostage th.hi{color:#e2e8f0;font-weight:600}
 
 /* A pinned cell keeps a white ring - brighter than the grey hover, so the locked
-   selection stays findable while the cursor wanders. Declared after .hi so it
-   still wins when the pinned cell happens to be the one under the cursor. */
+   selection stays findable while the cursor wanders. */
 #ostage td.pin,
 #ostage td.pin.hi{outline:3px solid #fff;outline-offset:1px}
 
 /* ---- detail panel ----
    The equations live in a fixed side panel rather than a tooltip, because a
-   tooltip vanishes the moment you move the mouse - and the whole request here is
-   to be able to keep reading the conversion while looking at the matrix. */
-#opanel{width:400px;flex:none;overflow-y:auto;background:#0f172acc;color:#e2e8f0;
- border-left:1px solid #ffffff1f;padding:20px 22px;font-size:13px}
+   tooltip vanishes the moment you move the mouse - and the point is to keep
+   reading the conversion while looking at the matrix. */
+#opanel{width:430px;flex:none;overflow-y:auto;background:#0f172acc;color:#e2e8f0;
+ border-left:1px solid #ffffff1f;padding:20px 22px;font-size:14.5px}
 #opanel .empty{color:#94a3b8;line-height:1.6}
 #opanel .empty b{color:#e2e8f0}
 
@@ -132,39 +162,85 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#f1f5f9 3px,#f1
 
 /* Typeset formula styling, ported from the Python project. Serif italics for
    unit symbols is what makes these read as equations rather than as code. */
-.fx{font-size:14px;line-height:1.5}
+.fx{font-size:15.5px;line-height:1.5}
 .fx i{font-style:italic;font-size:1.06em;
  font-family:'Cambria Math','STIX Two Math','Times New Roman',Georgia,serif}
 .fx sup{font-size:.72em}
-.fx-head{font-family:'Cambria Math','Times New Roman',Georgia,serif;font-size:17px;
- padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid #ffffff1f;color:#f1f5f9}
+.fx-head{font-family:'Cambria Math','Times New Roman',Georgia,serif;font-size:18px;
+ padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid #ffffff1f;color:#f1f5f9;
+ display:flex;align-items:center;gap:2px;flex-wrap:wrap}
 .fx-head .arrow{margin:0 10px;color:#94a3b8}
+.fx-head .chip{margin-left:auto;font:10.5px ui-monospace,monospace;
+ padding:2px 9px;border-radius:99px;font-style:normal}
+.chip.passed{background:#14532d;color:#86efac}
+.chip.failed{background:#7f1d1d;color:#fca5a5}
+.chip.untested{background:#334155;color:#cbd5e1}
+
 .fx-body{border-collapse:collapse;margin:0}
 .fx-body td{padding:2px 0;vertical-align:baseline}
 .fx-body .lhs{text-align:right;padding-right:8px}
 .fx-body .eq{padding:0 8px;color:#94a3b8}
 .fx-body .rhs{text-align:left;word-break:break-word}
 .fx-body .warn{color:#fbbf24}
-.fx-where{margin-top:13px;font-size:12.5px;color:#94a3b8;word-break:break-word}
+
+.fx-where{margin-top:13px;font-size:13px;color:#94a3b8;word-break:break-word}
 .fx-where .kw{font-style:italic;margin-right:8px;
  font-family:'Cambria Math','Times New Roman',Georgia,serif}
+.fx-where .hopcount{margin-left:8px;font:10.5px ui-monospace,monospace;
+ background:#ffffff14;border-radius:99px;padding:1px 8px;white-space:nowrap}
+
 .fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid #ffffff14;
- font:11.5px ui-monospace,monospace;color:#64748b;word-break:break-all}
+ font:12px ui-monospace,monospace;color:#64748b;word-break:break-all}
+
+/* ---- test cases ----
+   A red cell that cannot say why it is red is barely better than no cell. */
+.fx-tests{margin-top:15px;padding-top:12px;border-top:1px solid #ffffff14}
+.fx-tests .lbl{font:10.5px ui-monospace,monospace;color:#7dd3fc;
+ letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.fx-tests table{width:100%;border-collapse:collapse;font:12.5px ui-monospace,monospace}
+.fx-tests td{padding:4px 6px 4px 0;vertical-align:baseline}
+.fx-tests .u{color:#64748b}
+.fx-tests .got{color:#e2e8f0}
+.fx-tests .exp{color:#94a3b8}
+.fx-tests .v{text-align:right;white-space:nowrap}
+.fx-tests tr.ok .v{color:#86efac}
+.fx-tests tr.bad td{background:#7f1d1d33}
+.fx-tests tr.bad .v{color:#fca5a5}
+.fx-tests tr.note td{color:#64748b;font-size:11px;padding-top:0}
+
+/* ---- routes ---- */
+.fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid #ffffff14}
+.pathbtn{background:#ffffff14;border:1px solid #ffffff2e;color:#cbd5e1;border-radius:6px;
+ padding:5px 12px;cursor:pointer;font:11.5px ui-monospace,monospace;width:100%}
+.pathbtn:hover{background:#ffffff24;color:#e2e8f0}
+.routes{margin-top:10px}
+.routes .rt{padding:7px 9px;border-radius:6px;margin-bottom:5px;background:#ffffff0d;
+ border:1px solid transparent}
+.routes .rt.chosen{background:#38bdf814;border-color:#38bdf84d}
+.routes .hops{font:10px ui-monospace,monospace;background:#ffffff1a;color:#cbd5e1;
+ border-radius:99px;padding:1px 7px;margin-right:7px}
+.routes .via{font:11.5px ui-monospace,monospace;color:#cbd5e1;word-break:break-word}
+.routes .fac{display:block;margin-top:4px;font-size:12px;color:#94a3b8}
+.routes .disagree{color:#fbbf24}
+.routes .more{color:#64748b;font-size:11.5px;margin-top:8px}
 
 @media(prefers-color-scheme:dark){
  body{background:#0f172a;color:#e2e8f0}
  .card,.legend{background:#1e293b;border-color:#334155}
+ .olegend{background:transparent;border:none}
  .lede{color:#94a3b8}
+ .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
+ .notice code{background:#ffffff14}
  .sw{border-color:#475569}
  table.matrix th{color:#94a3b8}
  .badge.passed{background:#14532d;color:#86efac}
  .badge.failed{background:#7f1d1d;color:#fca5a5}
  .badge.untested{background:#334155;color:#cbd5e1}
  .badge.missing{background:#1e293b;color:#64748b}
- .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
- .notice code{background:#ffffff14}
- td.untested{background:#334155}
+ td.untested{background:#475569}
  td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
  td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 3px,#334155 3px,#334155 6px)}
+ .sw.untested{background:#475569}
+ .sw.missing{background:#1e293b}
  .card:hover{box-shadow:0 6px 20px #0006}
 }
