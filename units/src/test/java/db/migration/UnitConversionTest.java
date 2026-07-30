@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -53,7 +54,13 @@ class UnitConversionTest {
     private static final HashSet<String> expected_conversion_pairs = new HashSet<>();
     private static final HashSet<String> expected_test_pairs = new HashSet<>();
 
-    private static Map<String, AtomicInteger> conversion_count = new HashMap<>();
+    // For debugging visualizer, it will be helpful to differentiate between FAILED and NOT-TESTED
+    private enum Status {
+        PASSED,
+        FAILED
+    }
+
+    private static final Map<String, Status> results = new HashMap<>();
 
     @BeforeAll
     static void setup() throws Exception {
@@ -98,7 +105,12 @@ class UnitConversionTest {
 
     @AfterAll
     static void check_provided_tests_passed() {
-        final HashSet<String> conversionKeySet = new HashSet<>(conversion_count.keySet());
+        final HashSet<String> conversionKeySet = new HashSet<>();
+        results.forEach((pair, status) -> {
+            if (status == Status.PASSED) {
+                conversionKeySet.add(pair);
+            }
+        });
         
         boolean failedConversions = false;
         final var sb = new StringBuilder();
@@ -129,33 +141,39 @@ class UnitConversionTest {
         var buffer = new StringWriter();
     
         var writer = xmlFactory.createXMLStreamWriter(buffer);
-        final var actualConversions = conversion_count.keySet();
-
-        writer.writeStartDocument();
-        
-        writer.writeStartElement("unit-conversions");
-
-        final int totalExpected = expected_conversion_pairs.size();
-        final int totalActual = actualConversions.size();            
-
-        final float percentTested = totalActual/(float)totalExpected*100;
-
-        writer.writeAttribute("expected", "" + totalExpected);
-        writer.writeAttribute("actual", "" + totalActual);
-        writer.writeAttribute("percent-tested", String.format("%.01f", percentTested));
-        writer.writeStartElement("missing-conversions");
-        for (var expected_conversion: expected_conversion_pairs) {
-            if (!actualConversions.contains(expected_conversion)) {
-
-                var parts = expected_conversion.split("_");
-                writer.writeStartElement("conversion");
-                writer.writeAttribute("from", parts[0]);
-                writer.writeAttribute("to", parts[1]);
-                writer.writeEndElement();
+        // allows us to discern between tests that failed, and conversions that are not covered by testing suite.
+        int passed = 0;
+        int failed = 0;
+        for (var status : results.values()) {
+            if (status == Status.PASSED) {
+                passed++;
+            } else {
+                failed++;
             }
         }
-        writer.writeEndElement();
+        final int totalExpected = expected_conversion_pairs.size();
+        final int numNotTested = totalExpected - passed - failed;
+        final float percentTested = passed / (float) totalExpected * 100;
 
+        writer.writeStartDocument();
+        writer.writeStartElement("unit-conversions");
+        writer.writeAttribute("expected", "" + totalExpected);
+        writer.writeAttribute("actual", "" + passed);
+        writer.writeAttribute("passed", "" + passed);
+        writer.writeAttribute("failed", "" + failed);
+        writer.writeAttribute("not-tested", "" + numNotTested);
+        writer.writeAttribute("percent-tested", String.format("%.01f", percentTested));
+
+        for (var pair : new TreeSet<>(expected_conversion_pairs)) {
+            var parts = pair.split("_");
+            var status = results.get(pair);
+            writer.writeStartElement("conversion");
+            writer.writeAttribute("from", parts[0]);
+            writer.writeAttribute("to", parts[1]);
+            writer.writeAttribute("status", 
+                status == null ? "not-tested" : status.name().toLowerCase());
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
         writer.writeEndDocument();
         writer.flush();
@@ -171,8 +189,13 @@ class UnitConversionTest {
         }
     }
 
-    private static void update_conversion_count(String from, String to) {
-        conversion_count.computeIfAbsent(toConversionKey(from, to), k -> new AtomicInteger(0)).incrementAndGet();
+    private static void record(String from, String to, boolean passed) {
+        String key = toConversionKey(from, to);
+        if (passed) {
+            results.putIfAbsent(key, Status.PASSED); // only if both ways pass do we allow a pass
+        } else {
+            results.put(key, Status.FAILED);
+        }
     }
 
     @ParameterizedTest /*(name="[{index}] {arguments}")*/
@@ -187,15 +210,25 @@ class UnitConversionTest {
 
         log.finest(()->"Forward conversion " + conversion.toString());
         double forward = SimpleInfixCalculator.calculate(infix, in);
-        assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
-        assertEquals(expected, forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
-        update_conversion_count(from, to);
+        boolean forwardOk = false; // assume false unless we pass
+        try {
+            assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
+            assertEquals(expected, forward, delta, () -> "Unable to perform conversion using " + conversion.toString() + " within " + delta);
+            forwardOk = true;
+        } finally {
+            record(from, to, forwardOk);
+        }
 
         log.finest(()->"Inverse conversion " + inverseConversion.toString());
         double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
-        assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
-        assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
-        update_conversion_count(to, from);
+        boolean inverseOk = false;
+        try {
+            assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
+            assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
+            inverseOk = true;
+        } finally {
+            record(to, from, inverseOk);
+        }
     }
 
     private Conversion getConversion(Unit from, Unit to) {
