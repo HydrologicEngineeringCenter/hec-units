@@ -22,14 +22,31 @@ public final class GenerateVisualization {
         Path outputDir = Path.of(args[0]);
         Path report = Path.of(args[1]);
 
+        // A missing report is not an error here. The page is still worth having -
+        // it just cannot say anything about coverage, so it says so instead of
+        // quietly showing every conversion as untested.
+        boolean covered = GeneratedGraphSource.hasReport(report);
+
         var graph = GeneratedGraphSource.load(report);
-        String html = PageRenderer.render("Unit conversion coverage", MatrixView.render(graph));
+        String html = PageRenderer.render("Unit conversion coverage",
+                                          (covered ? "" : missingReportNotice()) + MatrixView.render(graph));
 
         Files.createDirectories(outputDir);
         Path index = outputDir.resolve("index.html");
         Files.writeString(index, html, StandardCharsets.UTF_8);
 
-        System.out.println(graph.nodes().size() + " units, " + graph.edges().size() + " conversions");
+        if (!covered) {
+            System.err.println("warning: no test report at " + report.toAbsolutePath()
+                + " - showing the algorithm's conversions with no coverage information.");
+        }
+        System.out.println(graph.nodes().size() + " units, " + graph.edges().size() + " conversions"
+            + (covered ? "" : " (no coverage data)"));
         System.out.println("Open: file://" + index.toAbsolutePath());
+    }
+
+    private static String missingReportNotice() {
+        return "<div class=\"notice\"><b>No test report found.</b> Every conversion below is "
+            + "shown as untested because there is no coverage data to read - not because it "
+            + "went untested. Run <code>./gradlew :units:test</code>, then regenerate.</div>\n";
     }
 }
