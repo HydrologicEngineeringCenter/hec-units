@@ -20,8 +20,9 @@ public final class SummaryView {
           excluding a unit with itself.</div>
         <table class="sum-table">{{breakdown}}</table>
         <h4>Coverage by dimension</h4>
-        <div class="sum-note">Least covered first. The bar is the share of reachable
-          conversions that a test exercises.</div>
+        <div class="sum-note">Most untested conversions first - the dimensions with the
+          most testing work left. The bar is the share of reachable conversions that a
+          test exercises. Click a heading to re-sort.</div>
         <table class="sum-table dims sortable">
         <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
         <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
@@ -92,7 +93,7 @@ public final class SummaryView {
             .raw("donut", donut(stats))
             .raw("figures", figures(stats))
             .raw("breakdown", breakdown(stats))
-            .raw("dimensions", Html.each(stats.groupsByCoverage(), SummaryView::dimensionRow))
+            .raw("dimensions", Html.each(stats.groupsByAttention(), SummaryView::dimensionRow))
             .raw("routes", routes(stats, routeTitle))
             .raw("cards", cards(stats))
             .render();

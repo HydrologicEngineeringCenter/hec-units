@@ -135,15 +135,15 @@ public final class Stats {
     }
 
     /**
-     * Groups worst-covered first, which is the order worth acting on.
-     *
-     * Groups with nothing reachable sink to the bottom rather than topping the
-     * list at 0%. They are not badly covered - there is simply nothing there to
-     * cover, and letting them crowd out the real gaps defeats the sort.
+     * Groups ordered by how much testing work they represent: most untested
+     * conversions first. That weights both size and gap - a big dimension
+     * missing half its tests outranks a two-unit one missing all of them.
+     * Fully covered groups follow (largest first); empty ones sink to the end.
      */
-    public List<Group> groupsByCoverage() {
+    public List<Group> groupsByAttention() {
         var sorted = new ArrayList<>(groups);
         sorted.sort(Comparator.comparingInt((Group g) -> g.reachable() == 0 ? 1 : 0)
+                              .thenComparing(Comparator.comparingInt(Group::untested).reversed())
                               .thenComparingDouble(Group::coverage)
                               .thenComparing(Comparator.comparingInt(Group::reachable).reversed()));
         return sorted;

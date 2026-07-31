@@ -327,8 +327,12 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 .sum-table{width:100%;border-collapse:collapse;font-size:13px}
 .sum-table td,.sum-table th{padding:5px 10px 5px 0;vertical-align:middle}
-.sum-table thead th{font:10.5px var(--mono);color:var(--lt-ink-4);text-align:left;
+/* Headers align the way their column's data does: numbers are right-aligned, so
+   their headings are too - a left heading over a right column reads as a
+   misalignment. Only the first (name) column is left. */
+.sum-table thead th{font:10.5px var(--mono);color:var(--lt-ink-4);text-align:right;
  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--glass-line)}
+.sum-table thead th:first-child{text-align:left}
 .sum-table .n{text-align:right;font:13px var(--mono);width:64px}
 .sum-table .p{text-align:right;font:13px var(--mono);color:var(--lt-ink-3);width:78px}
 .sum-table .n.ok{color:#86efac}
