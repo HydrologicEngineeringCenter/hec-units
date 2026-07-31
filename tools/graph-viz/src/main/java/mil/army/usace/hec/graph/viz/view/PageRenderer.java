@@ -106,6 +106,7 @@ public final class PageRenderer {
               + key(stats, "failed", "failed")
               + key(stats, "untested", "reachable, not tested")
               + key(stats, "missing", "no conversion")
+              + total(stats)
               + "<span class=\"hint\">numbers in cells are hops in the chosen route</span>")
             .toString();
     }
@@ -116,6 +117,19 @@ public final class PageRenderer {
             .put("label", label)
             .raw("counts", stats == null ? "" : counts(stats, cls))
             .render();
+    }
+
+    /** The denominator the percentages above are shares of. */
+    private static String total(Stats stats) {
+        if (stats == null) {
+            return "";
+        }
+        return Html.fill("""
+            <span class="key total">
+            <span class="k-top">total</span>
+            <span class="k-num">{{count}}</span>
+            </span>
+            """).put("count", stats.pairs()).render();
     }
 
     private static String counts(Stats stats, String cls) {

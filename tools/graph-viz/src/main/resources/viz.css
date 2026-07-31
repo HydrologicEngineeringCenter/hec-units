@@ -339,3 +339,29 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
  #sumopen{background:#e2e8f0;color:#0f172a;border-color:#e2e8f0}
  .legend .k-num{color:#e2e8f0}
 }
+
+/* ---- sortable table headers ---- */
+.sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
+ position:relative;padding-right:15px;transition:color .1s}
+.sum-table.sortable thead th.sortable-col:hover{color:#cbd5e1}
+
+/* One triangle, recoloured and nudged rather than swapped, so the indicator
+   never shifts the header text. */
+.sum-table.sortable thead th.sortable-col::after{content:"";position:absolute;right:2px;
+ top:calc(50% - 2px);border:4px solid transparent;border-top-color:#475569;
+ opacity:0;transition:opacity .1s}
+.sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
+.sum-table.sortable thead th.desc::after{opacity:1;border-top-color:#7dd3fc}
+.sum-table.sortable thead th.asc::after{opacity:1;border-top-color:transparent;
+ border-bottom-color:#7dd3fc;top:calc(50% - 6px)}
+
+/* ---- total in the key ---- */
+.legend .key.total{border-left:1px solid #e2e8f0;padding-left:18px;margin-left:2px}
+.legend .key.total .k-top{font:10.5px ui-monospace,monospace;color:#64748b;
+ letter-spacing:.07em;text-transform:uppercase}
+.legend .key.total .k-num{padding-left:0;font-size:17px}
+.olegend .key.total{border-left-color:#ffffff2e}
+
+@media(prefers-color-scheme:dark){
+ .legend .key.total{border-left-color:#334155}
+}

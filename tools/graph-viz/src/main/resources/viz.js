@@ -275,6 +275,80 @@
 
   document.getElementById('oclose').addEventListener('click', close);
 
+  /* ---------------------------------------------------------- table sorting */
+
+  /*
+   * Click a header to sort by it: first click descending, second ascending,
+   * third back to the order the page was generated in.
+   *
+   * The original row order is captured once up front, which is what makes the
+   * third click a genuine reset rather than another sort.
+   */
+  function makeSortable(table) {
+    var body = table.tBodies[0];
+    var headers = table.querySelectorAll('thead th');
+    if (!body || !headers.length) {
+      return;
+    }
+    var original = Array.prototype.slice.call(body.rows);
+    var sortedBy = -1;
+    var direction = 0;                      // 0 none, 1 descending, 2 ascending
+
+    function valueOf(row, column) {
+      var cell = row.cells[column];
+      if (!cell) {
+        return '';
+      }
+      var text = cell.textContent.trim();
+      // Strip units and symbols so "22.73%" and "2 hops" still compare as numbers.
+      var number = parseFloat(text.replace(/[^0-9.eE+-]/g, ''));
+      return isNaN(number) ? text.toLowerCase() : number;
+    }
+
+    function apply() {
+      headers.forEach(function (header) {
+        header.classList.remove('asc', 'desc');
+      });
+
+      var rows = original.slice();
+      if (direction !== 0) {
+        rows.sort(function (a, b) {
+          var x = valueOf(a, sortedBy);
+          var y = valueOf(b, sortedBy);
+          var order = (typeof x === 'number' && typeof y === 'number')
+                    ? x - y
+                    : String(x).localeCompare(String(y));
+          return direction === 1 ? -order : order;
+        });
+        headers[sortedBy].classList.add(direction === 1 ? 'desc' : 'asc');
+      }
+      rows.forEach(function (row) {
+        body.appendChild(row);
+      });
+    }
+
+    headers.forEach(function (header, column) {
+      if (!header.textContent.trim()) {
+        return;                             // spacer column, nothing to sort by
+      }
+      header.classList.add('sortable-col');
+      header.addEventListener('click', function () {
+        if (sortedBy !== column) {
+          sortedBy = column;
+          direction = 1;
+        } else {
+          direction = (direction + 1) % 3;
+          if (direction === 0) {
+            sortedBy = -1;
+          }
+        }
+        apply();
+      });
+    });
+  }
+
+  document.querySelectorAll('table.sortable').forEach(makeSortable);
+
   /* --------------------------------------------------------------- summary */
 
   // The summary is rendered into the page up front rather than built here: it is

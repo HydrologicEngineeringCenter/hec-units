@@ -22,7 +22,7 @@ public final class SummaryView {
         <h4>Coverage by dimension</h4>
         <div class="sum-note">Least covered first. The bar is the share of reachable
           conversions that a test exercises.</div>
-        <table class="sum-table dims">
+        <table class="sum-table dims sortable">
         <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
         <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
         <tbody>{{dimensions}}</tbody>
@@ -59,7 +59,10 @@ public final class SummaryView {
         <h4>{{title}}</h4>
         <div class="sum-note">Every hop multiplies in another constant, so long chains
           are where rounding error accumulates.</div>
-        <table class="sum-table">{{rows}}</table>
+        <table class="sum-table sortable">
+        <thead><tr><th>route</th><th>conversions</th><th>share</th><th></th></tr></thead>
+        <tbody>{{rows}}</tbody>
+        </table>
         """;
 
     private static final String ROUTE_ROW = """
