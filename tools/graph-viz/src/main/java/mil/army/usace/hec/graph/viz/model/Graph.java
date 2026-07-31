@@ -8,9 +8,13 @@ import java.util.Map;
 
 public final class Graph {
 
+    // Pairs and byPair is mainly used as a way to find whether there is an edge from X to Y in constant time
+    private record Pair(String from, String to) {
+    }
+
     private final List<Node> nodes;
     private final List<Edge> edges;
-    private final Map<String, Edge> byPair;
+    private final Map<Pair, Edge> byPair;
 
     public Graph(List<Node> nodes, List<Edge> edges) {
         this.nodes = List.copyOf(nodes);
@@ -27,7 +31,7 @@ public final class Graph {
                 throw new IllegalArgumentException(
                     "Edge " + e.from() + " -> " + e.to() + " references a node that isn't in this graph");
             }
-            byPair.put(key(e.from(), e.to()), e);
+            byPair.put(new Pair(e.from(), e.to()), e);
         }
     }
 
@@ -39,12 +43,8 @@ public final class Graph {
         return edges;
     }
 
-    // Caller should null check 
+    // Caller should null check
     public Edge edge(String from, String to) {
-        return byPair.get(key(from, to));
-    }
-
-    private static String key(String from, String to) {
-        return from + "\u0000" + to;
+        return byPair.get(new Pair(from, to));
     }
 }
