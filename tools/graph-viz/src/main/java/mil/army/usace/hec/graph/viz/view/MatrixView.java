@@ -18,7 +18,7 @@ public final class MatrixView {
         """;
 
     private static final String CARD = """
-        <div class="card">
+        <div class="card" style="--i:{{index}}">
         <header><h2>{{group}}</h2>{{tally}}</header>
         <div class="scroll">
         <table class="matrix">
@@ -39,9 +39,10 @@ public final class MatrixView {
     public static String render(Graph graph) {
         var groups = groupNodes(graph);
         var cards = new StringBuilder();
+        int[] index = {0};                      // drives the staggered entrance
         groups.forEach((group, members) -> {
             if (members.size() >= 2) {          // a lone unit has nothing to convert to
-                cards.append(card(group, members, graph));
+                cards.append(card(group, members, graph, index[0]++));
             }
         });
         return Html.fill(GRID).raw("cards", cards.toString()).render();
@@ -57,9 +58,10 @@ public final class MatrixView {
         return byGroup;
     }
 
-    private static String card(String group, List<Node> members, Graph graph) {
+    private static String card(String group, List<Node> members, Graph graph, int index) {
         return Html.fill(CARD)
             .put("group", group)
+            .put("index", index)
             .raw("tally", tally(members, graph))
             .raw("columns", Html.each(members, to -> Html.tag("th").text(to.id()).toString()))
             .raw("rows", Html.each(members, from -> row(from, members, graph)))

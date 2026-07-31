@@ -41,6 +41,46 @@
     return;
   }
 
+  /* ---------------------------------------------------------- modal layers */
+
+  /*
+   * Two classes, two jobs: .open mounts the layer (display), .in - added one
+   * frame later - runs the fade/rise transition. display:none cannot animate,
+   * so the swap has to happen across a frame boundary.
+   */
+  function raise(layer) {
+    layer.classList.add('open');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        layer.classList.add('in');
+      });
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function lower(layer, after) {
+    layer.classList.remove('in');
+    var done = false;
+    function finish() {
+      if (done) {
+        return;
+      }
+      done = true;
+      layer.classList.remove('open');
+      document.body.style.overflow = '';
+      if (after) {
+        after();
+      }
+    }
+    layer.addEventListener('transitionend', function handler(event) {
+      if (event.target === layer) {
+        layer.removeEventListener('transitionend', handler);
+        finish();
+      }
+    });
+    setTimeout(finish, 400);          // safety net if the transition never fires
+  }
+
   /* ---------------------------------------------------------------- routes */
 
   // Adjacency built from the seed conversions, both ways round. Only the
@@ -135,13 +175,13 @@
     var reference = found[0].m;
     var html = '';
 
-    found.forEach(function (route) {
+    found.forEach(function (route, index) {
       var hops = route.path.length - 1;
       var chosen = hops === chosenHops;
       var off = reference !== 0 ? Math.abs(route.m - reference) / Math.abs(reference) : 0;
       var disagrees = off > 1e-9;
 
-      html += '<div class="rt' + (chosen ? ' chosen' : '') + '">'
+      html += '<div class="rt' + (chosen ? ' chosen' : '') + '" style="--i:' + index + '">'
             + '<span class="hops">' + hops + (hops === 1 ? ' hop' : ' hops') + '</span>'
             + '<span class="via">' + route.path.join(' → ') + '</span>'
             + '<span class="fac' + (disagrees ? ' disagree' : '') + '">× ' + num(route.m)
@@ -243,19 +283,17 @@
 
     pinned = null;
     show(HINT);
-    overlay.classList.add('open');
-    // Stop the page behind the overlay from scrolling with the wheel.
-    document.body.style.overflow = 'hidden';
+    raise(overlay);
     // Sizing has to happen after the overlay is visible, or the stage still
     // measures zero. A frame later is guaranteed to be after layout.
     requestAnimationFrame(fit);
   }
 
   function close() {
-    overlay.classList.remove('open');
-    document.body.style.overflow = '';
-    stage.innerHTML = '';
     pinned = null;
+    lower(overlay, function () {
+      stage.innerHTML = '';
+    });
   }
 
   document.querySelectorAll('.card').forEach(function (card) {
@@ -361,8 +399,11 @@
     if (!summary) {
       return;
     }
-    summary.classList.toggle('open', show);
-    document.body.style.overflow = show ? 'hidden' : '';
+    if (show) {
+      raise(summary);
+    } else {
+      lower(summary);
+    }
   }
 
   if (openSummary && summary) {

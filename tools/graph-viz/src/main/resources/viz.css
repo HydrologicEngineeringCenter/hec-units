@@ -1,367 +1,413 @@
+/* ============================================================ design tokens
+   Every colour, radius, shadow and duration lives here, so views written later
+   (the node-link graph, the path explorer) inherit the same language by using
+   the same variables. */
+:root{
+  /* surfaces */
+  --page:#f8fafc; --page-deep:#eef2f7;
+  --card:#ffffff; --line:#e2e8f0;
+  --dark:#0f172a; --dark-2:#1e293b; --dark-3:#334155;
+  --veil:rgba(10,15,28,.92);
+  --glass:#ffffff0a; --glass-line:#ffffff14; --glass-strong:#ffffff1f;
+
+  /* ink */
+  --ink:#0f172a; --ink-2:#475569; --ink-3:#64748b;
+  --lt-ink:#f1f5f9; --lt-ink-2:#cbd5e1; --lt-ink-3:#94a3b8; --lt-ink-4:#64748b;
+
+  /* status - the pair is CVD-checked (worst deutan/protan dE 19.9, was 7.7) */
+  --ok:#2fd06b; --bad:#c92a2a;
+  --untested:#a8b6c5; --untested-dark:#475569;
+  --missing:#f1f4f7; --missing-dark:#1e293b;
+  --seed:#6366f1;
+  --accent:#7dd3fc; --accent-deep:#38bdf8;
+  --warn:#fbbf24;
+
+  /* shape + depth */
+  --r-s:4px; --r-m:8px; --r-l:12px; --r-pill:99px;
+  --shadow-s:0 1px 2px #0f172a0a,0 1px 6px #0f172a0f;
+  --shadow-m:0 6px 20px #0f172a1f;
+  --shadow-l:0 18px 50px #00000059;
+
+  /* motion - one easing curve everywhere is most of what "consistent" means */
+  --ease:cubic-bezier(.22,.7,.28,1);
+  --fast:.14s; --med:.26s; --slow:.44s;
+
+  --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --math:'Cambria Math','STIX Two Math','Latin Modern Math',Georgia,serif;
+}
+
 *{box-sizing:border-box}
 
-/* Slate palette and 15px/1.6 body text, carried over from the Python project.
-   The page is not white - the cards are, which is what makes them read as
-   separate objects sitting above it. */
-body{margin:0;padding:32px;background:#f8fafc;color:#0f172a;
- font:15px/1.6 ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif}
+body{margin:0;padding:32px;color:var(--ink);
+ background:linear-gradient(180deg,var(--page) 0%,var(--page-deep) 100%) fixed;
+ font:15px/1.6 var(--sans)}
 
-h1{margin:0 0 6px;font-size:26px}
-.lede{margin:0 0 8px;color:#475569;max-width:78ch}
+h1{margin:0 0 6px;font-size:26px;letter-spacing:-.015em}
+.lede{margin:0 0 8px;color:var(--ink-2);max-width:78ch}
 
-/* Amber rather than red: this is "the page cannot tell you something", not
-   "something is broken", and it must not be mistaken for a failing conversion. */
-.notice{margin:0 0 22px;padding:12px 16px;border-radius:8px;font-size:13px;
+/* ============================================================ shared pieces */
+
+/* Buttons: one primary, one ghost-on-dark. Everything clickable presses down. */
+button{font:inherit}
+#sumopen{flex:none;background:var(--dark);color:var(--page);border:1px solid var(--dark);
+ border-radius:var(--r-m);padding:9px 20px;cursor:pointer;font:600 13px var(--sans);
+ transition:transform var(--fast) var(--ease),box-shadow var(--fast) var(--ease)}
+#sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
+#sumopen:active{transform:translateY(0) scale(.97);box-shadow:none}
+
+#oclose,#sclose,.pathbtn{background:var(--glass-strong);border:1px solid #ffffff2e;
+ color:var(--lt-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
+ font:12px var(--sans);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
+   transform var(--fast) var(--ease)}
+#oclose:hover,#sclose:hover,.pathbtn:hover{background:#ffffff2e;color:var(--lt-ink)}
+#oclose:active,#sclose:active,.pathbtn:active{transform:scale(.97)}
+
+#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,.pathbtn:focus-visible,
+.card:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+/* Amber: "the page cannot tell you something", never mistakable for a failure. */
+.notice{margin:0 0 22px;padding:12px 16px;border-radius:var(--r-m);font-size:13px;
  background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
-.notice code{font:12px ui-monospace,monospace;background:#00000014;
- padding:1px 6px;border-radius:4px}
+.notice code{font:12px var(--mono);background:#00000014;padding:1px 6px;border-radius:var(--r-s)}
 
-/* The legend is itself a card, so the key and the data share one visual language. */
-.legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 16px;
- background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
+.pagehead{display:flex;align-items:flex-start;gap:24px;justify-content:space-between}
+
+/* ============================================================ legend / key */
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 18px;
+ background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+ font-size:13px;box-shadow:var(--shadow-s)}
 .legend span{display:flex;align-items:center;gap:7px}
-.legend .hint{margin-left:auto;color:#64748b;font:11.5px ui-monospace,monospace}
-.sw{display:inline-block;width:13px;height:13px;border-radius:4px;border:1.5px solid #cbd5e1}
+.legend .hint{margin-left:auto;color:var(--ink-3);font:11.5px var(--mono)}
+.sw{display:inline-block;width:13px;height:13px;border-radius:var(--r-s);
+ border:1.5px solid #cbd5e1}
+.sw.passed{background:var(--ok)}
+.sw.failed{background:var(--bad)}
+.sw.untested{background:var(--untested)}
+.sw.missing{background:var(--missing)}
 
-/* auto-fill lets the browser pick the column count from the window width. The
-   440px minimum is sized so a wide screen lands on 4-5 cards per row rather
-   than cramming in 7 - each matrix needs room to be legible. */
+.legend .key{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.legend .k-top{display:flex;align-items:center;gap:7px}
+.legend .k-num{font:600 15px var(--mono);color:var(--ink);padding-left:20px}
+.legend .k-num em{font-style:normal;font-weight:400;font-size:11.5px;
+ color:var(--ink-3);margin-left:7px}
+.legend .key.total{border-left:1px solid var(--line);padding-left:18px;margin-left:2px}
+.legend .key.total .k-top{font:10.5px var(--mono);color:var(--ink-3);
+ letter-spacing:.07em;text-transform:uppercase}
+.legend .key.total .k-num{padding-left:0;font-size:17px}
+
+/* the same key restyled for the dark backdrop of the enlarged view */
+.olegend{background:transparent;border:none;box-shadow:none;margin:10px 0 0;
+ padding:0 2px;color:var(--lt-ink-3);font-size:12px;gap:16px}
+.olegend .sw{border-color:#ffffff2e}
+.olegend .sw.untested{background:var(--untested-dark)}
+.olegend .sw.missing{background:var(--missing-dark)}
+.olegend .hint{color:var(--lt-ink-4)}
+.olegend .k-num{color:var(--lt-ink);font-size:13px}
+.olegend .k-num em{color:var(--lt-ink-4)}
+.olegend .key.total{border-left-color:#ffffff2e}
+
+/* ============================================================ matrix cards */
 .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
 
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;
- cursor:pointer;transition:transform .12s,box-shadow .12s}
-.card:hover{transform:translateY(-2px);box-shadow:0 6px 20px #0f172a1f}
-.card:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+ padding:16px;cursor:pointer;box-shadow:var(--shadow-s);
+ transition:transform var(--fast) var(--ease),box-shadow var(--med) var(--ease),
+   border-color var(--med) var(--ease);
+ animation:rise var(--slow) var(--ease) both;
+ animation-delay:calc(min(var(--i,0),14)*30ms)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-m);border-color:#cbd5e1}
 
 .card header{display:flex;align-items:baseline;gap:10px;justify-content:space-between;
  margin-bottom:10px;flex-wrap:wrap}
 .card h2{margin:0;font-size:16px}
 
-/* Counts as monospace pills - technical data, visually distinct from prose. */
 .tally{display:inline-flex;gap:5px;flex:none}
-.badge{font:11px ui-monospace,monospace;padding:2px 8px;border-radius:99px;white-space:nowrap}
-.badge.passed{background:#dcfce7;color:#166534}
-.badge.failed{background:#fee2e2;color:#991b1b}
-.badge.untested{background:#f1f5f9;color:#64748b}
-.badge.missing{background:#f8fafc;color:#94a3b8}
+.badge{font:11px var(--mono);padding:2px 8px;border-radius:var(--r-pill);white-space:nowrap}
+.badge.passed{background:#d7f5e2;color:#14532d}
+.badge.failed{background:#fbe3e3;color:#8c1d1d}
+.badge.untested{background:#f1f5f9;color:var(--ink-3)}
+.badge.missing{background:var(--page);color:var(--lt-ink-3)}
 .badge.present{background:#e0e7ff;color:#3730a3}
 
 .scroll{overflow-x:auto}
 
-/* border-spacing plus rounded cells gives separated squares rather than a solid
-   block, so individual cells stay readable. */
 table.matrix{border-collapse:separate;border-spacing:2px}
-table.matrix th{font:11px ui-monospace,monospace;font-weight:400;color:#64748b;
+table.matrix th{font:11px var(--mono);font-weight:400;color:var(--ink-3);
  padding:0 5px;text-align:right;white-space:nowrap}
-table.matrix td{width:22px;height:22px;border-radius:3px;padding:0}
+table.matrix td{width:22px;height:22px;border-radius:3px;padding:0;
+ transition:transform var(--fast) var(--ease),outline-color var(--fast) var(--ease)}
 
-/* Column headers run bottom-to-top rather than across.
-   A <th> can never be narrower than its own text, so a label like "1000 m3"
-   was forcing its whole column to ~60px and pushing a 13-unit matrix off the
-   side of its card - which is where the horizontal scrollbar came from.
-   Turned on its side a header takes one line-height of width, so the cells set
-   the column width again and every matrix fits without scrolling. */
+/* Rotated headers cost one line-height of width, so the cells - not a label
+   like "1000 m3" - set the column width, and every matrix fits its card. */
 table.matrix thead th{writing-mode:vertical-rl;transform:rotate(180deg);
  text-align:left;padding:5px 0;vertical-align:bottom}
 table.matrix thead th.corner{writing-mode:horizontal-tb;transform:none;padding:0}
 
-/* Hop counts live in the cell but are hidden at thumbnail size - a 22px square
-   has no room for a legible digit. They appear in the enlarged view. */
 table.matrix td .lab{display:none}
 
-/* passed and failed are saturated because they are results you must notice.
-   untested and missing recede - they are the background state, not findings. */
-td.passed{background:#22c55e}
-td.failed{background:#ef4444}
-td.untested{background:#a8b6c5}
-td.missing{background:#f1f4f7;box-shadow:inset 0 0 0 1px #e6ebf0}
-td.present{background:#6366f1}
+td.passed{background:var(--ok)}
+td.failed{background:var(--bad)}
+td.untested{background:var(--untested)}
+td.missing{background:var(--missing);box-shadow:inset 0 0 0 1px #e6ebf0}
+td.present{background:var(--seed)}
 td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8edf2 6px)}
 
-.sw.passed{background:#22c55e}
-.sw.failed{background:#ef4444}
-.sw.untested{background:#a8b6c5}
-.sw.missing{background:#f1f4f7}
+/* ============================================================ modal layers
+   #overlay and #summary share one entrance: the veil fades, the content rises.
+   .open mounts the layer; .in (added a frame later) runs the transition. */
+#overlay,#summary{position:fixed;inset:0;background:var(--veil);display:none;
+ z-index:50;backdrop-filter:blur(6px);padding:22px 26px;opacity:0;
+ transition:opacity var(--med) var(--ease)}
+#summary{z-index:60}
+#overlay.open,#summary.open{display:flex;flex-direction:column}
+#overlay.in,#summary.in{opacity:1}
 
-/* ---- enlarged view ---- */
-#overlay{position:fixed;inset:0;background:#0f172ae6;display:none;z-index:50;
- backdrop-filter:blur(3px);padding:22px 26px}
-#overlay.open{display:flex;flex-direction:column}
+#overlay>*,#summary>*{opacity:0;transform:translateY(14px);
+ transition:opacity var(--slow) var(--ease),transform var(--slow) var(--ease)}
+#overlay.in>*,#summary.in>*{opacity:1;transform:none}
+#overlay.in>*:nth-child(2),#summary.in>*:nth-child(2){transition-delay:50ms}
+#overlay.in>*:nth-child(3){transition-delay:90ms}
 
-#obar{display:flex;align-items:center;gap:14px;padding:0 2px 12px;color:#e2e8f0;
- border-bottom:1px solid #ffffff1f;flex:none;flex-wrap:wrap}
-#obar h3{margin:0;font-size:19px}
+#obar,#sbar{display:flex;align-items:center;gap:14px;padding:0 2px 12px;
+ color:var(--lt-ink);border-bottom:1px solid var(--glass-strong);flex:none;flex-wrap:wrap}
+#obar h3,#sbar h3{margin:0;font-size:19px;letter-spacing:-.01em}
+#oclose,#sclose{margin-left:auto}
 
-/* Spelling out the reading direction, because a grid of squares gives no clue
-   which axis is the source and which the target. */
-#oaxis{font:11.5px ui-monospace,monospace;color:#cbd5e1;background:#ffffff14;
- border:1px solid #ffffff1f;padding:2px 10px;border-radius:99px}
+#oaxis{font:11.5px var(--mono);color:var(--lt-ink-2);background:var(--glass-line);
+ border:1px solid var(--glass-strong);padding:2px 10px;border-radius:var(--r-pill)}
 
-#oclose{background:#ffffff1a;border:1px solid #ffffff2e;color:#e2e8f0;border-radius:6px;
- padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif;flex:none;margin-left:auto}
-#oclose:hover{background:#ffffff2e}
+/* dark panes scroll with a quiet thin bar, not the default chrome */
+#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--dark-3) transparent}
+#ostage::-webkit-scrollbar,#opanel::-webkit-scrollbar,#sbody::-webkit-scrollbar{
+ width:8px;height:8px}
+#ostage::-webkit-scrollbar-thumb,#opanel::-webkit-scrollbar-thumb,
+#sbody::-webkit-scrollbar-thumb{background:var(--dark-3);border-radius:var(--r-pill)}
 
-/* The key again, on the dark backdrop. The enlarged view covers the page, so a
-   key you have to close it to read would be useless. */
-.olegend{background:transparent;border:none;margin:10px 0 0;padding:0 2px;
- color:#94a3b8;font-size:12px;gap:16px}
-.olegend .sw{border-color:#ffffff2e}
-.olegend .hint{color:#64748b}
-
+/* ============================================================ enlarged view */
 #ostagewrap{flex:1;min-height:0;display:flex;margin-top:12px}
 
 #ostage{flex:1;min-width:0;overflow:auto;padding:18px;
  display:flex;justify-content:center;align-items:flex-start}
 
-/* --cell is set by script, not here: a 2x2 matrix and a 13x13 matrix need very
-   different cell sizes to fill the same screen, and only the browser knows how
-   much room there actually is. The value here is just the fallback. */
+/* --cell comes from script: only the browser knows how much room there is. */
 #ostage table.matrix td{width:var(--cell,34px);height:var(--cell,34px);border-radius:5px}
-#ostage table.matrix th{font-size:13px;color:#cbd5e1;padding:0 10px}
+#ostage table.matrix th{font-size:13px;color:var(--lt-ink-2);padding:0 10px;
+ transition:color var(--fast) var(--ease)}
 #ostage table.matrix thead th{padding:8px 0}
-#ostage table.matrix th.corner{font-size:10.5px;color:#64748b;text-align:right;
+#ostage table.matrix th.corner{font-size:10.5px;color:var(--lt-ink-4);text-align:right;
  padding-right:10px;white-space:pre}
 
-#ostage td.untested{background:#475569}
-#ostage td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
-#ostage td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 4px,#334155 4px,#334155 8px)}
+#ostage td.untested{background:var(--untested-dark)}
+#ostage td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
+#ostage td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
+ var(--missing-dark) 4px,var(--dark-3) 4px,var(--dark-3) 8px)}
 
-/* Hop count, centred in the cell. Dark text on the saturated colours, light on
-   the recessive ones, so it stays legible on every cell type. */
 #ostage table.matrix td .lab{display:flex;align-items:center;justify-content:center;
- width:100%;height:100%;font:600 12px ui-monospace,monospace;color:#0f172ab3}
-#ostage td.untested .lab{color:#cbd5e1}
-#ostage td.missing .lab{color:#475569}
+ width:100%;height:100%;font:600 12px var(--mono);color:#0f172ab3}
+#ostage td.failed .lab{color:#ffffffe6}
+#ostage td.untested .lab{color:var(--lt-ink-2)}
+#ostage td.missing .lab{color:var(--untested-dark)}
 
-/* These must come after the status colours: same specificity, so source order is
-   what lets a highlight win. Hover marks where the cursor is and nothing more -
-   filling the cell would hide the status the grid exists to show. */
-#ostage td.hi{outline:2px solid #94a3b8;outline-offset:1px}
-#ostage th.hi{color:#e2e8f0;font-weight:600}
-
-/* A pinned cell keeps a white ring - brighter than the grey hover, so the locked
-   selection stays findable while the cursor wanders. */
+/* Hover marks position only - a ring, never a fill that would hide the status.
+   Must sit after the status colours: same specificity, source order decides. */
+#ostage td.hi{outline:2px solid var(--lt-ink-3);outline-offset:1px;transform:scale(1.06)}
+#ostage th.hi{color:var(--lt-ink);font-weight:600}
 #ostage td.pin,
 #ostage td.pin.hi{outline:3px solid #fff;outline-offset:1px}
 
-/* ---- detail panel ----
-   The equations live in a fixed side panel rather than a tooltip, because a
-   tooltip vanishes the moment you move the mouse - and the point is to keep
-   reading the conversion while looking at the matrix. */
-#opanel{width:430px;flex:none;overflow-y:auto;background:#0f172acc;color:#e2e8f0;
- border-left:1px solid #ffffff1f;padding:20px 22px;font-size:14.5px}
-#opanel .empty{color:#94a3b8;line-height:1.6}
-#opanel .empty b{color:#e2e8f0}
+/* ============================================================ detail panel */
+#opanel{width:430px;flex:none;overflow-y:auto;background:#0f172acc;color:var(--lt-ink);
+ border-left:1px solid var(--glass-strong);padding:20px 22px;font-size:14.5px}
+#opanel .empty{color:var(--lt-ink-3);line-height:1.6}
+#opanel .empty b{color:var(--lt-ink)}
 
-/* Generated by CSS rather than markup, so the script only has to toggle a class.
-   Without it a locked panel is indistinguishable from a stuck one. */
+/* freshly inserted content slides up - new node, so the animation replays */
+#odetail>.fx,#odetail>.empty{animation:rise var(--fast) var(--ease) both}
+
 #odetail.locked::before{content:'pinned - click the cell again to unpin';
- display:block;margin-bottom:12px;padding:3px 9px;border-radius:99px;
- background:#ffffff1a;border:1px solid #ffffff2e;color:#cbd5e1;
- font:10.5px ui-monospace,monospace;letter-spacing:.04em}
+ display:block;margin-bottom:12px;padding:3px 9px;border-radius:var(--r-pill);
+ background:var(--glass-strong);border:1px solid #ffffff2e;color:var(--lt-ink-2);
+ font:10.5px var(--mono);letter-spacing:.04em;animation:rise var(--fast) var(--ease)}
 
-/* ---- typeset formula ----
-   Approximating maths typesetting with plain HTML rather than pulling in a
-   LaTeX renderer: a serif face for the equation, real <sup> exponents, and
-   spacing around operators. Unit symbols are upright, not italic - in SI
-   notation italics mean a variable, and a unit is not one. */
+/* ---- typeset formula: serif face, real superscripts, upright unit symbols
+   (in SI notation italics mean a variable, and a unit is not one) ---- */
 .fx{font-size:15.5px;line-height:1.5}
 .fx sup{font-size:.68em;vertical-align:super;line-height:0}
 
-.u{font-family:'Cambria Math','STIX Two Math','Latin Modern Math',Georgia,serif;
- font-size:1.1em;white-space:nowrap}
+.u{font-family:var(--math);font-size:1.1em;white-space:nowrap}
 
 .fx-head{display:flex;align-items:center;gap:2px;flex-wrap:wrap;font-size:19px;
- color:#f1f5f9;padding-bottom:8px}
-.fx-head .arrow{margin:0 10px;color:#94a3b8;font-size:.9em}
-.fx-head .chip{margin-left:auto;font:10.5px ui-monospace,monospace;
- padding:2px 9px;border-radius:99px}
+ color:var(--lt-ink);padding-bottom:8px}
+.fx-head .arrow{margin:0 10px;color:var(--lt-ink-3);font-size:.9em}
+.fx-head .chip{margin-left:auto;font:10.5px var(--mono);padding:2px 9px;
+ border-radius:var(--r-pill)}
 .chip.passed{background:#14532d;color:#86efac}
 .chip.failed{background:#7f1d1d;color:#fca5a5}
-.chip.untested{background:#334155;color:#cbd5e1}
+.chip.untested{background:var(--dark-3);color:var(--lt-ink-2)}
 
-/* The plain-English pair, so a two-letter symbol is never ambiguous. */
-.fx-names{color:#94a3b8;font-size:13px;padding-bottom:11px;
- border-bottom:1px solid #ffffff1f;margin-bottom:13px}
+.fx-names{color:var(--lt-ink-3);font-size:13px;padding-bottom:11px;
+ border-bottom:1px solid var(--glass-strong);margin-bottom:13px}
 
-.fx-eq{font-family:'Cambria Math','STIX Two Math',Georgia,serif;font-size:20px;
- color:#f1f5f9;display:flex;align-items:center;flex-wrap:wrap;gap:2px;
- padding:4px 0 2px}
-.fx-eq .eq{margin:0 12px;color:#94a3b8}
-.fx-eq .op{margin:0 8px;color:#cbd5e1}
-.fx-eq .warn{color:#fbbf24;font-size:.75em;font-family:ui-sans-serif,sans-serif}
+.fx-eq{font-family:var(--math);font-size:20px;color:var(--lt-ink);
+ display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
+.fx-eq .eq{margin:0 12px;color:var(--lt-ink-3)}
+.fx-eq .op{margin:0 8px;color:var(--lt-ink-2)}
+.fx-eq .warn{color:var(--warn);font-size:.75em;font-family:var(--sans)}
 
-.fx-where{margin-top:14px;font-size:13px;color:#94a3b8;
+.fx-where{margin-top:14px;font-size:13px;color:var(--lt-ink-3);
  display:flex;align-items:center;flex-wrap:wrap;gap:2px}
-.fx-where .kw{font-style:italic;margin-right:9px;
- font-family:'Cambria Math','Times New Roman',Georgia,serif}
-.fx-where .arrow{margin:0 6px;color:#64748b}
-.fx-where .hopcount{margin-left:9px;font:10.5px ui-monospace,monospace;
- background:#ffffff14;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.fx-where .kw{font-style:italic;margin-right:9px;font-family:var(--math)}
+.fx-where .arrow{margin:0 6px;color:var(--lt-ink-4)}
+.fx-where .hopcount{margin-left:9px;font:10.5px var(--mono);
+ background:var(--glass-line);border-radius:var(--r-pill);padding:1px 8px;white-space:nowrap}
 
-/* ---- test cases ----
-   A red cell that cannot say why it is red is barely better than no cell. */
-.fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid #ffffff14}
-.fx-tests .lbl{font:10.5px ui-monospace,monospace;color:#7dd3fc;
+/* ---- test cases ---- */
+.fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid var(--glass-line)}
+.fx-tests .lbl{font:10.5px var(--mono);color:var(--accent);
  letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
 .fx-tests table{width:100%;border-collapse:collapse;font-size:13.5px}
 .fx-tests td{padding:3px 6px 3px 0;vertical-align:baseline}
-.fx-tests .k{font:10px ui-monospace,monospace;color:#64748b;white-space:nowrap;
+.fx-tests .k{font:10px var(--mono);color:var(--lt-ink-4);white-space:nowrap;
  text-transform:uppercase;letter-spacing:.04em}
-.fx-tests .got{color:#e2e8f0}
-.fx-tests .v{text-align:right;white-space:nowrap;font:12px ui-monospace,monospace}
+.fx-tests .got{color:var(--lt-ink)}
+.fx-tests .v{text-align:right;white-space:nowrap;font:12px var(--mono)}
 .fx-tests tr.ok .v{color:#86efac}
 .fx-tests tr.bad td{background:#7f1d1d33}
 .fx-tests tr.bad .v{color:#fca5a5}
 .fx-tests tr.want td{color:#7c8b9a;font-size:11.5px;padding-top:0;padding-bottom:7px;
- font-family:ui-monospace,monospace}
+ font-family:var(--mono)}
 
 /* ---- routes ---- */
-.fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid #ffffff14}
-.pathbtn{background:#ffffff14;border:1px solid #ffffff2e;color:#cbd5e1;border-radius:6px;
- padding:5px 12px;cursor:pointer;font:11.5px ui-monospace,monospace;width:100%}
-.pathbtn:hover{background:#ffffff24;color:#e2e8f0}
+.fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid var(--glass-line)}
+.pathbtn{width:100%;font:11.5px var(--mono)}
 .routes{margin-top:10px}
-.routes .rt{padding:7px 9px;border-radius:6px;margin-bottom:5px;background:#ffffff0d;
- border:1px solid transparent}
+.routes .rt{padding:7px 9px;border-radius:var(--r-m);margin-bottom:5px;
+ background:#ffffff0d;border:1px solid transparent;
+ animation:rise var(--med) var(--ease) both;
+ animation-delay:calc(min(var(--i,0),12)*25ms);
+ transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.routes .rt:hover{background:#ffffff17}
 .routes .rt.chosen{background:#38bdf814;border-color:#38bdf84d}
-.routes .hops{font:10px ui-monospace,monospace;background:#ffffff1a;color:#cbd5e1;
- border-radius:99px;padding:1px 7px;margin-right:7px}
-.routes .via{font:11.5px ui-monospace,monospace;color:#cbd5e1;word-break:break-word}
-.routes .fac{display:block;margin-top:4px;font-size:12px;color:#94a3b8}
-.routes .disagree{color:#fbbf24}
-.routes .more{color:#64748b;font-size:11.5px;margin-top:8px}
+.routes .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+ border-radius:var(--r-pill);padding:1px 7px;margin-right:7px}
+.routes .via{font:11.5px var(--mono);color:var(--lt-ink-2);word-break:break-word}
+.routes .fac{display:block;margin-top:4px;font-size:12px;color:var(--lt-ink-3)}
+.routes .disagree{color:var(--warn)}
+.routes .more{color:var(--lt-ink-4);font-size:11.5px;margin-top:8px}
 
-@media(prefers-color-scheme:dark){
- body{background:#0f172a;color:#e2e8f0}
- .card,.legend{background:#1e293b;border-color:#334155}
- .olegend{background:transparent;border:none}
- .lede{color:#94a3b8}
- .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
- .notice code{background:#ffffff14}
- .sw{border-color:#475569}
- table.matrix th{color:#94a3b8}
- .badge.passed{background:#14532d;color:#86efac}
- .badge.failed{background:#7f1d1d;color:#fca5a5}
- .badge.untested{background:#334155;color:#cbd5e1}
- .badge.missing{background:#1e293b;color:#64748b}
- td.untested{background:#475569}
- td.missing{background:#1e293b;box-shadow:inset 0 0 0 1px #334155}
- td.self{background:repeating-linear-gradient(45deg,#1e293b,#1e293b 3px,#334155 3px,#334155 6px)}
- .sw.untested{background:#475569}
- .sw.missing{background:#1e293b}
- .card:hover{box-shadow:0 6px 20px #0006}
-}
-
-/* ---- page header + summary button ---- */
-.pagehead{display:flex;align-items:flex-start;gap:24px;justify-content:space-between}
-#sumopen{flex:none;background:#0f172a;color:#f8fafc;border:1px solid #0f172a;border-radius:8px;
- padding:9px 20px;cursor:pointer;font:600 13px ui-sans-serif,-apple-system,sans-serif;
- transition:transform .12s,box-shadow .12s}
-#sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
-
-/* ---- key, with counts ----
-   Raw count and share sit under each swatch. A colour key tells you what green
-   means; the number tells you how much green there is, which is the thing you
-   actually want to know before scrolling through 28 matrices. */
-.legend .key{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
-.legend .k-top{display:flex;align-items:center;gap:7px}
-.legend .k-num{font:600 15px ui-monospace,monospace;color:#0f172a;padding-left:20px}
-.legend .k-num em{font-style:normal;font-weight:400;font-size:11.5px;color:#64748b;margin-left:7px}
-.olegend .k-num{color:#e2e8f0;font-size:13px}
-.olegend .k-num em{color:#64748b}
-
-/* ---- summary window ---- */
-#summary{position:fixed;inset:0;background:#0f172aee;display:none;z-index:60;
- backdrop-filter:blur(3px);padding:22px 26px}
-#summary.open{display:flex;flex-direction:column}
-#sbar{display:flex;align-items:center;gap:16px;padding:0 2px 12px;color:#e2e8f0;
- border-bottom:1px solid #ffffff1f;flex:none}
-#sbar h3{margin:0;font-size:19px}
-#sclose{margin-left:auto;background:#ffffff1a;border:1px solid #ffffff2e;color:#e2e8f0;
- border-radius:6px;padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif}
-#sclose:hover{background:#ffffff2e}
+/* ============================================================ summary */
 #sbody{flex:1;min-height:0;overflow-y:auto;padding:20px 2px 40px}
 
-.sum{max-width:1000px;margin:0 auto;color:#e2e8f0;font-size:13.5px}
-.sum h4{margin:30px 0 4px;font-size:15px;color:#f1f5f9}
-.sum-note{color:#64748b;font-size:12px;margin-bottom:12px;line-height:1.5}
+.sum{max-width:1000px;margin:0 auto;color:var(--lt-ink);font-size:13.5px}
+.sum h4{margin:30px 0 4px;font-size:15px;color:var(--lt-ink)}
+.sum-note{color:var(--lt-ink-4);font-size:12px;margin-bottom:12px;line-height:1.5}
 
 .sum-top{display:flex;align-items:center;gap:38px;flex-wrap:wrap;
- background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:22px 26px}
+ background:var(--glass);border:1px solid var(--glass-line);
+ border-radius:var(--r-l);padding:22px 26px;box-shadow:var(--shadow-l)}
+
 .donut{width:160px;height:160px;flex:none}
-.donut-hole{stroke:#ffffff14}
-.donut .seg.passed{stroke:#22c55e}
-.donut .seg.failed{stroke:#ef4444}
-.donut .seg.untested{stroke:#64748b}
-.donut .seg.missing{stroke:#334155}
-.donut-mid{fill:#f1f5f9;font:600 7px ui-sans-serif,sans-serif;text-anchor:middle}
-.donut-sub{fill:#64748b;font:2.6px ui-monospace,monospace;text-anchor:middle;
+#summary.in .donut{animation:sweep .7s var(--ease) both}
+.donut-hole{stroke:var(--glass-line)}
+.donut .seg.passed{stroke:var(--ok)}
+.donut .seg.failed{stroke:var(--bad)}
+.donut .seg.untested{stroke:var(--untested-dark)}
+.donut .seg.missing{stroke:var(--dark-3)}
+.donut-mid{fill:var(--lt-ink);font:600 7px var(--sans);text-anchor:middle}
+.donut-sub{fill:var(--lt-ink-4);font:2.6px var(--mono);text-anchor:middle;
  letter-spacing:.12em;text-transform:uppercase}
 
 .sum-figures{display:flex;gap:34px;flex-wrap:wrap}
-.fig-label{font:10.5px ui-monospace,monospace;color:#7dd3fc;letter-spacing:.06em;
+.fig-label{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
  text-transform:uppercase}
-.fig-value{font:600 30px ui-sans-serif,sans-serif;color:#f1f5f9;line-height:1.25}
-.fig-note{color:#64748b;font-size:11.5px;max-width:26ch;line-height:1.45}
+.fig-value{font:600 30px var(--sans);color:var(--lt-ink);line-height:1.25}
+.fig-note{color:var(--lt-ink-4);font-size:11.5px;max-width:26ch;line-height:1.45}
 
 .sum-table{width:100%;border-collapse:collapse;font-size:13px}
 .sum-table td,.sum-table th{padding:5px 10px 5px 0;vertical-align:middle}
-.sum-table thead th{font:10.5px ui-monospace,monospace;color:#64748b;text-align:left;
- text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ffffff14}
-.sum-table .n{text-align:right;font:13px ui-monospace,monospace;width:64px}
-.sum-table .p{text-align:right;font:13px ui-monospace,monospace;color:#94a3b8;width:78px}
+.sum-table thead th{font:10.5px var(--mono);color:var(--lt-ink-4);text-align:left;
+ text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--glass-line)}
+.sum-table .n{text-align:right;font:13px var(--mono);width:64px}
+.sum-table .p{text-align:right;font:13px var(--mono);color:var(--lt-ink-3);width:78px}
 .sum-table .n.ok{color:#86efac}
 .sum-table .n.bad{color:#fca5a5}
-.sum-table .name{color:#e2e8f0}
-.sum-table .hopn{font:13px ui-monospace,monospace;color:#cbd5e1;width:80px}
+.sum-table .name{color:var(--lt-ink)}
+.sum-table .hopn{font:13px var(--mono);color:var(--lt-ink-2);width:80px}
 .sum-table .barcell{width:38%}
-.sum-table .total td{border-top:1px solid #ffffff14;color:#94a3b8;padding-top:9px}
+.sum-table .total td{border-top:1px solid var(--glass-line);color:var(--lt-ink-3);
+ padding-top:9px}
+.sum-table tbody tr{transition:background var(--fast) var(--ease)}
 .sum-table tbody tr:hover{background:#ffffff08}
-.bar{display:block;height:8px;border-radius:99px;min-width:2px}
-.bar.passed{background:#22c55e}
-.bar.failed{background:#ef4444}
-.bar.untested{background:#64748b}
-.bar.missing{background:#334155}
-.bar.hops{background:#7dd3fc}
+
+.bar{display:block;height:8px;border-radius:var(--r-pill);min-width:2px}
+#summary.in .bar{animation:grow var(--slow) var(--ease) both;animation-delay:.15s}
+.bar.passed{background:var(--ok)}
+.bar.failed{background:var(--bad)}
+.bar.untested{background:var(--untested-dark)}
+.bar.missing{background:var(--dark-3)}
+.bar.hops{background:var(--accent)}
 
 .sum-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
-.sum-card{background:#ffffff0a;border:1px solid #ffffff14;border-radius:10px;padding:16px 18px}
+.sum-card{background:var(--glass);border:1px solid var(--glass-line);
+ border-radius:var(--r-l);padding:16px 18px;
+ transition:border-color var(--med) var(--ease),background var(--med) var(--ease)}
+.sum-card:hover{border-color:#ffffff2e}
 .sum-card.bad{border-color:#ef444459;background:#7f1d1d26}
 .sum-card.warn{border-color:#f59e0b45;background:#78350f1f}
-.c-value{font:600 26px ui-sans-serif,sans-serif;color:#f1f5f9;line-height:1.2}
+.c-value{font:600 26px var(--sans);color:var(--lt-ink);line-height:1.2}
 .sum-card.bad .c-value{color:#fca5a5}
 .sum-card.warn .c-value{color:#fcd34d}
-.c-label{font-size:12.5px;color:#cbd5e1;margin-bottom:7px}
-.c-note{font:11.5px ui-monospace,monospace;color:#64748b;line-height:1.55;word-break:break-word}
+.c-label{font-size:12.5px;color:var(--lt-ink-2);margin-bottom:7px}
+.c-note{font:11.5px var(--mono);color:var(--lt-ink-4);line-height:1.55;word-break:break-word}
 
-@media(prefers-color-scheme:dark){
- #sumopen{background:#e2e8f0;color:#0f172a;border-color:#e2e8f0}
- .legend .k-num{color:#e2e8f0}
+/* ---- sortable headers: the triangle sits with the label, not across the
+   column - inline, space always reserved, so nothing shifts on click ---- */
+.sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
+ transition:color var(--fast) var(--ease)}
+.sum-table.sortable thead th.sortable-col:hover{color:var(--lt-ink-2)}
+.sum-table.sortable thead th.sortable-col::after{content:"";display:inline-block;
+ margin-left:6px;vertical-align:middle;border:4px solid transparent;
+ border-top-color:var(--untested-dark);transform:translateY(2px);
+ opacity:0;transition:opacity var(--fast) var(--ease)}
+.sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
+.sum-table.sortable thead th.desc::after{opacity:1;border-top-color:var(--accent)}
+.sum-table.sortable thead th.asc::after{opacity:1;border-top-color:transparent;
+ border-bottom-color:var(--accent);transform:translateY(-2px)}
+
+/* ============================================================ animation */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes grow{from{width:0}}
+@keyframes sweep{from{opacity:0;transform:rotate(-70deg) scale(.92)}}
+
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
 }
 
-/* ---- sortable table headers ---- */
-.sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
- position:relative;padding-right:15px;transition:color .1s}
-.sum-table.sortable thead th.sortable-col:hover{color:#cbd5e1}
-
-/* One triangle, recoloured and nudged rather than swapped, so the indicator
-   never shifts the header text. */
-.sum-table.sortable thead th.sortable-col::after{content:"";position:absolute;right:2px;
- top:calc(50% - 2px);border:4px solid transparent;border-top-color:#475569;
- opacity:0;transition:opacity .1s}
-.sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
-.sum-table.sortable thead th.desc::after{opacity:1;border-top-color:#7dd3fc}
-.sum-table.sortable thead th.asc::after{opacity:1;border-top-color:transparent;
- border-bottom-color:#7dd3fc;top:calc(50% - 6px)}
-
-/* ---- total in the key ---- */
-.legend .key.total{border-left:1px solid #e2e8f0;padding-left:18px;margin-left:2px}
-.legend .key.total .k-top{font:10.5px ui-monospace,monospace;color:#64748b;
- letter-spacing:.07em;text-transform:uppercase}
-.legend .key.total .k-num{padding-left:0;font-size:17px}
-.olegend .key.total{border-left-color:#ffffff2e}
-
+/* ============================================================ dark mode */
 @media(prefers-color-scheme:dark){
- .legend .key.total{border-left-color:#334155}
+ body{color:var(--lt-ink);
+  background:linear-gradient(180deg,var(--dark) 0%,#0b1120 100%) fixed}
+ .card,.legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
+ .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--untested-dark)}
+ .olegend{background:transparent;border:none}
+ .lede{color:var(--lt-ink-3)}
+ .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
+ .notice code{background:var(--glass-line)}
+ .sw{border-color:var(--untested-dark)}
+ table.matrix th{color:var(--lt-ink-3)}
+ .badge.passed{background:#14532d;color:#86efac}
+ .badge.failed{background:#7f1d1d;color:#fca5a5}
+ .badge.untested{background:var(--dark-3);color:var(--lt-ink-2)}
+ .badge.missing{background:var(--dark-2);color:var(--lt-ink-4)}
+ td.untested{background:var(--untested-dark)}
+ td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
+ td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
+  var(--missing-dark) 3px,var(--dark-3) 3px,var(--dark-3) 6px)}
+ .sw.untested{background:var(--untested-dark)}
+ .sw.missing{background:var(--missing-dark)}
+ .legend .k-num{color:var(--lt-ink)}
+ .legend .key.total{border-left-color:var(--dark-3)}
+ #sumopen{background:var(--lt-ink);color:var(--dark);border-color:var(--lt-ink)}
 }
