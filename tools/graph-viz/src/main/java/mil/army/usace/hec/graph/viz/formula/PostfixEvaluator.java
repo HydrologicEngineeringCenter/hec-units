@@ -6,14 +6,8 @@ import java.util.Deque;
 /**
  * Evaluates a postfix (reverse-Polish) expression at a given value of `i`.
  *
- * This exists because a conversion derived by chaining several hops together
- * only ever exposes postfix - asking such a method for infix throws. So the
- * only way to find out what a multi-hop conversion actually computes is to
- * evaluate its postfix form, which is what feeds FormulaRenderer.affineOf.
- *
- * Operand order matters and is not symmetric: for "a b -" the result is a - b,
- * so the second value popped is the left-hand side. Getting that backwards
- * would silently invert every subtraction and division in the project.
+ * Multi-hop conversions expose only postfix - asking them for infix throws.
+ * Operand order is not symmetric: for "a b -" the answer is a - b.
  */
 public final class PostfixEvaluator {
 

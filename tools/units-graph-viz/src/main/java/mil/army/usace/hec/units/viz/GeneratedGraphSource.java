@@ -20,18 +20,13 @@ import mil.army.usace.hec.graph.viz.model.Node;
 import net.hobbyscience.database.Conversion;
 
 /**
- * Builds the post-algorithm graph.
+ * Builds the post-algorithm graph from three sources:
  *
- * Three sources feed into it, because none has everything:
- *   ConversionGraph - every pair the algorithm can produce, what each computes,
- *                     and the chain of hops it went through
- *   the test report - which of those pairs were tested, and whether they passed
- *   the test CSV    - the actual inputs and expected values, so a failing pair
- *                     can show why it failed rather than just that it did
+ *   ConversionGraph - every pair, its formula, its hop chain
+ *   the test report - which pairs were tested, and the outcome
+ *   the test CSV    - the inputs and expected values behind those outcomes
  *
- * Only the first is required. Without a report the graph is still built, just
- * with nothing known about coverage - a build whose tests could not finish still
- * produces a usable tool, which is when you most want to look at the data.
+ * Only the first is required; without a report every edge is UNTESTED.
  */
 public final class GeneratedGraphSource {
 

@@ -10,94 +10,100 @@ import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
 
-/**
- * Renders a graph as one coverage matrix per node group.
-*/
+/** Renders a graph as one coverage matrix per node group. */
 public final class MatrixView {
+
+    private static final String GRID = """
+        <div class="grid">{{cards}}</div>
+        """;
+
+    private static final String CARD = """
+        <div class="card">
+        <header><h2>{{group}}</h2>{{tally}}</header>
+        <div class="scroll">
+        <table class="matrix">
+        <thead><tr><th class="corner"></th>{{columns}}</tr></thead>
+        <tbody>{{rows}}</tbody>
+        </table>
+        </div>
+        </div>
+        """;
+
+    private static final String ROW = """
+        <tr><th>{{unit}}</th>{{cells}}</tr>
+        """;
 
     private MatrixView() {
     }
 
     public static String render(Graph graph) {
+        var groups = groupNodes(graph);
+        var cards = new StringBuilder();
+        groups.forEach((group, members) -> {
+            if (members.size() >= 2) {          // a lone unit has nothing to convert to
+                cards.append(card(group, members, graph));
+            }
+        });
+        return Html.fill(GRID).raw("cards", cards.toString()).render();
+    }
+
+    /** Nodes by group, each group sorted, so the page is byte-identical per run. */
+    private static TreeMap<String, List<Node>> groupNodes(Graph graph) {
         var byGroup = new TreeMap<String, List<Node>>();
         for (Node node : graph.nodes()) {
             byGroup.computeIfAbsent(node.group(), key -> new ArrayList<>()).add(node);
         }
-
-        var out = new StringBuilder("<div class=\"grid\">\n");
-        for (var entry : byGroup.entrySet()) {
-            List<Node> members = entry.getValue();
-            if (members.size() < 2) {
-                continue;   // skip lone units
-            }
-            members.sort(Comparator.comparing(Node::id));
-            renderGroup(out, entry.getKey(), members, graph);
-        }
-        return out.append("</div>\n").toString();
+        byGroup.values().forEach(members -> members.sort(Comparator.comparing(Node::id)));
+        return byGroup;
     }
 
-    private static void renderGroup(StringBuilder out, String group, List<Node> members, Graph graph) {
-        out.append("<div class=\"card\">\n<header><h2>")
-           .append(Html.escape(group))
-           .append("</h2>")
-           .append(tally(members, graph))
-           .append("</header>\n<div class=\"scroll\">\n<table class=\"matrix\">\n");
-
-        out.append("<thead><tr><th class=\"corner\"></th>");
-        for (Node to : members) {
-            out.append("<th>").append(Html.escape(to.id())).append("</th>");
-        }
-        out.append("</tr></thead>\n<tbody>\n");
-
-        for (Node from : members) {
-            out.append("<tr><th>").append(Html.escape(from.id())).append("</th>");
-            for (Node to : members) {
-                appendCell(out, graph, from, to);
-            }
-            out.append("</tr>\n");
-        }
-
-        out.append("</tbody>\n</table>\n</div>\n</div>\n");
+    private static String card(String group, List<Node> members, Graph graph) {
+        return Html.fill(CARD)
+            .put("group", group)
+            .raw("tally", tally(members, graph))
+            .raw("columns", Html.each(members, to -> Html.tag("th").text(to.id()).toString()))
+            .raw("rows", Html.each(members, from -> row(from, members, graph)))
+            .render();
     }
 
-    private static void appendCell(StringBuilder out, Graph graph, Node from, Node to) {
+    private static String row(Node from, List<Node> members, Graph graph) {
+        return Html.fill(ROW)
+            .put("unit", from.id())
+            .raw("cells", Html.each(members, to -> cell(from, to, graph)))
+            .render();
+    }
+
+    private static String cell(Node from, Node to, Graph graph) {
         if (from.id().equals(to.id())) {
-            out.append("<td class=\"self\"></td>");
-            return;
+            return "<td class=\"self\"></td>";
         }
         Edge edge = graph.edge(from.id(), to.id());
         String state = stateOf(edge);
 
-        out.append("<td class=\"").append(state).append("\" title=\"")
-           .append(Html.escape(from.id() + " \u2192 " + to.id() + ": " + state))
-           .append("\" data-from=\"").append(Html.escape(from.id()))
-           .append("\" data-to=\"").append(Html.escape(to.id()))
-           .append("\"");
-
-        // The edge's own description travels with the cell, so the enlarged view
-        // needs no second copy of the graph data to look anything up in.
-        if (edge != null && edge.detail() != null) {
-            out.append(" data-detail=\"").append(Html.escape(edge.detail())).append("\"");
-        }
-        out.append(">");
-
-        // The label sits in the cell but is hidden by CSS at thumbnail size, where
-        // a 22px square has no room for a legible character. It appears once the
-        // cell is big enough to carry it.
-        if (edge != null && edge.label() != null) {
-            out.append("<span class=\"lab\">").append(Html.escape(edge.label())).append("</span>");
-        }
-        out.append("</td>");
+        return Html.tag("td")
+            .attr("class", state)
+            .attr("title", from.id() + " → " + to.id() + ": " + state)
+            .attr("data-from", from.id())
+            .attr("data-to", to.id())
+            // The edge carries its own description, so the enlarged view needs no
+            // second copy of the graph data.
+            .attr("data-detail", edge == null ? null : edge.detail())
+            .html(label(edge))
+            .toString();
     }
 
-    /**
-     * Package-visible so Stats counts cells exactly the way the matrix draws
-     * them. Two definitions of "what state is this cell" would drift apart, and
-     * a key whose numbers disagree with the grid is worse than no key.
-     */
+    /** Hidden by CSS at thumbnail size, where a 22px square cannot hold a digit. */
+    private static String label(Edge edge) {
+        if (edge == null || edge.label() == null) {
+            return "";
+        }
+        return Html.tag("span").attr("class", "lab").text(edge.label()).toString();
+    }
+
+    /** Package-visible so Stats classifies cells exactly as the matrix draws them. */
     static String stateOf(Edge edge) {
         if (edge == null) {
-            return "missing";           // no conversion exists between this pair
+            return "missing";               // no conversion exists between this pair
         }
         if (edge.status() == EdgeStatus.PASSED) {
             return "passed";
@@ -108,10 +114,10 @@ public final class MatrixView {
         if (edge.status() == EdgeStatus.UNTESTED) {
             return "untested";
         }
-        return "present";               // a seed edge, which carries no status at all
+        return "present";                   // a seed edge, carrying no status
     }
 
-    // Per group counts, shown beside the heading so you can rank dimensions by coverage.
+    /** Counts beside the heading, so dimensions can be triaged without opening them. */
     private static String tally(List<Node> members, Graph graph) {
         var counts = new TreeMap<String, Integer>();
         for (Node from : members) {
@@ -121,10 +127,9 @@ public final class MatrixView {
                 }
             }
         }
-        var out = new StringBuilder("<span class=\"tally\">");
-        counts.forEach((state, n) ->
-            out.append("<span class=\"badge ").append(state).append("\">")
-               .append(n).append("</span>"));
-        return out.append("</span>").toString();
+        var badges = new StringBuilder();
+        counts.forEach((state, count) -> badges.append(
+            Html.tag("span").attr("class", "badge " + state).text(count)));
+        return Html.tag("span").attr("class", "tally").html(badges.toString()).toString();
     }
 }

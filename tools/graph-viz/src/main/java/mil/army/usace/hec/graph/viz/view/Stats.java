@@ -13,10 +13,7 @@ import mil.army.usace.hec.graph.viz.model.Node;
 /**
  * Every number the key and the summary need, counted once.
  *
- * Both views ask the same questions of the same graph, and walking a 13x13
- * matrix is not free, so the counting happens here rather than twice over.
- * Nothing in this class knows what a unit is - it counts nodes, edges and
- * groups, and the caller decides what those mean.
+ * Knows nothing of units - it counts nodes, edges and groups.
  */
 public final class Stats {
 

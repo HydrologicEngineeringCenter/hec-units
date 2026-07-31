@@ -11,15 +11,10 @@ import mil.army.usace.hec.graph.viz.formula.PostfixEvaluator;
 import net.hobbyscience.database.Conversion;
 
 /**
- * The hand-authored conversions, as data the page can walk at runtime.
+ * The hand-written conversions, as data the page walks at runtime.
  *
- * "Show every route between these two units" cannot be precomputed - there are
- * hundreds of pairs and each has many routes, so baking them all in would bloat
- * the page enormously. Instead the ~100 seed conversions are embedded, which is
- * a couple of kilobytes, and the browser enumerates routes on demand from those.
- *
- * Only the forward direction is emitted; the page derives each inverse itself,
- * which halves the payload.
+ * Routes cannot be precomputed - too many pairs - so the ~100 seed edges are
+ * embedded instead and the browser enumerates from those.
  */
 final class SeedPaths {
 

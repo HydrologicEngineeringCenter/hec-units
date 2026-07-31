@@ -10,12 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Reads the conversion test cases so a cell can show what was actually tried.
+ * Reads the test cases so a cell can show what was actually tried.
  *
- * The XML report says only whether a pair passed. That answers "did it work" but
- * never "why not" - and a red cell you cannot explain is not much better than no
- * cell at all. The inputs and expected values live only in this CSV, so it gets
- * read directly rather than going through the test report.
+ * The XML report says only whether a pair passed; the inputs live only here.
  */
 final class TestCaseReader {
 

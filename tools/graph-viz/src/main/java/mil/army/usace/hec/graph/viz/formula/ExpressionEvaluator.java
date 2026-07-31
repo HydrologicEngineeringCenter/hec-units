@@ -1,12 +1,10 @@
 package mil.army.usace.hec.graph.viz.formula;
 
 /**
- * Evaluates a small arithmetic expression - numbers, the single variable `i`,
- * the operators + - * / ^, and parentheses - at a given value of `i`.
+ * Evaluates an infix expression at a given value of `i`.
  *
- * Simple expression evaluator, basic version of eval() in python
- * 
- * For the Units Graph Visualizer, this will be used in the visualizer to help see mathmatical results of symbolic equations.
+ * Hand-written because Java has no eval() and graph-viz cannot import
+ * hec-units' own evaluator.
  */
 public final class ExpressionEvaluator {
 

@@ -2,14 +2,7 @@ package mil.army.usace.hec.units.viz;
 
 import mil.army.usace.hec.graph.viz.view.Html;
 
-/**
- * Writes a unit abbreviation the way it would be typeset rather than the way it
- * is stored: "m3" becomes m with a superscript 3.
- *
- * The stored form is ASCII because it has to survive JSON, CSV and a database.
- * On screen that is a needless step of decoding for the reader, and the whole
- * point of the panel is to be readable at a glance.
- */
+/** Typesets a unit abbreviation: "m3" becomes m with a superscript 3. */
 final class UnitFormat {
 
     private UnitFormat() {

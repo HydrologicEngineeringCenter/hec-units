@@ -6,57 +6,114 @@ import java.util.Map;
 /**
  * A whole-project read-out: how much of the graph is covered, where the gaps
  * are, and what needs attention.
- *
- * The matrices answer "what is the state of this one conversion". This answers
- * "what is the state of the project", which is the question you actually have
- * when you open the page cold.
  */
 public final class SummaryView {
 
-    /** Chart geometry: r chosen so the circumference is exactly 100 units. */
+    /** Radius chosen so the circumference is exactly 100, making arcs percentages. */
     private static final double RADIUS = 15.9154943;
+
+    private static final String LAYOUT = """
+        <div class="sum">
+        <div class="sum-top">{{donut}}<div class="sum-figures">{{figures}}</div></div>
+        <h4>Every conversion slot</h4>
+        <div class="sum-note">Both directions of every pair within a dimension,
+          excluding a unit with itself.</div>
+        <table class="sum-table">{{breakdown}}</table>
+        <h4>Coverage by dimension</h4>
+        <div class="sum-note">Least covered first. The bar is the share of reachable
+          conversions that a test exercises.</div>
+        <table class="sum-table dims">
+        <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
+        <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
+        <tbody>{{dimensions}}</tbody>
+        </table>
+        {{routes}}
+        <h4>Worth a look</h4>
+        <div class="sum-cards">{{cards}}</div>
+        </div>
+        """;
+
+    private static final String FIGURE = """
+        <div class="fig">
+        <div class="fig-label">{{label}}</div>
+        <div class="fig-value">{{value}}</div>
+        <div class="fig-note">{{note}}</div>
+        </div>
+        """;
+
+    private static final String BAR_ROW = """
+        <tr><td><i class="sw {{cls}}"></i></td><td>{{label}}</td>
+        <td class="n">{{count}}</td><td class="p">{{share}}</td>
+        <td class="barcell"><span class="bar {{cls2}}" style="width:{{width}}%"></span></td></tr>
+        """;
+
+    private static final String DIM_ROW = """
+        <tr><td class="name">{{name}}</td><td class="n">{{units}}</td>
+        <td class="n">{{reachable}}</td><td class="n ok">{{passed}}</td>
+        <td class="n {{failtone}}">{{failed}}</td><td class="n">{{untested}}</td>
+        <td class="p">{{coverage}}</td>
+        <td class="barcell"><span class="bar passed" style="width:{{width}}%"></span></td></tr>
+        """;
+
+    private static final String ROUTES = """
+        <h4>{{title}}</h4>
+        <div class="sum-note">Every hop multiplies in another constant, so long chains
+          are where rounding error accumulates.</div>
+        <table class="sum-table">{{rows}}</table>
+        """;
+
+    private static final String ROUTE_ROW = """
+        <tr><td class="hopn">{{hops}}</td><td class="n">{{count}}</td>
+        <td class="p">{{share}}</td>
+        <td class="barcell"><span class="bar hops" style="width:{{width}}%"></span></td></tr>
+        """;
+
+    private static final String CARD = """
+        <div class="sum-card {{tone}}">
+        <div class="c-value">{{value}}</div>
+        <div class="c-label">{{label}}</div>
+        <div class="c-note">{{note}}</div>
+        </div>
+        """;
+
+    private static final String ARC = """
+        <circle class="seg {{cls}}" cx="21" cy="21" r="{{r}}" fill="none" stroke-width="5"
+          stroke-dasharray="{{share}} {{rest}}" stroke-dashoffset="{{offset}}"></circle>
+        """;
 
     private SummaryView() {
     }
 
-    public static String render(Stats stats, String routeLengthTitle) {
-        var out = new StringBuilder("<div class=\"sum\">");
-        headline(out, stats);
-        breakdown(out, stats);
-        dimensions(out, stats);
-        routeLengths(out, stats, routeLengthTitle);
-        attention(out, stats);
-        return out.append("</div>").toString();
+    public static String render(Stats stats, String routeTitle) {
+        return Html.fill(LAYOUT)
+            .raw("donut", donut(stats))
+            .raw("figures", figures(stats))
+            .raw("breakdown", breakdown(stats))
+            .raw("dimensions", Html.each(stats.groupsByCoverage(), SummaryView::dimensionRow))
+            .raw("routes", routes(stats, routeTitle))
+            .raw("cards", cards(stats))
+            .render();
     }
 
-    /** The three numbers worth reading first. */
-    private static void headline(StringBuilder out, Stats stats) {
-        out.append("<div class=\"sum-top\">");
-        out.append(donut(stats));
-        out.append("<div class=\"sum-figures\">");
-        figure(out, "coverage", Stats.percent(stats.coverage()),
-               stats.tested() + " of " + stats.reachable() + " reachable conversions tested");
-        figure(out, "pass rate", Stats.percent(stats.passRate()),
-               stats.passed() + " of " + stats.tested() + " tested conversions pass");
-        figure(out, "conversions", Integer.toString(stats.reachable()),
-               "reachable across " + stats.groups().size() + " dimensions, "
-               + stats.nodeCount() + " units");
-        out.append("</div></div>");
+    private static String figures(Stats stats) {
+        return figure("coverage", Stats.percent(stats.coverage()),
+                      stats.tested() + " of " + stats.reachable() + " reachable conversions tested")
+             + figure("pass rate", Stats.percent(stats.passRate()),
+                      stats.passed() + " of " + stats.tested() + " tested conversions pass")
+             + figure("conversions", Integer.toString(stats.reachable()),
+                      "reachable across " + stats.groups().size() + " dimensions, "
+                      + stats.nodeCount() + " units");
     }
 
-    private static void figure(StringBuilder out, String label, String value, String note) {
-        out.append("<div class=\"fig\"><div class=\"fig-label\">").append(Html.escape(label))
-           .append("</div><div class=\"fig-value\">").append(Html.escape(value))
-           .append("</div><div class=\"fig-note\">").append(Html.escape(note))
-           .append("</div></div>");
+    private static String figure(String label, String value, String note) {
+        return Html.fill(FIGURE).put("label", label).put("value", value).put("note", note).render();
     }
 
     /**
      * A donut drawn as SVG arcs.
      *
-     * With the radius set so the circumference is 100, each slice's
-     * stroke-dasharray is simply "percentage, remainder" - no trigonometry and
-     * no charting library. The -25 offset rotates the start to twelve o'clock.
+     * With circumference 100, each slice's dasharray is just "share, remainder" -
+     * no trigonometry and no charting library.
      */
     private static String donut(Stats stats) {
         record Slice(String cls, int count) { }
@@ -65,148 +122,119 @@ public final class SummaryView {
                              new Slice("untested", stats.untested()),
                              new Slice("missing", stats.missing()));
 
-        var out = new StringBuilder("<svg class=\"donut\" viewBox=\"0 0 42 42\" role=\"img\">");
-        out.append("<circle class=\"donut-hole\" cx=\"21\" cy=\"21\" r=\"").append(RADIUS)
-           .append("\" fill=\"none\" stroke-width=\"5\"></circle>");
-
-        double offset = 25;
+        var arcs = new StringBuilder();
+        double offset = 25;                     // rotates the start to twelve o'clock
         for (Slice slice : slices) {
             double share = stats.percentOfPairs(slice.count());
             if (share <= 0) {
                 continue;
             }
-            out.append("<circle class=\"seg ").append(slice.cls())
-               .append("\" cx=\"21\" cy=\"21\" r=\"").append(RADIUS)
-               .append("\" fill=\"none\" stroke-width=\"5\" stroke-dasharray=\"")
-               .append(round(share)).append(' ').append(round(100 - share))
-               .append("\" stroke-dashoffset=\"").append(round(offset)).append("\"></circle>");
+            arcs.append(Html.fill(ARC)
+                .put("cls", slice.cls())
+                .put("r", RADIUS)
+                .put("share", round(share))
+                .put("rest", round(100 - share))
+                .put("offset", round(offset))
+                .render());
             offset -= share;
         }
 
-        out.append("<text class=\"donut-mid\" x=\"21\" y=\"20.2\">")
-           .append(Math.round(stats.coverage())).append("%</text>");
-        out.append("<text class=\"donut-sub\" x=\"21\" y=\"24.6\">covered</text>");
-        return out.append("</svg>").toString();
+        return Html.fill("""
+            <svg class="donut" viewBox="0 0 42 42" role="img">
+            <circle class="donut-hole" cx="21" cy="21" r="{{r}}" fill="none" stroke-width="5"></circle>
+            {{arcs}}
+            <text class="donut-mid" x="21" y="20.2">{{pct}}%</text>
+            <text class="donut-sub" x="21" y="24.6">covered</text>
+            </svg>
+            """)
+            .put("r", RADIUS)
+            .raw("arcs", arcs.toString())
+            .put("pct", Math.round(stats.coverage()))
+            .render();
     }
 
-    /** Every category with a raw count, a share, and a proportional bar. */
-    private static void breakdown(StringBuilder out, Stats stats) {
-        out.append("<h4>Every conversion slot</h4>");
-        out.append("<div class=\"sum-note\">Counting both directions of every pair within a "
-                 + "dimension, excluding a unit with itself.</div>");
-        out.append("<table class=\"sum-table\">");
-        bar(out, "passed", "passed", stats.passed(), stats);
-        bar(out, "failed", "failed", stats.failed(), stats);
-        bar(out, "untested", "reachable, not tested", stats.untested(), stats);
-        bar(out, "missing", "no conversion exists", stats.missing(), stats);
-        out.append("<tr class=\"total\"><td></td><td>total</td><td class=\"n\">")
-           .append(stats.pairs()).append("</td><td class=\"p\">100.00%</td><td></td></tr>");
-        out.append("</table>");
+    private static String breakdown(Stats stats) {
+        return barRow("passed", "passed", stats.passed(), stats)
+             + barRow("failed", "failed", stats.failed(), stats)
+             + barRow("untested", "reachable, not tested", stats.untested(), stats)
+             + barRow("missing", "no conversion exists", stats.missing(), stats)
+             + Html.fill("""
+                 <tr class="total"><td></td><td>total</td><td class="n">{{count}}</td>
+                 <td class="p">100.00%</td><td></td></tr>
+                 """).put("count", stats.pairs()).render();
     }
 
-    private static void bar(StringBuilder out, String cls, String label, int count, Stats stats) {
+    private static String barRow(String cls, String label, int count, Stats stats) {
         double share = stats.percentOfPairs(count);
-        out.append("<tr><td><i class=\"sw ").append(cls).append("\"></i></td><td>")
-           .append(Html.escape(label)).append("</td><td class=\"n\">").append(count)
-           .append("</td><td class=\"p\">").append(Stats.percent(share))
-           .append("</td><td class=\"barcell\"><span class=\"bar ").append(cls)
-           .append("\" style=\"width:").append(round(share)).append("%\"></span></td></tr>");
+        return Html.fill(BAR_ROW)
+            .put("cls", cls).put("cls2", cls)
+            .put("label", label)
+            .put("count", count)
+            .put("share", Stats.percent(share))
+            .put("width", round(share))
+            .render();
     }
 
-    /** Worst-covered dimension first, since that is the actionable order. */
-    private static void dimensions(StringBuilder out, Stats stats) {
-        out.append("<h4>Coverage by dimension</h4>");
-        out.append("<div class=\"sum-note\">Least covered first. The bar is the share of "
-                 + "reachable conversions that a test exercises.</div>");
-        out.append("<table class=\"sum-table dims\"><thead><tr><th>dimension</th><th>units</th>"
-                 + "<th>reachable</th><th>passed</th><th>failed</th><th>untested</th>"
-                 + "<th>coverage</th><th></th></tr></thead><tbody>");
-
-        for (Stats.Group group : stats.groupsByCoverage()) {
-            out.append("<tr><td class=\"name\">").append(Html.escape(group.name()))
-               .append("</td><td class=\"n\">").append(group.units())
-               .append("</td><td class=\"n\">").append(group.reachable())
-               .append("</td><td class=\"n ok\">").append(group.passed())
-               .append("</td><td class=\"n ").append(group.failed() > 0 ? "bad" : "")
-               .append("\">").append(group.failed())
-               .append("</td><td class=\"n\">").append(group.untested())
-               .append("</td><td class=\"p\">").append(Stats.percent(group.coverage()))
-               .append("</td><td class=\"barcell\"><span class=\"bar passed\" style=\"width:")
-               .append(round(group.coverage())).append("%\"></span></td></tr>");
-        }
-        out.append("</tbody></table>");
+    private static String dimensionRow(Stats.Group group) {
+        return Html.fill(DIM_ROW)
+            .put("name", group.name())
+            .put("units", group.units())
+            .put("reachable", group.reachable())
+            .put("passed", group.passed())
+            .put("failed", group.failed())
+            .put("failtone", group.failed() > 0 ? "bad" : "")
+            .put("untested", group.untested())
+            .put("coverage", Stats.percent(group.coverage()))
+            .put("width", round(group.coverage()))
+            .render();
     }
 
-    /**
-     * How many hops each conversion takes.
-     *
-     * Worth surfacing because every extra hop multiplies another constant in,
-     * so a long chain is where rounding error accumulates and where a single
-     * bad constant does the most damage.
-     */
-    private static void routeLengths(StringBuilder out, Stats stats, String title) {
+    private static String routes(Stats stats, String title) {
         Map<Integer, Integer> lengths = stats.routeLengths();
         if (lengths.isEmpty()) {
-            return;
+            return "";
         }
         int most = lengths.values().stream().mapToInt(Integer::intValue).max().orElse(1);
         int total = lengths.values().stream().mapToInt(Integer::intValue).sum();
 
-        out.append("<h4>").append(Html.escape(title)).append("</h4>");
-        out.append("<div class=\"sum-note\">Every hop multiplies in another constant, so the "
-                 + "long chains are where rounding error accumulates.</div>");
-        out.append("<table class=\"sum-table\">");
-        lengths.forEach((hops, count) ->
-            out.append("<tr><td class=\"hopn\">").append(hops)
-               .append(hops == 1 ? " hop" : " hops").append("</td><td class=\"n\">").append(count)
-               .append("</td><td class=\"p\">")
-               .append(Stats.percent(total == 0 ? 0 : count * 100.0 / total))
-               .append("</td><td class=\"barcell\"><span class=\"bar hops\" style=\"width:")
-               .append(round(most == 0 ? 0 : count * 100.0 / most)).append("%\"></span></td></tr>"));
-        out.append("</table>");
+        var rows = new StringBuilder();
+        lengths.forEach((hops, count) -> rows.append(Html.fill(ROUTE_ROW)
+            .put("hops", hops + (hops == 1 ? " hop" : " hops"))
+            .put("count", count)
+            .put("share", Stats.percent(total == 0 ? 0 : count * 100.0 / total))
+            .put("width", round(most == 0 ? 0 : count * 100.0 / most))
+            .render()));
+
+        return Html.fill(ROUTES).put("title", title).raw("rows", rows.toString()).render();
     }
 
-    /** Things a person should probably go and look at. */
-    private static void attention(StringBuilder out, Stats stats) {
-        out.append("<h4>Worth a look</h4><div class=\"sum-cards\">");
+    private static String cards(Stats stats) {
+        var noTests = stats.groups().stream()
+            .filter(group -> group.tested() == 0).map(Stats.Group::name).toList();
 
-        card(out, stats.failed() > 0 ? "bad" : "ok", Integer.toString(stats.failed()),
-             "failing conversions",
-             stats.failed() == 0 ? "Nothing is failing."
-                                 : String.join(", ", first(stats.failures(), 8)));
-
-        var zero = stats.groups().stream().filter(g -> g.tested() == 0).map(Stats.Group::name).toList();
-        card(out, zero.isEmpty() ? "ok" : "warn", Integer.toString(zero.size()),
-             "dimensions with no tests at all",
-             zero.isEmpty() ? "Every dimension has at least one test."
-                            : String.join(", ", first(zero, 10)));
-
-        card(out, stats.isolated().isEmpty() ? "ok" : "warn",
-             Integer.toString(stats.isolated().size()), "units with no conversions",
-             stats.isolated().isEmpty() ? "Every unit connects to something."
-                                        : String.join(", ", first(stats.isolated(), 12)));
-
-        card(out, "ok", Integer.toString(stats.singletonGroups()),
-             "dimensions with a single unit",
-             "No matrix is drawn for these - there is nothing to convert between.");
-
-        out.append("</div>");
+        return card(stats.failed() > 0 ? "bad" : "ok", stats.failed(), "failing conversions",
+                    stats.failed() == 0 ? "Nothing is failing." : list(stats.failures(), 8))
+             + card(noTests.isEmpty() ? "ok" : "warn", noTests.size(),
+                    "dimensions with no tests at all",
+                    noTests.isEmpty() ? "Every dimension has at least one test." : list(noTests, 10))
+             + card(stats.isolated().isEmpty() ? "ok" : "warn", stats.isolated().size(),
+                    "units with no conversions",
+                    stats.isolated().isEmpty() ? "Every unit connects to something."
+                                               : list(stats.isolated(), 12))
+             + card("ok", stats.singletonGroups(), "dimensions with a single unit",
+                    "No matrix is drawn for these - there is nothing to convert between.");
     }
 
-    private static void card(StringBuilder out, String tone, String value, String label, String note) {
-        out.append("<div class=\"sum-card ").append(tone).append("\"><div class=\"c-value\">")
-           .append(Html.escape(value)).append("</div><div class=\"c-label\">")
-           .append(Html.escape(label)).append("</div><div class=\"c-note\">")
-           .append(Html.escape(note)).append("</div></div>");
+    private static String card(String tone, int value, String label, String note) {
+        return Html.fill(CARD)
+            .put("tone", tone).put("value", value).put("label", label).put("note", note).render();
     }
 
-    private static List<String> first(List<String> items, int limit) {
+    private static String list(List<String> items, int limit) {
         if (items.size() <= limit) {
-            return items;
+            return String.join(", ", items);
         }
-        var shown = new java.util.ArrayList<>(items.subList(0, limit));
-        shown.add("and " + (items.size() - limit) + " more");
-        return shown;
+        return String.join(", ", items.subList(0, limit)) + ", and " + (items.size() - limit) + " more";
     }
 
     private static String round(double value) {
