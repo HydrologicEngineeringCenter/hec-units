@@ -10,9 +10,7 @@ import mil.army.usace.hec.graph.viz.formula.Substitution;
 import mil.army.usace.hec.graph.viz.view.Html;
 
 /**
- * The panel for one direct conversion: the formula as authored - constant names
- * intact - then what it works out to, and a "where" footnote giving each
- * constant's value. The raw JSON text sits at the bottom for provenance.
+ * The panel for one direct conversion: the formula as authored
  */
 final class SeedFormula {
 
@@ -66,7 +64,7 @@ final class SeedFormula {
             .render();
     }
 
-    /** "= ft3 × 0.028316846592" - the number a person can actually check. */
+    // "= ft3 × 0.028316846592" - the number a person can actually check
     private static String resolved(AffineForm form, String from) {
         if (form == null || (form.m() == 1.0 && form.b() == 0.0)) {
             return "";
@@ -83,7 +81,7 @@ final class SeedFormula {
         return out.append("</div>").toString();
     }
 
-    /** "where m_per_ft = 0.3048" - the audit trail behind the number above. */
+    // "where m_per_ft = 0.3048" - the audit trail behind the number above
     private static String where(Substitution substitution, Map<String, String> constants) {
         if (substitution.used().isEmpty()) {
             return "";
@@ -103,10 +101,6 @@ final class SeedFormula {
         return "<div class=\"fx-where\"><span class=\"kw\">where</span>" + items + "</div>";
     }
 
-    /**
-     * Typesets an infix expression: x for *, superscript powers, the variable
-     * `i` replaced by the source unit's symbol, constant names in italic.
-     */
     static String pretty(String expr, String variable) {
         var out = new StringBuilder();
         boolean pendingPower = false;
@@ -123,7 +117,7 @@ final class SeedFormula {
                     out.append("<sup>").append(Html.escape(token)).append("</sup>");
                     continue;
                 }
-                out.append('^');    // something exotic - show it literally
+                out.append('^'); 
             }
             if (matcher.group("op") != null) {
                 switch (token) {

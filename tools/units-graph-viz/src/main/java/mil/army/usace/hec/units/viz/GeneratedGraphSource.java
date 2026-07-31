@@ -25,15 +25,13 @@ import net.hobbyscience.database.Conversion;
  *   ConversionGraph - every pair, its formula, its hop chain
  *   the test report - which pairs were tested, and the outcome
  *   the test CSV    - the inputs and expected values behind those outcomes
- *
- * Only the first is required; without a report every edge is UNTESTED.
  */
 public final class GeneratedGraphSource {
 
     private GeneratedGraphSource() {
     }
 
-    /** True when a report exists to read coverage from. */
+    // True when a report exists to read coverage from
     public static boolean hasReport(Path report) {
         return report != null && Files.isReadable(report);
     }
@@ -59,7 +57,7 @@ public final class GeneratedGraphSource {
         return new Graph(nodes, edges);
     }
 
-    /** Edges from the report, each carrying its status and its description. */
+    // Edges from the report, each carrying its status and its description
     private static List<Edge> withCoverage(Path report, Map<String, Conversion> conversions,
                                            Map<String, List<TestCase>> tests,
                                            Map<String, String> names, HashSet<String> known)
@@ -86,9 +84,6 @@ public final class GeneratedGraphSource {
 
     /**
      * Edges straight from the algorithm, with every pair marked untested.
-     *
-     * UNTESTED rather than null is the honest answer: these conversions could
-     * have been tested, and we simply do not know whether they were.
      */
     private static List<Edge> withoutCoverage(Map<String, Conversion> conversions,
                                               Map<String, List<TestCase>> tests,
@@ -139,21 +134,11 @@ public final class GeneratedGraphSource {
 
     /**
      * Runs the real conversion algorithm and indexes every pair it produces.
-     *
-     * The report knows nothing about formulas, so this is the only way a cell can
-     * show what it computes. generateConversions() returns each pair in one
-     * direction only, so the inverse is derived too - a matrix has cells on both
-     * sides of the diagonal.
      */
     private static Map<String, Conversion> conversionsByPair(Loader loader) {
         var generated = new ConversionGraph(loader.getConversions()).generateConversions();
         var conversions = new HashMap<String, Conversion>();
 
-        // Two passes, and the order is the point. generateConversions() returns a
-        // HashSet, so its iteration order is arbitrary; interleaving these would
-        // let a derived inverse land on a pair the algorithm already produced
-        // natively and win purely by luck. Every conversion the algorithm states
-        // outright is recorded first, and inverses only fill what is left.
         for (Conversion conversion : generated) {
             record(conversions, conversion);
         }
@@ -175,10 +160,6 @@ public final class GeneratedGraphSource {
 
     /**
      * Joins two abbreviations into a lookup key.
-     *
-     * The separator is a null character rather than a space because several
-     * abbreviations contain spaces of their own - "1000 acre", "1000 m3" - and a
-     * space would let two different pairs produce the same key.
      */
     private static String pair(String from, String to) {
         return from + "\u0000" + to;

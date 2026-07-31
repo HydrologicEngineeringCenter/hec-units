@@ -12,21 +12,9 @@ import net.hobbyscience.database.Conversion;
 
 /**
  * The hand-written conversions, as data the page walks at runtime.
- *
- * Routes cannot be precomputed - too many pairs - so the ~100 seed edges are
- * embedded instead and the browser enumerates from those.
  */
 final class SeedPaths {
 
-    private SeedPaths() {
-    }
-
-    /**
-     * A JavaScript declaration of the seed edges as [from, to, scale, offset].
-     *
-     * Carrying the affine form rather than the formula text is what lets the page
-     * multiply a route out into a single factor without an expression parser.
-     */
     static String script(Loader loader) {
         var rows = new ArrayList<String>();
         for (Conversion conversion : loader.getConversions()) {
@@ -71,7 +59,7 @@ final class SeedPaths {
         return out.append('"').toString();
     }
 
-    /** Convenience for callers that only have the list. */
+    // Convenience for callers that only have the list
     static List<String> unitsWithSeedEdges(Loader loader) {
         var units = new ArrayList<String>();
         for (Conversion conversion : loader.getConversions()) {

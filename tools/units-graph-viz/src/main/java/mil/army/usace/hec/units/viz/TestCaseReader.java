@@ -11,15 +11,13 @@ import java.util.Map;
 
 /**
  * Reads the test cases so a cell can show what was actually tried.
- *
- * The XML report says only whether a pair passed; the inputs live only here.
  */
 final class TestCaseReader {
 
     private TestCaseReader() {
     }
 
-    /** Test cases grouped by the pair they exercise, in the direction written. */
+    // Test cases grouped by the pair they exercise, in the direction written
     static Map<String, List<TestCase>> read(Path csv) throws IOException {
         var byPair = new HashMap<String, List<TestCase>>();
         if (csv == null || !Files.isReadable(csv)) {
@@ -51,10 +49,6 @@ final class TestCaseReader {
 
     /**
      * Parses one field, tolerating the quoting JUnit's CSV reader also tolerates.
-     *
-     * Some rows in the file are written as `" .0001"` - quoted, with a leading
-     * space. A plain parse throws on those, and silently dropping them would
-     * leave test cases invisible in exactly the tool meant to surface them.
      */
     private static double number(String field) {
         String value = field.trim();

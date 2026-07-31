@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public final class SummaryView {
 
-    /** Radius chosen so the circumference is exactly 100, making arcs percentages. */
+    // Radius chosen so the circumference is exactly 100, making arcs percentages
     private static final double RADIUS = 15.9154943;
 
     private static final String LAYOUT = """
@@ -20,9 +20,8 @@ public final class SummaryView {
           excluding a unit with itself.</div>
         <table class="sum-table">{{breakdown}}</table>
         <h4>Coverage by dimension</h4>
-        <div class="sum-note">Most untested conversions first - the dimensions with the
-          most testing work left. The bar is the share of reachable conversions that a
-          test exercises. Click a heading to re-sort.</div>
+        <div class="sum-note">Alphabetical, like the matrices. The bar is the share of
+          reachable conversions that a test exercises. Click a heading to re-sort.</div>
         <table class="sum-table dims sortable">
         <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
         <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
@@ -50,7 +49,7 @@ public final class SummaryView {
 
     private static final String DIM_ROW = """
         <tr><td class="name">{{name}}</td><td class="n">{{units}}</td>
-        <td class="n">{{reachable}}</td><td class="n ok">{{passed}}</td>
+        <td class="n">{{reachable}}</td><td class="n {{oktone}}">{{passed}}</td>
         <td class="n {{failtone}}">{{failed}}</td><td class="n">{{untested}}</td>
         <td class="p">{{coverage}}</td>
         <td class="barcell"><span class="bar passed" style="width:{{width}}%"></span></td></tr>
@@ -93,7 +92,7 @@ public final class SummaryView {
             .raw("donut", donut(stats))
             .raw("figures", figures(stats))
             .raw("breakdown", breakdown(stats))
-            .raw("dimensions", Html.each(stats.groupsByAttention(), SummaryView::dimensionRow))
+            .raw("dimensions", Html.each(stats.groups(), SummaryView::dimensionRow))
             .raw("routes", routes(stats, routeTitle))
             .raw("cards", cards(stats))
             .render();
@@ -115,9 +114,6 @@ public final class SummaryView {
 
     /**
      * A donut drawn as SVG arcs.
-     *
-     * With circumference 100, each slice's dasharray is just "share, remainder" -
-     * no trigonometry and no charting library.
      */
     private static String donut(Stats stats) {
         record Slice(String cls, int count) { }
@@ -185,6 +181,7 @@ public final class SummaryView {
             .put("units", group.units())
             .put("reachable", group.reachable())
             .put("passed", group.passed())
+            .put("oktone", group.passed() > 0 ? "ok" : "")
             .put("failed", group.failed())
             .put("failtone", group.failed() > 0 ? "bad" : "")
             .put("untested", group.untested())

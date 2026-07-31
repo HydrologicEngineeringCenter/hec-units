@@ -53,7 +53,7 @@ final class ConversionDetail {
     private ConversionDetail() {
     }
 
-    /** Conversions chained together, counted from the hop chain. */
+    // Conversions chained together, counted from the hop chain
     static int hops(Conversion conversion) {
         String chain = conversion.getConversionChain();
         if (chain == null || chain.isBlank()) {
@@ -86,7 +86,6 @@ final class ConversionDetail {
             .render();
     }
 
-    /** Abbreviations are terse; the full names remove any doubt about which unit. */
     private static String names(String fromName, String toName) {
         if (fromName == null || toName == null) {
             return "";
@@ -102,7 +101,7 @@ final class ConversionDetail {
         return Html.tag("span").attr("class", "chip " + cls).text(label).toString();
     }
 
-    /** Derived conversions expose only postfix, so the affine probe runs against that. */
+    // Derived conversions expose only postfix, so the affine probe runs against that
     private static String equation(String postfix, String from) {
         AffineForm form = FormulaRenderer.affineOf(x -> PostfixEvaluator.evaluate(postfix, x));
 
@@ -133,7 +132,7 @@ final class ConversionDetail {
         return Html.tag("span").attr("class", "op").text(symbol).toString();
     }
 
-    /** When a derived conversion is wrong it is usually one hop in the middle. */
+    // When a derived conversion is wrong it is usually one hop in the middle
     private static String chain(Conversion conversion) {
         String chain = conversion.getConversionChain();
         if (chain == null || chain.isBlank()) {
@@ -154,11 +153,6 @@ final class ConversionDetail {
             .render();
     }
 
-    /**
-     * Rows written the other way round still exercise this conversion: the suite
-     * converts and converts back. Reproducing that means running the opposite
-     * conversion first and feeding its result in, exactly as the suite does.
-     */
     private static String tests(String postfix, String inversePostfix, String from, String to,
                                 List<TestCase> direct, List<TestCase> roundTrip) {
         boolean canRoundTrip = inversePostfix != null;

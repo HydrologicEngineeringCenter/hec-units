@@ -17,14 +17,7 @@ import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
 
 /**
- * Renders a graph as one node-link drawing per group: a hierarchical layout
- * when the group is a tree, a ring otherwise (the browser then runs a force
- * simulation on the enlarged copy).
- *
- * Edge labels follow a small contract with the adapter: "tag|m|b", where tag
- * becomes a CSS class and styles the stroke, and (m, b) let the page compose
- * route factors. Edges between the same two nodes are bowed apart so both
- * stay visible.
+ * Renders a graph as one node-link drawing per group
  */
 public final class NodeLinkView {
 
@@ -52,15 +45,11 @@ public final class NodeLinkView {
                         .add(edge);
         }
 
-        // Busiest dimensions first - they are the ones worth looking at.
-        var order = new ArrayList<>(groups.keySet());
-        order.sort(Comparator.comparingInt((String g) ->
-                       -edgesByGroup.getOrDefault(g, List.of()).size())
-                   .thenComparing(g -> g));
-
+        // Alphabetical, matching the coverage tab - the two grids should read
+        // as the same page in two projections.
         var cards = new StringBuilder("<div class=\"grid\">\n");
         int index = 0;
-        for (String group : order) {
+        for (String group : groups.keySet()) {
             List<Edge> edges = edgesByGroup.getOrDefault(group, List.of());
             if (edges.isEmpty()) {
                 continue;
@@ -182,9 +171,6 @@ public final class NodeLinkView {
         double[] a = pos.get(edge.from());
         double[] b = pos.get(edge.to());
 
-        // The perpendicular comes from a stable ordering of the endpoints; taking
-        // it from each edge's own direction would flip it for the reverse edge and
-        // cancel the opposite bow signs, laying the pair on top of each other.
         String loId = edge.from().compareTo(edge.to()) <= 0 ? edge.from() : edge.to();
         String hiId = edge.from().equals(loId) ? edge.to() : edge.from();
         double[] lo = pos.get(loId);
@@ -240,13 +226,6 @@ public final class NodeLinkView {
         out.append(group);
     }
 
-    /* ------------------------------------------------------------- layouts */
-
-    /**
-     * Root at the top, children flowing down; null when the group has a cycle
-     * and therefore no sensible root. Duplicate edges between one pair do not
-     * count against tree-ness - they are drawn bowed apart instead.
-     */
     private static Map<String, double[]> treeLayout(List<Node> nodes, List<Edge> edges) {
         var adjacency = new TreeMap<String, Set<String>>();
         nodes.forEach(node -> adjacency.put(node.id(), new HashSet<>()));

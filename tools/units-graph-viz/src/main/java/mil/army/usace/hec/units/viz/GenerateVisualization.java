@@ -55,9 +55,6 @@ public final class GenerateVisualization {
                 + " - showing the algorithm's conversions with no coverage information.");
         }
 
-        // Printed unconditionally, and last. When tests fail this is the output
-        // that matters most, and it is the easiest thing to lose in a wall of
-        // failure text.
         System.out.println();
         System.out.println("  " + graph.nodes().size() + " units, " + graph.edges().size()
             + " conversions" + (covered ? "" : "  (no coverage data)")

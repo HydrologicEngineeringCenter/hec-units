@@ -11,20 +11,18 @@ import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
 
 /**
- * Every number the key and the summary need, counted once.
- *
- * Knows nothing of units - it counts nodes, edges and groups.
+ * Every number the key and the summary need, counted once
  */
 public final class Stats {
 
-    /** One group's tally. A "pair" is an ordered pair of distinct members. */
+    // One group's tally. A "pair" is an ordered pair of distinct members
     public record Group(String name, int units, int passed, int failed, int untested, int missing) {
 
         public int pairs() {
             return passed + failed + untested + missing;
         }
 
-        /** Pairs the algorithm can actually convert - everything but the gaps. */
+        // Pairs the algorithm can actually convert - everything but the gaps
         public int reachable() {
             return passed + failed + untested;
         }
@@ -33,7 +31,7 @@ public final class Stats {
             return passed + failed;
         }
 
-        /** Share of reachable conversions that a test actually exercises. */
+        // Share of reachable conversions that a test actually exercises
         public double coverage() {
             return reachable() == 0 ? 0 : tested() * 100.0 / reachable();
         }
@@ -134,20 +132,6 @@ public final class Stats {
         return groups;
     }
 
-    /**
-     * Groups ordered by how much testing work they represent: most untested
-     * conversions first. That weights both size and gap - a big dimension
-     * missing half its tests outranks a two-unit one missing all of them.
-     * Fully covered groups follow (largest first); empty ones sink to the end.
-     */
-    public List<Group> groupsByAttention() {
-        var sorted = new ArrayList<>(groups);
-        sorted.sort(Comparator.comparingInt((Group g) -> g.reachable() == 0 ? 1 : 0)
-                              .thenComparing(Comparator.comparingInt(Group::untested).reversed())
-                              .thenComparingDouble(Group::coverage)
-                              .thenComparing(Comparator.comparingInt(Group::reachable).reversed()));
-        return sorted;
-    }
 
     public Map<Integer, Integer> routeLengths() {
         return routeLengths;
@@ -185,7 +169,7 @@ public final class Stats {
         return singletonGroups;
     }
 
-    /** Every cell a matrix draws, excluding the diagonal. */
+    // Every cell a matrix draws, excluding the diagonal
     public int pairs() {
         return passed + failed + untested + missing;
     }
@@ -198,12 +182,12 @@ public final class Stats {
         return passed + failed;
     }
 
-    /** Share of reachable conversions a test exercises. */
+    // Share of reachable conversions a test exercises
     public double coverage() {
         return reachable() == 0 ? 0 : tested() * 100.0 / reachable();
     }
 
-    /** Share of exercised conversions that pass. */
+    // Share of exercised conversions that pass
     public double passRate() {
         return tested() == 0 ? 0 : passed * 100.0 / tested();
     }

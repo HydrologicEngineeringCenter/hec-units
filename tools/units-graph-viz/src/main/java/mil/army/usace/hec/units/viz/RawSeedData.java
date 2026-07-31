@@ -12,15 +12,6 @@ import java.util.regex.Pattern;
 
 /**
  * The conversion data as written, before Loader touches it.
- *
- * Loader substitutes constant values in and discards the names, but the seed
- * view exists to show the data as authored - "i * m_per_ft^3", with the name
- * intact and a "where" footnote. So this reads the same classpath resources
- * Loader does, keeping the raw text.
- *
- * Parsing is regex over comment-stripped JSON rather than a JSON library,
- * which holds because both files are flat: conversions is an array of
- * three-string rows, constants a single object of string values.
  */
 final class RawSeedData {
 
@@ -29,7 +20,7 @@ final class RawSeedData {
     private static final Pattern ENTRY = Pattern.compile(
         "\"([^\"]+)\"\\s*:\\s*\"([^\"]+)\"");
 
-    /** One row of conversions.json: from, to, and the method text as written. */
+    // One row of conversions.json: from, to, and the method text as written
     record Row(String from, String to, String method) {
     }
 
@@ -71,7 +62,7 @@ final class RawSeedData {
         return constants;
     }
 
-    /** Reads a :units resource with comments stripped, so commented-out rows are excluded. */
+    // Reads a :units resource with comments stripped, so commented-out rows are excluded
     private static String resource(String path) throws IOException {
         try (InputStream in = RawSeedData.class.getClassLoader().getResourceAsStream(path)) {
             if (in == null) {

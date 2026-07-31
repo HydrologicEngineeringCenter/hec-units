@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-/** Wraps view fragments in a complete, self-contained HTML document. */
+// Wraps view fragments in a complete, self-contained HTML document
 public final class PageRenderer {
 
     private static final String PAGE = """
@@ -129,7 +129,7 @@ public final class PageRenderer {
         </div>
         """;
 
-    /** The graph tab's own key: node systems and the two stroke kinds. */
+    // The graph tab's own key: node systems and the two stroke kinds
     private static String seedLegend() {
         return """
             <div class="legend seedlegend">
@@ -143,7 +143,7 @@ public final class PageRenderer {
             """;
     }
 
-    /** The same key on the dark backdrop, shown only while a graph is enlarged. */
+    // The same key on the dark backdrop, shown only while a graph is enlarged
     private static String seedKey() {
         return """
             <div class="legend olegend skey">
@@ -159,9 +159,6 @@ public final class PageRenderer {
 
     /**
      * The colour key, with each category's count and share.
-     *
-     * Rendered twice - the enlarged view covers the page, and a key you must
-     * close the thing you are reading to consult is no key at all.
      */
     private static String legend(String className, Stats stats) {
         return Html.tag("div").attr("class", className).html(
@@ -182,7 +179,7 @@ public final class PageRenderer {
             .render();
     }
 
-    /** The denominator the percentages above are shares of. */
+    // The denominator the percentages above are shares of
     private static String total(Stats stats) {
         if (stats == null) {
             return "";
@@ -218,9 +215,6 @@ public final class PageRenderer {
     /**
      * CSS and JS live as real files but are inlined, so the output is one
      * self-contained page that cannot arrive with a broken asset path.
-     *
-     * The leading slash matters: without it the path resolves relative to this
-     * class's package and comes back null.
      */
     private static String resource(String path) throws IOException {
         try (InputStream in = PageRenderer.class.getResourceAsStream(path)) {

@@ -374,13 +374,16 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 .c-label{font-size:12.5px;color:var(--lt-ink-2);margin-bottom:7px}
 .c-note{font:11.5px var(--mono);color:var(--lt-ink-4);line-height:1.55;word-break:break-word}
 
-/* ---- sortable headers: the triangle sits with the label, not across the
-   column - inline, space always reserved, so nothing shifts on click ---- */
+/* ---- sortable headers ----
+   The triangle sits with the label - inline, space always reserved, so nothing
+   shifts on click. nowrap + the negative vertical margins matter: without them
+   the triangle overflows a narrow column, wraps to its own line, and that
+   two-line cell rides up against its single-line neighbours. */
 .sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
- transition:color var(--fast) var(--ease)}
+ white-space:nowrap;transition:color var(--fast) var(--ease)}
 .sum-table.sortable thead th.sortable-col:hover{color:var(--lt-ink-2)}
 .sum-table.sortable thead th.sortable-col::after{content:"";display:inline-block;
- margin-left:6px;vertical-align:middle;border:4px solid transparent;
+ margin:-4px 0 -4px 6px;vertical-align:middle;border:4px solid transparent;
  border-top-color:var(--untested-dark);transform:translateY(2px);
  opacity:0;transition:opacity var(--fast) var(--ease)}
 .sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
@@ -426,11 +429,15 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 /* ============================================================ tabs */
 .tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--line)}
-.tab{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;
- padding:9px 18px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-3);
- transition:color var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.tab{background:none;border:none;margin-bottom:-1px;position:relative;
+ padding:9px 18px 11px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-3);
+ transition:color var(--fast) var(--ease)}
+.tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;
+ border-radius:var(--r-pill);background:var(--accent-deep);
+ transform:scaleX(0);transition:transform var(--med) var(--ease)}
 .tab:hover{color:var(--ink)}
-.tab.active{color:var(--ink);border-bottom-color:var(--accent-deep)}
+.tab.active{color:var(--ink)}
+.tab.active::after{transform:scaleX(1)}
 .tab:focus-visible{outline:2px solid var(--accent-deep);outline-offset:-2px}
 
 .tabpane{display:none}
@@ -438,7 +445,6 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 /* ============================================================ seed cards */
 .seedcard .meta{margin:6px 0 2px;font:12px var(--mono);color:var(--ink-3)}
-.seedcard .shape{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
 .card.cyclic{border-color:#f59e0b73}
 .card.dup{border-color:#818cf8a6}
 .badge.tree{background:#f1f5f9;color:var(--ink-3)}
@@ -507,7 +513,6 @@ svg.nl{width:100%;height:auto;display:block}
 .prow .res .u{font-size:1.05em}
 .grp{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
  vertical-align:0}
-.pth-more{color:var(--warn);font-size:12px;margin-top:10px}
 
 /* ============================================================ fx additions */
 .fx-eq.cont{font-size:18px;color:var(--lt-ink-2)}
@@ -525,7 +530,6 @@ svg.nl{width:100%;height:auto;display:block}
  .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
  .badge.cyclic{background:#78350f66;color:#fcd34d}
  .badge.dup{background:#312e81;color:#c7d2fe}
- .seedcard .shape{color:var(--lt-ink-3)}
  .ln{border-top-color:var(--lt-ink-3)}
 }
 

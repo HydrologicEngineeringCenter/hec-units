@@ -16,14 +16,6 @@ import mil.army.usace.hec.graph.viz.model.Node;
 /**
  * The pre-algorithm graph: the hand-written conversions exactly as authored,
  * before ConversionGraph derives anything.
- *
- * Formula text comes from the raw JSON rather than Loader, which substitutes
- * the constant names away. Unit names, dimensions and systems still come from
- * Loader - only the formulas need the raw source.
- *
- * Edge labels carry "kind|m|b" for the node-link view: kind styles the stroke
- * (linear solid, function dashed), (m, b) let the page compose route factors.
- * Seed edges have no test status - they are definitions, so status stays null.
  */
 public final class SeedGraphSource {
 
