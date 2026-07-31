@@ -47,31 +47,34 @@ public final class GeneratedGraphSource {
             throws IOException, XMLStreamException {
         var nodes = new ArrayList<Node>();
         var known = new HashSet<String>();
+        var names = new HashMap<String, String>();
         loader.getUnits().forEach((abbreviation, unit) -> {
             nodes.add(new Node(abbreviation, unit.getName(), unit.getAbstractParameter()));
             known.add(abbreviation);
+            names.put(abbreviation, unit.getName());
         });
 
         var conversions = conversionsByPair(loader);
         var tests = TestCaseReader.read(testCsv);
 
         List<Edge> edges = hasReport(report)
-            ? withCoverage(report, conversions, tests, known)
-            : withoutCoverage(conversions, tests, known);
+            ? withCoverage(report, conversions, tests, names, known)
+            : withoutCoverage(conversions, tests, names, known);
 
         return new Graph(nodes, edges);
     }
 
     /** Edges from the report, each carrying its status and its description. */
     private static List<Edge> withCoverage(Path report, Map<String, Conversion> conversions,
-                                           Map<String, List<TestCase>> tests, HashSet<String> known)
+                                           Map<String, List<TestCase>> tests,
+                                           Map<String, String> names, HashSet<String> known)
             throws IOException, XMLStreamException {
         var edges = new ArrayList<Edge>();
         var stale = new ArrayList<String>();
 
         for (Edge edge : TestReportReader.read(report)) {
             if (known.contains(edge.from()) && known.contains(edge.to())) {
-                edges.add(build(edge.from(), edge.to(), edge.status(), conversions, tests));
+                edges.add(build(edge.from(), edge.to(), edge.status(), conversions, tests, names));
             } else {
                 stale.add(edge.from() + " -> " + edge.to());
             }
@@ -94,13 +97,14 @@ public final class GeneratedGraphSource {
      */
     private static List<Edge> withoutCoverage(Map<String, Conversion> conversions,
                                               Map<String, List<TestCase>> tests,
+                                              Map<String, String> names,
                                               HashSet<String> known) {
         var edges = new ArrayList<Edge>();
         for (Conversion conversion : conversions.values()) {
             String from = conversion.getFrom().getAbbreviation();
             String to = conversion.getTo().getAbbreviation();
             if (known.contains(from) && known.contains(to)) {
-                edges.add(build(from, to, EdgeStatus.UNTESTED, conversions, tests));
+                edges.add(build(from, to, EdgeStatus.UNTESTED, conversions, tests, names));
             }
         }
         return edges;
@@ -108,17 +112,34 @@ public final class GeneratedGraphSource {
 
     private static Edge build(String from, String to, EdgeStatus status,
                               Map<String, Conversion> conversions,
-                              Map<String, List<TestCase>> tests) {
+                              Map<String, List<TestCase>> tests,
+                              Map<String, String> names) {
         Conversion conversion = conversions.get(pair(from, to));
         if (conversion == null) {
             return new Edge(from, to, status);
         }
-        List<TestCase> forward = tests.getOrDefault(TestCaseReader.key(from, to), List.of());
-        List<TestCase> reverse = tests.getOrDefault(TestCaseReader.key(to, from), List.of());
+        List<TestCase> direct = tests.getOrDefault(TestCaseReader.key(from, to), List.of());
+        List<TestCase> roundTrip = tests.getOrDefault(TestCaseReader.key(to, from), List.of());
+
+        // Reproducing a round-trip test needs the opposite conversion too: the
+        // suite runs that one first and feeds its result back through this one.
+        String inversePostfix = postfixOf(conversions.get(pair(to, from)));
 
         return new Edge(from, to, status,
                         Integer.toString(ConversionDetail.hops(conversion)),
-                        ConversionDetail.of(conversion, status, forward, reverse));
+                        ConversionDetail.of(conversion, inversePostfix, status, names,
+                                            direct, roundTrip));
+    }
+
+    private static String postfixOf(Conversion conversion) {
+        if (conversion == null) {
+            return null;
+        }
+        try {
+            return conversion.getMethod().getPostfix();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

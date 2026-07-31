@@ -181,11 +181,20 @@
     if (!event.target.classList.contains('pathbtn') || !pinned) {
       return;
     }
-    event.target.disabled = true;
-    event.target.textContent = 'Routes through the hand-written conversions';
-    renderRoutes(odetail.querySelector('.routes'),
-                 pinned.dataset.from, pinned.dataset.to,
-                 parseInt(pinned.querySelector('.lab') ? pinned.querySelector('.lab').textContent : '0', 10));
+    var routeList = odetail.querySelector('.routes');
+
+    // Toggle rather than a one-way reveal: the route list can be long, and once
+    // you have read it you want the equation back without re-selecting the cell.
+    if (routeList.innerHTML !== '') {
+      routeList.innerHTML = '';
+      event.target.textContent = 'Show every route';
+      return;
+    }
+
+    event.target.textContent = 'Hide routes';
+    renderRoutes(routeList, pinned.dataset.from, pinned.dataset.to,
+                 parseInt(pinned.querySelector('.lab')
+                          ? pinned.querySelector('.lab').textContent : '0', 10));
   });
 
   /* --------------------------------------------------------------- overlay */

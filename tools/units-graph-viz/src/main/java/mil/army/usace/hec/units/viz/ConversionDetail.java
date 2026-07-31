@@ -1,6 +1,7 @@
 package mil.army.usace.hec.units.viz;
 
 import java.util.List;
+import java.util.Map;
 
 import mil.army.usace.hec.graph.viz.formula.AffineForm;
 import mil.army.usace.hec.graph.viz.formula.FormulaRenderer;
@@ -14,9 +15,9 @@ import net.hobbyscience.database.Conversion;
  *
  * A coloured square tells you a conversion passed or was never tested. It does
  * not tell you whether the number it produces is right, nor - when it is red -
- * what went wrong. That is what this fills in: the net factor as one readable
- * number, the chain of hops behind it, and every test case that touched it with
- * the value this conversion actually produces for each.
+ * what went wrong. That is what this fills in: the pair in plain English, the
+ * net factor as one readable number, the chain of hops behind it, and every test
+ * case that touched it with the value this conversion actually produces.
  */
 final class ConversionDetail {
 
@@ -32,8 +33,8 @@ final class ConversionDetail {
         return Math.max(1, chain.split("->").length - 1);
     }
 
-    static String of(Conversion conversion, EdgeStatus status, List<TestCase> forward,
-                     List<TestCase> reverse) {
+    static String of(Conversion conversion, String inversePostfix, EdgeStatus status,
+                     Map<String, String> names, List<TestCase> direct, List<TestCase> roundTrip) {
         final String postfix;
         try {
             postfix = conversion.getMethod().getPostfix();
@@ -46,32 +47,45 @@ final class ConversionDetail {
         String to = conversion.getTo().getAbbreviation();
 
         var out = new StringBuilder("<div class=\"fx\">");
-        out.append("<div class=\"fx-head\"><i>").append(Html.escape(from))
-           .append("</i><span class=\"arrow\">→</span><i>").append(Html.escape(to))
-           .append("</i>").append(statusChip(status)).append("</div>");
+
+        out.append("<div class=\"fx-head\">")
+           .append(UnitFormat.unit(from))
+           .append("<span class=\"arrow\">→</span>")
+           .append(UnitFormat.unit(to))
+           .append(statusChip(status))
+           .append("</div>");
+
+        // The abbreviations are terse by necessity; the full names remove any
+        // doubt about which unit a two-letter symbol refers to.
+        String fromName = names.get(from);
+        String toName = names.get(to);
+        if (fromName != null && toName != null) {
+            out.append("<div class=\"fx-names\">").append(Html.escape(fromName))
+               .append(" to ").append(Html.escape(toName)).append("</div>");
+        }
 
         // Derived conversions only expose postfix, so the affine probe has to run
         // against a postfix evaluator rather than the infix one.
         AffineForm form = FormulaRenderer.affineOf(x -> PostfixEvaluator.evaluate(postfix, x));
 
-        out.append("<table class=\"fx-body\"><tr><td class=\"lhs\"><i>")
-           .append(Html.escape(to)).append("</i></td><td class=\"eq\">=</td><td class=\"rhs\">");
+        out.append("<div class=\"fx-eq\">").append(UnitFormat.unit(to)).append("<span class=\"eq\">=</span>");
         if (form == null) {
             out.append("<span class=\"warn\">not a simple scale + offset</span>");
         } else if (form.m() == 0.0) {
             out.append("<span class=\"warn\">ignores its input - always ")
                .append(FormulaRenderer.formatNumber(form.b())).append("</span>");
         } else {
-            out.append("<i>").append(Html.escape(from)).append("</i>");
+            out.append(UnitFormat.unit(from));
             if (form.m() != 1.0) {
-                out.append(" × ").append(FormulaRenderer.formatNumber(form.m()));
+                out.append("<span class=\"op\">×</span>")
+                   .append(FormulaRenderer.formatNumber(form.m()));
             }
             if (form.b() != 0.0) {
-                out.append(form.b() > 0 ? " + " : " − ")
+                out.append("<span class=\"op\">").append(form.b() > 0 ? "+" : "−").append("</span>")
                    .append(FormulaRenderer.formatNumber(Math.abs(form.b())));
             }
         }
-        out.append("</td></tr></table>");
+        out.append("</div>");
 
         // The hop chain is the most useful field for debugging: when a conversion
         // is wrong it is usually one hop in the middle, and this points at it.
@@ -79,14 +93,26 @@ final class ConversionDetail {
         if (chain != null && !chain.isBlank()) {
             int hops = hops(conversion);
             out.append("<div class=\"fx-where\"><span class=\"kw\">via</span>")
-               .append(Html.escape(chain))
+               .append(chainSymbols(chain))
                .append("<span class=\"hopcount\">").append(hops)
                .append(hops == 1 ? " hop" : " hops").append("</span></div>");
         }
 
-        out.append("<div class=\"fx-raw\">").append(Html.escape(postfix)).append("</div>");
-        out.append(tests(postfix, from, to, forward, reverse));
+        out.append(tests(postfix, inversePostfix, from, to, direct, roundTrip));
         return out.append("</div>").toString();
+    }
+
+    /** "ac-ft -> ft3 -> m3" with each unit typeset and a real arrow. */
+    private static String chainSymbols(String chain) {
+        String[] steps = chain.split("->");
+        var out = new StringBuilder();
+        for (int i = 0; i < steps.length; i++) {
+            if (i > 0) {
+                out.append("<span class=\"arrow\">→</span>");
+            }
+            out.append(UnitFormat.unit(steps[i].trim()));
+        }
+        return out.toString();
     }
 
     private static String statusChip(EdgeStatus status) {
@@ -100,17 +126,18 @@ final class ConversionDetail {
     }
 
     /**
-     * Every test case that touches this pair, with what the conversion actually
-     * produces for each.
+     * Every test case that touches this pair, with what the conversion produces.
      *
      * Rows written the other way round still exercise this conversion, because
-     * the test converts and then converts back. For those the check runs in
-     * reverse: feed in the row's expected value and the answer should be the
-     * row's input.
+     * the suite converts and then converts back. Reproducing that faithfully
+     * means running the opposite conversion first and feeding its result in -
+     * exactly as the suite does. Substituting the row's ideal value instead
+     * would break the round trip and report a failure the suite never sees.
      */
-    private static String tests(String postfix, String from, String to,
-                                List<TestCase> forward, List<TestCase> reverse) {
-        int count = forward.size() + reverse.size();
+    private static String tests(String postfix, String inversePostfix, String from, String to,
+                                List<TestCase> direct, List<TestCase> roundTrip) {
+        boolean canRoundTrip = inversePostfix != null;
+        int count = direct.size() + (canRoundTrip ? roundTrip.size() : 0);
         if (count == 0) {
             return "<div class=\"fx-tests\"><div class=\"lbl\">no test covers this pair</div></div>";
         }
@@ -119,36 +146,51 @@ final class ConversionDetail {
             .append(count).append(count == 1 ? " test case" : " test cases")
             .append("</div><table>");
 
-        for (TestCase test : forward) {
-            row(out, postfix, from, to, test.input(), test.expected(), test.delta(), false);
+        for (TestCase test : direct) {
+            row(out, "direct", from, to, test.input(),
+                evaluate(postfix, test.input()), test.expected(), test.delta());
         }
-        for (TestCase test : reverse) {
-            // The row reads to -> from, so this conversion is the return leg.
-            row(out, postfix, from, to, test.expected(), test.input(), test.delta(), true);
+
+        if (canRoundTrip) {
+            for (TestCase test : roundTrip) {
+                // The row reads to -> from. The suite converts that way first, then
+                // back through this conversion, and checks it lands where it started.
+                Double there = evaluate(inversePostfix, test.input());
+                Double back = there == null ? null : evaluate(postfix, there);
+                row(out, "round trip", from, to, there, back, test.input(), test.inverseDelta());
+            }
         }
+
         return out.append("</table></div>").toString();
     }
 
-    private static void row(StringBuilder out, String postfix, String from, String to,
-                            double input, double want, double delta, boolean inverse) {
-        double got;
+    private static Double evaluate(String postfix, double input) {
         try {
-            got = PostfixEvaluator.evaluate(postfix, input);
+            double value = PostfixEvaluator.evaluate(postfix, input);
+            return Double.isFinite(value) ? value : null;
         } catch (RuntimeException e) {
-            out.append("<tr class=\"bad\"><td colspan=\"4\">could not evaluate</td></tr>");
+            return null;
+        }
+    }
+
+    private static void row(StringBuilder out, String kind, String from, String to,
+                            Double input, Double got, double want, double delta) {
+        if (input == null || got == null) {
+            out.append("<tr class=\"bad\"><td class=\"k\">").append(kind)
+               .append("</td><td colspan=\"3\">could not evaluate</td></tr>");
             return;
         }
 
         double off = Math.abs(got - want);
-        boolean ok = Double.isFinite(got) && off <= delta;
+        boolean ok = off <= delta;
 
         out.append("<tr class=\"").append(ok ? "ok" : "bad").append("\">")
+           .append("<td class=\"k\">").append(kind).append("</td>")
            .append("<td class=\"in\">").append(FormulaRenderer.formatNumber(input))
-           .append(" <span class=\"u\">").append(Html.escape(from)).append("</span></td>")
+           .append(" ").append(UnitFormat.unit(from)).append("</td>")
            .append("<td class=\"got\">").append(FormulaRenderer.formatNumber(got))
-           .append(" <span class=\"u\">").append(Html.escape(to)).append("</span></td>")
-           .append("<td class=\"exp\">want ").append(FormulaRenderer.formatNumber(want))
-           .append("</td><td class=\"v\">");
+           .append(" ").append(UnitFormat.unit(to)).append("</td>")
+           .append("<td class=\"v\">");
 
         if (ok) {
             out.append("✓");
@@ -157,12 +199,9 @@ final class ConversionDetail {
             // tolerance that is too tight, a large one means a wrong constant.
             out.append("off by ").append(FormulaRenderer.formatNumber(off));
         }
-        out.append("</td></tr>");
-
-        if (inverse) {
-            out.append("<tr class=\"note\"><td colspan=\"4\">↑ return leg of the ")
-               .append(Html.escape(to)).append(" → ").append(Html.escape(from))
-               .append(" test</td></tr>");
-        }
+        out.append("</td></tr>")
+           .append("<tr class=\"want ").append(ok ? "ok" : "bad").append("\"><td></td>")
+           .append("<td colspan=\"3\">expected ").append(FormulaRenderer.formatNumber(want))
+           .append(" ± ").append(FormulaRenderer.formatNumber(delta)).append("</td></tr>");
     }
 }

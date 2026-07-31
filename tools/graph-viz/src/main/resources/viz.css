@@ -160,53 +160,61 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
  background:#ffffff1a;border:1px solid #ffffff2e;color:#cbd5e1;
  font:10.5px ui-monospace,monospace;letter-spacing:.04em}
 
-/* Typeset formula styling, ported from the Python project. Serif italics for
-   unit symbols is what makes these read as equations rather than as code. */
+/* ---- typeset formula ----
+   Approximating maths typesetting with plain HTML rather than pulling in a
+   LaTeX renderer: a serif face for the equation, real <sup> exponents, and
+   spacing around operators. Unit symbols are upright, not italic - in SI
+   notation italics mean a variable, and a unit is not one. */
 .fx{font-size:15.5px;line-height:1.5}
-.fx i{font-style:italic;font-size:1.06em;
- font-family:'Cambria Math','STIX Two Math','Times New Roman',Georgia,serif}
-.fx sup{font-size:.72em}
-.fx-head{font-family:'Cambria Math','Times New Roman',Georgia,serif;font-size:18px;
- padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid #ffffff1f;color:#f1f5f9;
- display:flex;align-items:center;gap:2px;flex-wrap:wrap}
-.fx-head .arrow{margin:0 10px;color:#94a3b8}
+.fx sup{font-size:.68em;vertical-align:super;line-height:0}
+
+.u{font-family:'Cambria Math','STIX Two Math','Latin Modern Math',Georgia,serif;
+ font-size:1.1em;white-space:nowrap}
+
+.fx-head{display:flex;align-items:center;gap:2px;flex-wrap:wrap;font-size:19px;
+ color:#f1f5f9;padding-bottom:8px}
+.fx-head .arrow{margin:0 10px;color:#94a3b8;font-size:.9em}
 .fx-head .chip{margin-left:auto;font:10.5px ui-monospace,monospace;
- padding:2px 9px;border-radius:99px;font-style:normal}
+ padding:2px 9px;border-radius:99px}
 .chip.passed{background:#14532d;color:#86efac}
 .chip.failed{background:#7f1d1d;color:#fca5a5}
 .chip.untested{background:#334155;color:#cbd5e1}
 
-.fx-body{border-collapse:collapse;margin:0}
-.fx-body td{padding:2px 0;vertical-align:baseline}
-.fx-body .lhs{text-align:right;padding-right:8px}
-.fx-body .eq{padding:0 8px;color:#94a3b8}
-.fx-body .rhs{text-align:left;word-break:break-word}
-.fx-body .warn{color:#fbbf24}
+/* The plain-English pair, so a two-letter symbol is never ambiguous. */
+.fx-names{color:#94a3b8;font-size:13px;padding-bottom:11px;
+ border-bottom:1px solid #ffffff1f;margin-bottom:13px}
 
-.fx-where{margin-top:13px;font-size:13px;color:#94a3b8;word-break:break-word}
-.fx-where .kw{font-style:italic;margin-right:8px;
+.fx-eq{font-family:'Cambria Math','STIX Two Math',Georgia,serif;font-size:20px;
+ color:#f1f5f9;display:flex;align-items:center;flex-wrap:wrap;gap:2px;
+ padding:4px 0 2px}
+.fx-eq .eq{margin:0 12px;color:#94a3b8}
+.fx-eq .op{margin:0 8px;color:#cbd5e1}
+.fx-eq .warn{color:#fbbf24;font-size:.75em;font-family:ui-sans-serif,sans-serif}
+
+.fx-where{margin-top:14px;font-size:13px;color:#94a3b8;
+ display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.fx-where .kw{font-style:italic;margin-right:9px;
  font-family:'Cambria Math','Times New Roman',Georgia,serif}
-.fx-where .hopcount{margin-left:8px;font:10.5px ui-monospace,monospace;
+.fx-where .arrow{margin:0 6px;color:#64748b}
+.fx-where .hopcount{margin-left:9px;font:10.5px ui-monospace,monospace;
  background:#ffffff14;border-radius:99px;padding:1px 8px;white-space:nowrap}
-
-.fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid #ffffff14;
- font:12px ui-monospace,monospace;color:#64748b;word-break:break-all}
 
 /* ---- test cases ----
    A red cell that cannot say why it is red is barely better than no cell. */
-.fx-tests{margin-top:15px;padding-top:12px;border-top:1px solid #ffffff14}
+.fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid #ffffff14}
 .fx-tests .lbl{font:10.5px ui-monospace,monospace;color:#7dd3fc;
- letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
-.fx-tests table{width:100%;border-collapse:collapse;font:12.5px ui-monospace,monospace}
-.fx-tests td{padding:4px 6px 4px 0;vertical-align:baseline}
-.fx-tests .u{color:#64748b}
+ letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
+.fx-tests table{width:100%;border-collapse:collapse;font-size:13.5px}
+.fx-tests td{padding:3px 6px 3px 0;vertical-align:baseline}
+.fx-tests .k{font:10px ui-monospace,monospace;color:#64748b;white-space:nowrap;
+ text-transform:uppercase;letter-spacing:.04em}
 .fx-tests .got{color:#e2e8f0}
-.fx-tests .exp{color:#94a3b8}
-.fx-tests .v{text-align:right;white-space:nowrap}
+.fx-tests .v{text-align:right;white-space:nowrap;font:12px ui-monospace,monospace}
 .fx-tests tr.ok .v{color:#86efac}
 .fx-tests tr.bad td{background:#7f1d1d33}
 .fx-tests tr.bad .v{color:#fca5a5}
-.fx-tests tr.note td{color:#64748b;font-size:11px;padding-top:0}
+.fx-tests tr.want td{color:#7c8b9a;font-size:11.5px;padding-top:0;padding-bottom:7px;
+ font-family:ui-monospace,monospace}
 
 /* ---- routes ---- */
 .fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid #ffffff14}

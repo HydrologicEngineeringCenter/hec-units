@@ -36,14 +36,13 @@ final class TestCaseReader {
                 continue;
             }
             String[] parts = line.split(",");
-            if (parts.length < 5) {
+            if (parts.length < 6) {
                 continue;
             }
             try {
                 var testCase = new TestCase(parts[0].trim(), parts[1].trim(),
-                                            Double.parseDouble(parts[2].trim()),
-                                            Double.parseDouble(parts[3].trim()),
-                                            Double.parseDouble(parts[4].trim()));
+                                            number(parts[2]), number(parts[3]),
+                                            number(parts[4]), number(parts[5]));
                 byPair.computeIfAbsent(key(testCase.from(), testCase.to()), k -> new ArrayList<>())
                       .add(testCase);
             } catch (NumberFormatException e) {
@@ -51,6 +50,21 @@ final class TestCaseReader {
             }
         }
         return byPair;
+    }
+
+    /**
+     * Parses one field, tolerating the quoting JUnit's CSV reader also tolerates.
+     *
+     * Some rows in the file are written as `" .0001"` - quoted, with a leading
+     * space. A plain parse throws on those, and silently dropping them would
+     * leave test cases invisible in exactly the tool meant to surface them.
+     */
+    private static double number(String field) {
+        String value = field.trim();
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1).trim();
+        }
+        return Double.parseDouble(value);
     }
 
     static String key(String from, String to) {
