@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import cwms.units.Loader;
 import mil.army.usace.hec.graph.viz.view.MatrixView;
 import mil.army.usace.hec.graph.viz.view.PageRenderer;
+import mil.army.usace.hec.graph.viz.view.Stats;
 
 /**
  * Joins the hec-units data sources to the generic views and writes the page.
@@ -38,6 +39,7 @@ public final class GenerateVisualization {
         var graph = GeneratedGraphSource.load(loader, report, testCsv);
         String html = PageRenderer.render(
             "Unit conversion coverage",
+            new Stats(graph),
             (covered ? "" : missingReportNotice()) + MatrixView.render(graph),
             SeedPaths.script(loader));
 

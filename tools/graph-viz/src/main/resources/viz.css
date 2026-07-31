@@ -252,3 +252,90 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
  .sw.missing{background:#1e293b}
  .card:hover{box-shadow:0 6px 20px #0006}
 }
+
+/* ---- page header + summary button ---- */
+.pagehead{display:flex;align-items:flex-start;gap:24px;justify-content:space-between}
+#sumopen{flex:none;background:#0f172a;color:#f8fafc;border:1px solid #0f172a;border-radius:8px;
+ padding:9px 20px;cursor:pointer;font:600 13px ui-sans-serif,-apple-system,sans-serif;
+ transition:transform .12s,box-shadow .12s}
+#sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
+
+/* ---- key, with counts ----
+   Raw count and share sit under each swatch. A colour key tells you what green
+   means; the number tells you how much green there is, which is the thing you
+   actually want to know before scrolling through 28 matrices. */
+.legend .key{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.legend .k-top{display:flex;align-items:center;gap:7px}
+.legend .k-num{font:600 15px ui-monospace,monospace;color:#0f172a;padding-left:20px}
+.legend .k-num em{font-style:normal;font-weight:400;font-size:11.5px;color:#64748b;margin-left:7px}
+.olegend .k-num{color:#e2e8f0;font-size:13px}
+.olegend .k-num em{color:#64748b}
+
+/* ---- summary window ---- */
+#summary{position:fixed;inset:0;background:#0f172aee;display:none;z-index:60;
+ backdrop-filter:blur(3px);padding:22px 26px}
+#summary.open{display:flex;flex-direction:column}
+#sbar{display:flex;align-items:center;gap:16px;padding:0 2px 12px;color:#e2e8f0;
+ border-bottom:1px solid #ffffff1f;flex:none}
+#sbar h3{margin:0;font-size:19px}
+#sclose{margin-left:auto;background:#ffffff1a;border:1px solid #ffffff2e;color:#e2e8f0;
+ border-radius:6px;padding:5px 12px;cursor:pointer;font:12px ui-sans-serif,sans-serif}
+#sclose:hover{background:#ffffff2e}
+#sbody{flex:1;min-height:0;overflow-y:auto;padding:20px 2px 40px}
+
+.sum{max-width:1000px;margin:0 auto;color:#e2e8f0;font-size:13.5px}
+.sum h4{margin:30px 0 4px;font-size:15px;color:#f1f5f9}
+.sum-note{color:#64748b;font-size:12px;margin-bottom:12px;line-height:1.5}
+
+.sum-top{display:flex;align-items:center;gap:38px;flex-wrap:wrap;
+ background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:22px 26px}
+.donut{width:160px;height:160px;flex:none}
+.donut-hole{stroke:#ffffff14}
+.donut .seg.passed{stroke:#22c55e}
+.donut .seg.failed{stroke:#ef4444}
+.donut .seg.untested{stroke:#64748b}
+.donut .seg.missing{stroke:#334155}
+.donut-mid{fill:#f1f5f9;font:600 7px ui-sans-serif,sans-serif;text-anchor:middle}
+.donut-sub{fill:#64748b;font:2.6px ui-monospace,monospace;text-anchor:middle;
+ letter-spacing:.12em;text-transform:uppercase}
+
+.sum-figures{display:flex;gap:34px;flex-wrap:wrap}
+.fig-label{font:10.5px ui-monospace,monospace;color:#7dd3fc;letter-spacing:.06em;
+ text-transform:uppercase}
+.fig-value{font:600 30px ui-sans-serif,sans-serif;color:#f1f5f9;line-height:1.25}
+.fig-note{color:#64748b;font-size:11.5px;max-width:26ch;line-height:1.45}
+
+.sum-table{width:100%;border-collapse:collapse;font-size:13px}
+.sum-table td,.sum-table th{padding:5px 10px 5px 0;vertical-align:middle}
+.sum-table thead th{font:10.5px ui-monospace,monospace;color:#64748b;text-align:left;
+ text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ffffff14}
+.sum-table .n{text-align:right;font:13px ui-monospace,monospace;width:64px}
+.sum-table .p{text-align:right;font:13px ui-monospace,monospace;color:#94a3b8;width:78px}
+.sum-table .n.ok{color:#86efac}
+.sum-table .n.bad{color:#fca5a5}
+.sum-table .name{color:#e2e8f0}
+.sum-table .hopn{font:13px ui-monospace,monospace;color:#cbd5e1;width:80px}
+.sum-table .barcell{width:38%}
+.sum-table .total td{border-top:1px solid #ffffff14;color:#94a3b8;padding-top:9px}
+.sum-table tbody tr:hover{background:#ffffff08}
+.bar{display:block;height:8px;border-radius:99px;min-width:2px}
+.bar.passed{background:#22c55e}
+.bar.failed{background:#ef4444}
+.bar.untested{background:#64748b}
+.bar.missing{background:#334155}
+.bar.hops{background:#7dd3fc}
+
+.sum-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.sum-card{background:#ffffff0a;border:1px solid #ffffff14;border-radius:10px;padding:16px 18px}
+.sum-card.bad{border-color:#ef444459;background:#7f1d1d26}
+.sum-card.warn{border-color:#f59e0b45;background:#78350f1f}
+.c-value{font:600 26px ui-sans-serif,sans-serif;color:#f1f5f9;line-height:1.2}
+.sum-card.bad .c-value{color:#fca5a5}
+.sum-card.warn .c-value{color:#fcd34d}
+.c-label{font-size:12.5px;color:#cbd5e1;margin-bottom:7px}
+.c-note{font:11.5px ui-monospace,monospace;color:#64748b;line-height:1.55;word-break:break-word}
+
+@media(prefers-color-scheme:dark){
+ #sumopen{background:#e2e8f0;color:#0f172a;border-color:#e2e8f0}
+ .legend .k-num{color:#e2e8f0}
+}

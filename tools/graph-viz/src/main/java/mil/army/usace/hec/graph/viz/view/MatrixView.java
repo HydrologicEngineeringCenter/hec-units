@@ -90,7 +90,12 @@ public final class MatrixView {
         out.append("</td>");
     }
 
-    private static String stateOf(Edge edge) {
+    /**
+     * Package-visible so Stats counts cells exactly the way the matrix draws
+     * them. Two definitions of "what state is this cell" would drift apart, and
+     * a key whose numbers disagree with the grid is worse than no key.
+     */
+    static String stateOf(Edge edge) {
         if (edge == null) {
             return "missing";           // no conversion exists between this pair
         }

@@ -275,6 +275,36 @@
 
   document.getElementById('oclose').addEventListener('click', close);
 
+  /* --------------------------------------------------------------- summary */
+
+  // The summary is rendered into the page up front rather than built here: it is
+  // static, so there is nothing to compute at open time and the markup stays in
+  // the same place as everything else.
+  var summary = document.getElementById('summary');
+  var openSummary = document.getElementById('sumopen');
+
+  function showSummary(show) {
+    if (!summary) {
+      return;
+    }
+    summary.classList.toggle('open', show);
+    document.body.style.overflow = show ? 'hidden' : '';
+  }
+
+  if (openSummary && summary) {
+    openSummary.addEventListener('click', function () {
+      showSummary(true);
+    });
+    document.getElementById('sclose').addEventListener('click', function () {
+      showSummary(false);
+    });
+    summary.addEventListener('click', function (event) {
+      if (event.target === summary) {
+        showSummary(false);
+      }
+    });
+  }
+
   // Clicking the backdrop closes; clicking anything inside it must not.
   overlay.addEventListener('click', function (event) {
     if (event.target === overlay) {
@@ -283,9 +313,16 @@
   });
 
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-      close();
+    if (event.key !== 'Escape') {
+      return;
     }
+    // Close only the topmost thing, so Escape out of the summary does not also
+    // dismiss a matrix that was open behind it.
+    if (summary && summary.classList.contains('open')) {
+      showSummary(false);
+      return;
+    }
+    close();
   });
 
   window.addEventListener('resize', function () {
