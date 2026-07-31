@@ -22,14 +22,16 @@ public final class PageRenderer {
         <div class="pagehead">
         <div>
         <h1>{{title2}}</h1>
-        <p class="lede">Every conversion the algorithm can produce, one matrix per dimension.
-          <b>Each row converts into the columns.</b> Click a card to enlarge it, then click any
-          cell for its equation and test results.</p>
+        <p class="lede">{{lede}}</p>
         </div>
         {{summaryButton}}
         </div>
+        {{tabbar}}
+        <div class="tabpane active" id="tab-coverage">
         {{legend}}
         {{body}}
+        </div>
+        {{seedpane}}
         {{overlay}}
         {{summary}}
         {{data}}
@@ -46,9 +48,11 @@ public final class PageRenderer {
         <h3 id="otitle"></h3>
         <span id="oaxis">row → column</span>
         <span id="otally" class="tally"></span>
+        <button id="oreset" type="button">Reset view</button>
         <button id="oclose" type="button">Close</button>
         </div>
         {{legend}}
+        {{seedkey}}
         <div id="ostagewrap">
         <div id="ostage"></div>
         <aside id="opanel"><div id="odetail"></div></aside>
@@ -73,25 +77,84 @@ public final class PageRenderer {
     }
 
     /**
-     * @param stats counts for the key and the summary; null omits both
-     * @param data  a script emitted before the page script, for any dataset the
-     *              page has to work with at runtime
+     * @param stats    counts for the key and the summary; null omits both
+     * @param seedBody the seed-graph tab's content; empty renders no tab bar
+     * @param data     a script emitted before the page script, for any dataset
+     *                 the page has to work with at runtime
      */
-    public static String render(String title, Stats stats, String body, String data)
-            throws IOException {
+    public static String render(String title, Stats stats, String body, String seedBody,
+                                String data) throws IOException {
+        boolean tabbed = !seedBody.isEmpty();
         return Html.fill(PAGE)
             .put("title", title)
             .put("title2", title)
+            .put("lede", tabbed
+                 ? "Coverage shows every conversion the algorithm can produce, one matrix per "
+                 + "dimension - each row converts into the columns. Conversion graphs show the "
+                 + "direct conversions those are all derived from - the ones written by hand, "
+                 + "one step each. Click any card to enlarge it."
+                 : "Every conversion the algorithm can produce, one matrix per dimension. "
+                 + "Each row converts into the columns. Click a card to enlarge it, then click "
+                 + "any cell for its equation and test results.")
             .raw("css", resource("/viz.css"))
             .raw("js", resource("/viz.js"))
             .raw("summaryButton", stats == null ? ""
                  : "<button id=\"sumopen\" type=\"button\">Summary</button>")
+            .raw("tabbar", tabbed ? TABBAR : "")
             .raw("legend", legend("legend", stats))
             .raw("body", body)
-            .raw("overlay", Html.fill(OVERLAY).raw("legend", legend("legend olegend", null)).render())
+            .raw("seedpane", tabbed
+                 ? Html.fill(SEEDPANE).raw("legend", seedLegend()).raw("body", seedBody).render()
+                 : "")
+            .raw("overlay", Html.fill(OVERLAY)
+                 .raw("legend", legend("legend olegend mkey", null))
+                 .raw("seedkey", tabbed ? seedKey() : "")
+                 .render())
             .raw("summary", summary(stats))
             .raw("data", data.isEmpty() ? "" : "<script>\n" + data + "</script>")
             .render();
+    }
+
+    private static final String TABBAR = """
+        <div class="tabs" role="tablist">
+        <button class="tab active" data-pane="tab-coverage" type="button">Coverage</button>
+        <button class="tab" data-pane="tab-seed" type="button">Conversion graphs</button>
+        </div>
+        """;
+
+    private static final String SEEDPANE = """
+        <div class="tabpane" id="tab-seed">
+        {{legend}}
+        {{body}}
+        </div>
+        """;
+
+    /** The graph tab's own key: node systems and the two stroke kinds. */
+    private static String seedLegend() {
+        return """
+            <div class="legend seedlegend">
+            <span><i class="sw t-si"></i>SI</span>
+            <span><i class="sw t-english"></i>English</span>
+            <span><i class="sw t-null"></i>system-agnostic</span>
+            <span><i class="ln"></i><code>linear:</code> scale + offset</span>
+            <span><i class="ln dash"></i><code>function:</code> arbitrary expression</span>
+            <span class="hint">a bowed pair is two different conversions for the same two units</span>
+            </div>
+            """;
+    }
+
+    /** The same key on the dark backdrop, shown only while a graph is enlarged. */
+    private static String seedKey() {
+        return """
+            <div class="legend olegend skey">
+            <span><i class="sw t-si"></i>SI</span>
+            <span><i class="sw t-english"></i>English</span>
+            <span><i class="sw t-null"></i>system-agnostic</span>
+            <span><i class="ln"></i>linear</span>
+            <span><i class="ln dash"></i>function</span>
+            <span class="hint">click two units for routes · click an edge for its formula</span>
+            </div>
+            """;
     }
 
     /**

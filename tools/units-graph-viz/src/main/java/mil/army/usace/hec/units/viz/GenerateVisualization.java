@@ -6,6 +6,7 @@ import java.nio.file.Path;
 
 import cwms.units.Loader;
 import mil.army.usace.hec.graph.viz.view.MatrixView;
+import mil.army.usace.hec.graph.viz.view.NodeLinkView;
 import mil.army.usace.hec.graph.viz.view.PageRenderer;
 import mil.army.usace.hec.graph.viz.view.Stats;
 
@@ -37,10 +38,12 @@ public final class GenerateVisualization {
         var loader = new Loader();
 
         var graph = GeneratedGraphSource.load(loader, report, testCsv);
+        var seedGraph = SeedGraphSource.load(loader);
         String html = PageRenderer.render(
-            "Unit conversion coverage",
+            "Unit conversions",
             new Stats(graph),
             (covered ? "" : missingReportNotice()) + MatrixView.render(graph),
+            NodeLinkView.render(seedGraph),
             SeedPaths.script(loader));
 
         Files.createDirectories(outputDir);
@@ -57,7 +60,8 @@ public final class GenerateVisualization {
         // failure text.
         System.out.println();
         System.out.println("  " + graph.nodes().size() + " units, " + graph.edges().size()
-            + " conversions" + (covered ? "" : "  (no coverage data)"));
+            + " conversions" + (covered ? "" : "  (no coverage data)")
+            + ", " + seedGraph.edges().size() + " direct conversions");
         System.out.println("  view it:  ./gradlew :units-graph-viz:vizServe");
         System.out.println("            http://localhost:" + PORT + "/");
         System.out.println("  file:     " + index.toAbsolutePath());

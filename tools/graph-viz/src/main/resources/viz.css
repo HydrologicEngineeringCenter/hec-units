@@ -20,6 +20,7 @@
   --missing:#f1f4f7; --missing-dark:#1e293b;
   --seed:#6366f1;
   --accent:#7dd3fc; --accent-deep:#38bdf8;
+  --pick-1:#34d399; --pick-2:#fbbf24; --edge-pick:#f59e0b;
   --warn:#fbbf24;
 
   /* shape + depth */
@@ -39,6 +40,12 @@
 
 *{box-sizing:border-box}
 
+/* Reserve the scrollbar's width permanently.
+   Without this the page reflows twice: once when a modal sets overflow:hidden
+   and the page bar disappears, and again when an overlay scrollbar fades in as
+   the cursor nears a scrollable pane. Both read as a hitch. */
+html{scrollbar-gutter:stable}
+
 body{margin:0;padding:32px;color:var(--ink);
  background:linear-gradient(180deg,var(--page) 0%,var(--page-deep) 100%) fixed;
  font:15px/1.6 var(--sans)}
@@ -56,15 +63,15 @@ button{font:inherit}
 #sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
 #sumopen:active{transform:translateY(0) scale(.97);box-shadow:none}
 
-#oclose,#sclose,.pathbtn{background:var(--glass-strong);border:1px solid #ffffff2e;
+#oclose,#sclose,#oreset,.pathbtn{background:var(--glass-strong);border:1px solid #ffffff2e;
  color:var(--lt-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
  font:12px var(--sans);
  transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
    transform var(--fast) var(--ease)}
-#oclose:hover,#sclose:hover,.pathbtn:hover{background:#ffffff2e;color:var(--lt-ink)}
-#oclose:active,#sclose:active,.pathbtn:active{transform:scale(.97)}
+#oclose:hover,#sclose:hover,#oreset:hover,.pathbtn:hover{background:#ffffff2e;color:var(--lt-ink)}
+#oclose:active,#sclose:active,#oreset:active,.pathbtn:active{transform:scale(.97)}
 
-#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,.pathbtn:focus-visible,
+#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,#oreset:focus-visible,.pathbtn:focus-visible,
 .card:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 
 /* Amber: "the page cannot tell you something", never mistakable for a failure. */
@@ -179,7 +186,8 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
  border:1px solid var(--glass-strong);padding:2px 10px;border-radius:var(--r-pill)}
 
 /* dark panes scroll with a quiet thin bar, not the default chrome */
-#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--dark-3) transparent}
+#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--dark-3) transparent;
+ scrollbar-gutter:stable}
 #ostage::-webkit-scrollbar,#opanel::-webkit-scrollbar,#sbody::-webkit-scrollbar{
  width:8px;height:8px}
 #ostage::-webkit-scrollbar-thumb,#opanel::-webkit-scrollbar-thumb,
@@ -415,3 +423,182 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
  .legend .key.total{border-left-color:var(--dark-3)}
  #sumopen{background:var(--lt-ink);color:var(--dark);border-color:var(--lt-ink)}
 }
+
+/* ============================================================ tabs */
+.tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;
+ padding:9px 18px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-3);
+ transition:color var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent-deep)}
+.tab:focus-visible{outline:2px solid var(--accent-deep);outline-offset:-2px}
+
+.tabpane{display:none}
+.tabpane.active{display:block;animation:rise var(--med) var(--ease)}
+
+/* ============================================================ seed cards */
+.seedcard .meta{margin:6px 0 2px;font:12px var(--mono);color:var(--ink-3)}
+.seedcard .shape{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.card.cyclic{border-color:#f59e0b73}
+.card.dup{border-color:#818cf8a6}
+.badge.tree{background:#f1f5f9;color:var(--ink-3)}
+.badge.cyclic{background:#fef3c7;color:#92400e}
+.badge.dup{background:#e0e7ff;color:#3730a3}
+
+/* legend swatches for the seed tab */
+.sw.t-si{background:#dbeafe;border-color:#2563eb}
+.sw.t-english{background:#fee2e2;border-color:#dc2626}
+.sw.t-null{background:#e5e7eb;border-color:#6b7280}
+.ln{display:inline-block;width:26px;border-top:2px solid var(--ink-3);vertical-align:middle}
+.ln.dash{border-top-style:dashed}
+
+/* ============================================================ node-link svg */
+svg.nl{width:100%;height:auto;display:block}
+.nl text{font:14px var(--mono);text-anchor:middle;pointer-events:none;user-select:none}
+.nl-edge{fill:none;stroke:#94a3b8;stroke-width:1.6}
+.nl-edge.function{stroke-dasharray:6 4}
+.nl-node rect{fill:#e5e7eb;stroke:#6b7280;stroke-width:1.5}
+.nl-node text{fill:#374151}
+.nl-node.t-si rect{fill:#dbeafe;stroke:#2563eb}
+.nl-node.t-si text{fill:#1e3a5f}
+.nl-node.t-english rect{fill:#fee2e2;stroke:#dc2626}
+.nl-node.t-english text{fill:#5f1e1e}
+
+/* the same drawing, enlarged and interactive */
+#overlay.seedmode #ostage{padding:0;overflow:hidden;cursor:grab;display:block}
+#overlay.seedmode #ostage.panning{cursor:grabbing}
+#ostage svg.nl{width:100%;height:100%}
+#ostage .nl text{font-size:17px}
+#ostage .nl-edge{stroke:#64748b;stroke-width:2.5}
+#ostage .nl-edge.function{stroke-dasharray:7 5}
+#ostage .nl-node rect{stroke-width:2}
+#ostage .nl-node{cursor:grab}
+.nl-hit{fill:none;stroke:transparent;stroke-width:20;cursor:pointer}
+
+/* hover/selection states - opacity fades ride the shared easing curve */
+#ostage .nl-edge,#ostage .nl-node{transition:opacity var(--med) var(--ease)}
+#ostage .nl-edge.dim,#ostage .nl-node.dim{opacity:.12}
+#ostage .nl-edge.sel{stroke:var(--edge-pick);stroke-width:4.5}
+#ostage .nl-edge.on-route{stroke:var(--accent-deep);stroke-width:5;opacity:1}
+#ostage .nl-node.pick-a rect{stroke:#fff;stroke-width:4}
+#ostage .nl-node.pick-b rect{stroke:#fff;stroke-width:4;stroke-dasharray:7 5}
+
+/* ============================================================ route explorer */
+#odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--lt-ink)}
+.pth-sub{color:var(--lt-ink-4);font:11.5px var(--mono);margin-bottom:12px}
+.pth-warn{background:#78350f66;border:1px solid #f59e0b66;border-radius:var(--r-m);
+ padding:9px 12px;margin:10px 0;color:#fcd34d;font-size:12.5px;line-height:1.5}
+.pth-ok{color:#86efac;font-size:12.5px;margin:10px 0}
+#optoggle{display:flex;align-items:center;gap:7px;margin:0 0 12px;cursor:pointer;
+ font:11.5px var(--mono);color:var(--lt-ink-3);user-select:none}
+#optoggle input{accent-color:var(--accent-deep)}
+
+.prow{padding:8px 10px;border-radius:var(--r-m);margin-bottom:6px;background:#ffffff0d;
+ border:1px solid transparent;cursor:pointer;
+ animation:rise var(--med) var(--ease) both;animation-delay:calc(min(var(--i,0),12)*22ms);
+ transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.prow:hover{background:#ffffff17}
+.prow.best{background:#38bdf814;border-color:#38bdf84d}
+.prow .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.prow .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+ border-radius:var(--r-pill);padding:1px 8px;flex:none}
+.prow .route{font:12px var(--mono);color:var(--lt-ink);line-height:1.5;word-break:break-word}
+.prow .res{margin-top:4px;font-size:13px;color:var(--lt-ink-3)}
+.prow .res .u{font-size:1.05em}
+.grp{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
+ vertical-align:0}
+.pth-more{color:var(--warn);font-size:12px;margin-top:10px}
+
+/* ============================================================ fx additions */
+.fx-eq.cont{font-size:18px;color:var(--lt-ink-2)}
+.fx-note{margin-top:8px;font-size:12px;color:var(--warn)}
+.fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid var(--glass-line);
+ font:12px var(--mono);color:var(--lt-ink-4);word-break:break-all}
+.fx-where i{font-style:italic;font-family:var(--math)}
+.fx-where .sep{margin-right:6px}
+.fx .fx-eq i{font-style:italic;font-family:var(--math)}
+.chip.kind{background:var(--dark-3);color:var(--lt-ink-2)}
+
+@media(prefers-color-scheme:dark){
+ .tabs{border-bottom-color:var(--dark-3)}
+ .tab:hover,.tab.active{color:var(--lt-ink)}
+ .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
+ .badge.cyclic{background:#78350f66;color:#fcd34d}
+ .badge.dup{background:#312e81;color:#c7d2fe}
+ .seedcard .shape{color:var(--lt-ink-3)}
+ .ln{border-top-color:var(--lt-ink-3)}
+}
+
+/* reset button and the per-mode keys in the enlarged view */
+#oreset{display:none;margin-left:auto}
+#overlay.seedmode #oreset{display:inline-block}
+#overlay.seedmode #oclose{margin-left:0}
+.olegend.skey{display:none}
+#overlay.seedmode .olegend.skey{display:flex}
+#overlay.seedmode .olegend.mkey{display:none}
+.olegend .ln{border-top-color:var(--lt-ink-3)}
+
+/* ---- node selection ----
+   Three states, written to be mutually exclusive via :not() rather than relying
+   on source order - a picked node must never pick up a hover style, whatever
+   the specificity works out to.
+
+   Colour says which slot at a glance; the numbered badge says it unambiguously,
+   so the pair is never told apart by hue alone. */
+#ostage .nl-node rect{transition:stroke var(--fast) var(--ease),
+ stroke-width var(--fast) var(--ease)}
+
+#ostage .nl-node:not(.pick-a):not(.pick-b):hover rect{stroke-width:3.5}
+
+/* While one unit is chosen, hovering an unpicked node previews the ring it
+   would take - same colour as slot 2, dashed because it has not happened yet. */
+#ostage svg.picking .nl-node:not(.pick-a):not(.pick-b):hover rect{
+ stroke:var(--pick-2);stroke-width:3;stroke-dasharray:5 4}
+
+#ostage .nl-node.pick-a rect{stroke:var(--pick-1);stroke-width:4;stroke-dasharray:none}
+#ostage .nl-node.pick-b rect{stroke:var(--pick-2);stroke-width:4;stroke-dasharray:none}
+#ostage .nl-node.pop rect{animation:pickpop .42s var(--ease)}
+
+@keyframes pickpop{0%{stroke-width:2}45%{stroke-width:9}100%{stroke-width:4}}
+
+/* The matrix's "pinned" hint is wrong here and redundant - the graph has an
+   explicit Clear selection button instead. */
+#overlay.seedmode #odetail.locked::before{display:none}
+
+/* Sits above the heading rather than floating beside it, so a long unit name
+   cannot wrap underneath it. */
+.clearpick{float:none;display:block;margin:0 0 10px auto}
+
+/* ---- numbered pick badges ----
+   Inside the node's own <g>, so the simulation's transform carries them. */
+.pick-badge{pointer-events:none;animation:badgein .25s var(--ease) both}
+.pick-badge circle{stroke:#0f172a;stroke-width:2}
+.pick-badge.p1 circle{fill:var(--pick-1)}
+.pick-badge.p2 circle{fill:var(--pick-2)}
+#ostage .nl .pick-badge text{font:700 15px var(--sans);fill:#0f172a}
+
+@keyframes badgein{from{opacity:0}}
+
+/* the same 1/2 chips in the panel heading, tying it back to the graph */
+.pk{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;
+ border-radius:50%;margin-right:7px;font:700 12px var(--sans);color:#0f172a;
+ vertical-align:1px}
+.pk.p1{background:var(--pick-1)}
+.pk.p2{background:var(--pick-2)}
+
+.clearpick{float:right;margin:-2px 0 8px 10px;background:var(--glass-strong);
+ border:1px solid #ffffff2e;color:var(--lt-ink-2);border-radius:var(--r-m);
+ padding:4px 11px;cursor:pointer;font:11.5px var(--sans);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
+   transform var(--fast) var(--ease)}
+.clearpick:hover{background:#ffffff2e;color:var(--lt-ink)}
+.clearpick:active{transform:scale(.96)}
+.clearpick:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+/* ---- edge hover ----
+   Brighten, thicken and glow, so an edge announces it is clickable. Excluded
+   on selected and on-route edges so a stronger state is never downgraded. */
+#ostage .nl-edge{transition:stroke var(--fast) var(--ease),
+ stroke-width var(--fast) var(--ease),filter var(--fast) var(--ease)}
+#ostage .nl-edge.hot:not(.sel):not(.on-route){stroke:var(--edge-pick);stroke-width:4;
+ filter:drop-shadow(0 0 6px #f59e0baa)}
