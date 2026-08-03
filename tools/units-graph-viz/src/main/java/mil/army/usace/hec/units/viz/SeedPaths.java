@@ -7,7 +7,7 @@ import java.util.List;
 import cwms.units.Loader;
 import mil.army.usace.hec.graph.viz.formula.AffineForm;
 import mil.army.usace.hec.graph.viz.formula.FormulaRenderer;
-import mil.army.usace.hec.graph.viz.formula.PostfixEvaluator;
+import net.hobbyscience.SimpleInfixCalculator;
 import net.hobbyscience.database.Conversion;
 
 /**
@@ -24,7 +24,7 @@ final class SeedPaths {
             } catch (Exception e) {
                 continue;
             }
-            AffineForm form = FormulaRenderer.affineOf(x -> PostfixEvaluator.evaluate(postfix, x));
+            AffineForm form = FormulaRenderer.affineOf(x -> SimpleInfixCalculator.calculate(postfix, x));
             if (form == null || form.m() == 0.0) {
                 continue;   // cannot be composed into a route factor
             }

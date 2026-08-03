@@ -5,9 +5,9 @@ import java.util.Map;
 
 import mil.army.usace.hec.graph.viz.formula.AffineForm;
 import mil.army.usace.hec.graph.viz.formula.FormulaRenderer;
-import mil.army.usace.hec.graph.viz.formula.PostfixEvaluator;
 import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.view.Html;
+import net.hobbyscience.SimpleInfixCalculator;
 import net.hobbyscience.database.Conversion;
 
 /**
@@ -109,7 +109,7 @@ final class ConversionDetail {
 
     // Derived conversions expose only postfix, so the affine probe runs against that
     private static String equation(String postfix, String from) {
-        AffineForm form = FormulaRenderer.affineOf(x -> PostfixEvaluator.evaluate(postfix, x));
+        AffineForm form = FormulaRenderer.affineOf(x -> SimpleInfixCalculator.calculate(postfix, x));
 
         if (form == null) {
             return warn("not a simple scale + offset");
@@ -189,7 +189,7 @@ final class ConversionDetail {
 
     private static Double evaluate(String postfix, double input) {
         try {
-            double value = PostfixEvaluator.evaluate(postfix, input);
+            double value = SimpleInfixCalculator.calculate(postfix, input);
             return Double.isFinite(value) ? value : null;
         } catch (RuntimeException e) {
             return null;

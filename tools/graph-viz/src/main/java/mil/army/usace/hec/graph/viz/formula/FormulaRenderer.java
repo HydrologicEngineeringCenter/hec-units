@@ -84,7 +84,7 @@ public final class FormulaRenderer {
         try {
             f0 = formula.applyAsDouble(0.0);
             f1 = formula.applyAsDouble(1.0);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return null;
         }
         if (!Double.isFinite(f0) || !Double.isFinite(f1)) {
@@ -99,7 +99,7 @@ public final class FormulaRenderer {
             double actual;
             try {
                 actual = formula.applyAsDouble(x);
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
                 return null;
             }
             if (!Double.isFinite(actual)) {
