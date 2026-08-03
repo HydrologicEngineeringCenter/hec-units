@@ -15,18 +15,22 @@ import mil.army.usace.hec.graph.viz.model.Node;
 public final class MatrixView {
 
     private static final String GRID = """
-        <div class="grid">{{cards}}</div>
+        <div class="grid">
+          {{cards}}
+        </div>
         """;
 
     private static final String CARD = """
         <div class="card" style="--i:{{index}}">
-        <header><h2>{{group}}</h2>{{tally}}</header>
-        <div class="scroll">
-        <table class="matrix">
-        <thead><tr><th class="corner"></th>{{columns}}</tr></thead>
-        <tbody>{{rows}}</tbody>
-        </table>
-        </div>
+          <header><h2>{{group}}</h2>{{tally}}</header>
+          <div class="scroll">
+            <table class="matrix">
+              <thead><tr><th class="corner"></th>{{columns}}</tr></thead>
+              <tbody>
+                {{rows}}
+              </tbody>
+            </table>
+          </div>
         </div>
         """;
 

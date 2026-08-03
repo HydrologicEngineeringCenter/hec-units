@@ -20,6 +20,8 @@ final class SeedFormula {
       + "|(?<op>[-+*/^()])"
       + "|(?<ws>\\s+)");
 
+    // Flat for the same reason as ConversionDetail's: this ends up escaped
+    // inside a data-detail attribute, not in the page's own structure.
     private static final String PANEL = """
         <div class="fx">
         <div class="fx-head">{{from}}<span class="arrow">→</span>{{to}}

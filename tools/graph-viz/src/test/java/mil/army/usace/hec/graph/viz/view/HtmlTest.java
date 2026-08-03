@@ -39,6 +39,33 @@ class HtmlTest {
             Html.fill("<p>{{msg}}</p>").raw("msg", "<b>hi</b>").render());
     }
 
+    /** Nested markup lines up under the hole it fills, so templates compose
+        into one correctly indented document. */
+    @Test
+    void nested_markup_adopts_the_indentation_of_its_hole() {
+        String inner = """
+            <li>one</li>
+            <li>two</li>
+            """;
+        assertEquals("""
+            <ul>
+              <li>one</li>
+              <li>two</li>
+            </ul>
+            """,
+            Html.fill("""
+                <ul>
+                  {{items}}
+                </ul>
+                """).raw("items", inner).render());
+    }
+
+    @Test
+    void a_hole_mid_line_is_left_alone() {
+        assertEquals("  <p>a<b>b</b></p>",
+            Html.fill("  <p>a{{x}}</p>").raw("x", "<b>b</b>").render());
+    }
+
     /** A typo in a placeholder name should fail loudly, not render broken markup. */
     @Test
     void rejects_an_unfilled_placeholder() {

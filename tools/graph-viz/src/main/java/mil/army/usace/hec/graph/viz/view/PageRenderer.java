@@ -7,69 +7,74 @@ import java.nio.charset.StandardCharsets;
 // Wraps view fragments in a complete, self-contained HTML document
 public final class PageRenderer {
 
+    /*
+     * The inlined stylesheet and script stay at the left margin. They are whole
+     * files pasted in, not part of this document's structure, and indenting two
+     * thousand lines to sit under a tag costs bytes for nothing.
+     */
     private static final String PAGE = """
         <!doctype html>
         <html lang="en">
-        <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{title}}</title>
-        <style>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>{{title}}</title>
+            <style>
         {{css}}
-        </style>
-        </head>
-        <body>
-        <div class="pagehead">
-        <div>
-        <h1>{{title2}}</h1>
-        <p class="lede">{{lede}}</p>
-        </div>
-        {{summaryButton}}
-        </div>
-        {{tabbar}}
-        <div class="tabpane active" id="tab-coverage">
-        {{legend}}
-        {{body}}
-        </div>
-        {{seedpane}}
-        {{overlay}}
-        {{summary}}
-        {{data}}
-        <script>
+            </style>
+          </head>
+          <body>
+            <div class="pagehead">
+              <div>
+                <h1>{{title2}}</h1>
+                <p class="lede">{{lede}}</p>
+              </div>
+              {{summaryButton}}
+            </div>
+            {{tabbar}}
+            <div class="tabpane active" id="tab-coverage">
+              {{legend}}
+              {{body}}
+            </div>
+            {{seedpane}}
+            {{overlay}}
+            {{summary}}
+            {{data}}
+            <script>
         {{js}}
-        </script>
-        </body>
+            </script>
+          </body>
         </html>
         """;
 
     private static final String OVERLAY = """
         <div id="overlay">
-        <div id="obar">
-        <h3 id="otitle"></h3>
-        <span id="oaxis">row → column</span>
-        <span id="otally" class="tally"></span>
-        <button id="oreset" type="button">Reset view</button>
-        <button id="oclose" type="button">Close</button>
-        </div>
-        {{legend}}
-        {{seedkey}}
-        <div id="ostagewrap">
-        <div id="ostage"></div>
-        <aside id="opanel"><div id="odetail"></div></aside>
-        </div>
+          <div id="obar">
+            <h3 id="otitle"></h3>
+            <span id="oaxis">row → column</span>
+            <span id="otally" class="tally"></span>
+            <button id="oreset" type="button">Reset view</button>
+            <button id="oclose" type="button">Close</button>
+          </div>
+          {{legend}}
+          {{seedkey}}
+          <div id="ostagewrap">
+            <div id="ostage"></div>
+            <aside id="opanel"><div id="odetail"></div></aside>
+          </div>
         </div>
         """;
 
     private static final String SUMMARY = """
         <div id="summary">
-        <div id="sbar"><h3>Test suite summary</h3><button id="sclose" type="button">Close</button></div>
-        <div id="sbody">{{content}}</div>
+          <div id="sbar"><h3>Test suite summary</h3><button id="sclose" type="button">Close</button></div>
+          <div id="sbody">{{content}}</div>
         </div>
         """;
 
     private static final String KEY = """
         <span class="key">
-        <span class="k-top"><i class="sw {{cls}}"></i>{{label}}</span>{{counts}}
+          <span class="k-top"><i class="sw {{cls}}"></i>{{label}}</span>{{counts}}
         </span>
         """;
 
@@ -117,28 +122,42 @@ public final class PageRenderer {
 
     private static final String TABBAR = """
         <div class="tabs" role="tablist">
-        <button class="tab active" data-pane="tab-coverage" type="button">Coverage</button>
-        <button class="tab" data-pane="tab-seed" type="button">Conversion graphs</button>
+          <button class="tab active" data-pane="tab-coverage" type="button">Coverage</button>
+          <button class="tab" data-pane="tab-seed" type="button">Conversion graphs</button>
         </div>
         """;
 
     private static final String SEEDPANE = """
         <div class="tabpane" id="tab-seed">
-        {{legend}}
-        {{body}}
+          {{legend}}
+          {{body}}
         </div>
+        """;
+
+    private static final String LEGEND = """
+        <div class="{{class}}">
+          {{keys}}
+          <span class="hint">numbers in cells are hops in the chosen route</span>
+        </div>
+        """;
+
+    private static final String TOTAL = """
+        <span class="key total">
+          <span class="k-top">total</span>
+          <span class="k-num">{{count}}</span>
+        </span>
         """;
 
     // The graph tab's own key: node systems and the two stroke kinds
     private static String seedLegend() {
         return """
             <div class="legend seedlegend">
-            <span><i class="sw t-si"></i>SI</span>
-            <span><i class="sw t-english"></i>English</span>
-            <span><i class="sw t-null"></i>system-agnostic</span>
-            <span><i class="ln"></i><code>linear:</code> scale + offset</span>
-            <span><i class="ln dash"></i><code>function:</code> arbitrary expression</span>
-            <span class="hint">a bowed pair is two different conversions for the same two units</span>
+              <span><i class="sw t-si"></i>SI</span>
+              <span><i class="sw t-english"></i>English</span>
+              <span><i class="sw t-null"></i>system-agnostic</span>
+              <span><i class="ln"></i><code>linear:</code> scale + offset</span>
+              <span><i class="ln dash"></i><code>function:</code> arbitrary expression</span>
+              <span class="hint">a bowed pair is two different conversions for the same two units</span>
             </div>
             """;
     }
@@ -147,12 +166,12 @@ public final class PageRenderer {
     private static String seedKey() {
         return """
             <div class="legend olegend skey">
-            <span><i class="sw t-si"></i>SI</span>
-            <span><i class="sw t-english"></i>English</span>
-            <span><i class="sw t-null"></i>system-agnostic</span>
-            <span><i class="ln"></i>linear</span>
-            <span><i class="ln dash"></i>function</span>
-            <span class="hint">click two units for routes · click an edge for its formula</span>
+              <span><i class="sw t-si"></i>SI</span>
+              <span><i class="sw t-english"></i>English</span>
+              <span><i class="sw t-null"></i>system-agnostic</span>
+              <span><i class="ln"></i>linear</span>
+              <span><i class="ln dash"></i>function</span>
+              <span class="hint">click two units for routes · click an edge for its formula</span>
             </div>
             """;
     }
@@ -161,14 +180,14 @@ public final class PageRenderer {
      * The colour key, with each category's count and share.
      */
     private static String legend(String className, Stats stats) {
-        return Html.tag("div").attr("class", className).html(
-                key(stats, "passed", "passed")
-              + key(stats, "failed", "failed")
-              + key(stats, "untested", "reachable, not tested")
-              + key(stats, "missing", "no conversion")
-              + total(stats)
-              + "<span class=\"hint\">numbers in cells are hops in the chosen route</span>")
-            .toString();
+        return Html.fill(LEGEND)
+            .put("class", className)
+            .raw("keys", key(stats, "passed", "passed")
+                       + key(stats, "failed", "failed")
+                       + key(stats, "untested", "reachable, not tested")
+                       + key(stats, "missing", "no conversion")
+                       + total(stats))
+            .render();
     }
 
     private static String key(Stats stats, String cls, String label) {
@@ -184,12 +203,7 @@ public final class PageRenderer {
         if (stats == null) {
             return "";
         }
-        return Html.fill("""
-            <span class="key total">
-            <span class="k-top">total</span>
-            <span class="k-num">{{count}}</span>
-            </span>
-            """).put("count", stats.pairs()).render();
+        return Html.fill(TOTAL).put("count", stats.pairs()).render();
     }
 
     private static String counts(Stats stats, String cls) {

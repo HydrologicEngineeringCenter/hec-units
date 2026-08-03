@@ -17,6 +17,12 @@ import net.hobbyscience.database.Conversion;
  */
 final class ConversionDetail {
 
+    /*
+     * These stay flat, unlike the templates that build the page itself. This
+     * markup is escaped into a data-detail attribute on every cell, so it is a
+     * payload rather than structure - nobody reads it as source, and indenting
+     * it added 67KB across the 404 cells that carry a copy.
+     */
     private static final String PANEL = """
         <div class="fx">
         <div class="fx-head">{{from}}<span class="arrow">→</span>{{to}}{{chip}}</div>

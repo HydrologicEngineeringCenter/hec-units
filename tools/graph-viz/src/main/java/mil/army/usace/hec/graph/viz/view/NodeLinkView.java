@@ -24,9 +24,9 @@ public final class NodeLinkView {
 
     private static final String CARD = """
         <div class="card seedcard {{shape}}" style="--i:{{index}}">
-        <header><h2>{{group}}</h2><span class="badge {{shape}}">{{badge}}</span></header>
-        <p class="meta">{{meta}}</p>
-        {{svg}}
+          <header><h2>{{group}}</h2><span class="badge {{shape}}">{{badge}}</span></header>
+          <p class="meta">{{meta}}</p>
+          {{svg}}
         </div>
         """;
 

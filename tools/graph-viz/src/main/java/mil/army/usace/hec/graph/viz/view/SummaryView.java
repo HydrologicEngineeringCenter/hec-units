@@ -14,30 +14,36 @@ public final class SummaryView {
 
     private static final String LAYOUT = """
         <div class="sum">
-        <div class="sum-top">{{donut}}<div class="sum-figures">{{figures}}</div></div>
-        <h4>Every conversion slot</h4>
-        <div class="sum-note">Both directions of every pair within a dimension,
-          excluding a unit with itself.</div>
-        <table class="sum-table">{{breakdown}}</table>
-        <h4>Coverage by dimension</h4>
-        <div class="sum-note">Alphabetical, like the matrices. The bar is the share of
-          reachable conversions that a test exercises. Click a heading to re-sort.</div>
-        <table class="sum-table dims sortable">
-        <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
-        <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
-        <tbody>{{dimensions}}</tbody>
-        </table>
-        {{routes}}
-        <h4>Worth a look</h4>
-        <div class="sum-cards">{{cards}}</div>
+          <div class="sum-top">{{donut}}<div class="sum-figures">{{figures}}</div></div>
+          <h4>Every conversion slot</h4>
+          <div class="sum-note">Both directions of every pair within a dimension,
+            excluding a unit with itself.</div>
+          <table class="sum-table">
+            {{breakdown}}
+          </table>
+          <h4>Coverage by dimension</h4>
+          <div class="sum-note">Alphabetical, like the matrices. The bar is the share of
+            reachable conversions that a test exercises. Click a heading to re-sort.</div>
+          <table class="sum-table dims sortable">
+            <thead><tr><th>dimension</th><th>units</th><th>reachable</th><th>passed</th>
+            <th>failed</th><th>untested</th><th>coverage</th><th></th></tr></thead>
+            <tbody>
+              {{dimensions}}
+            </tbody>
+          </table>
+          {{routes}}
+          <h4>Worth a look</h4>
+          <div class="sum-cards">
+            {{cards}}
+          </div>
         </div>
         """;
 
     private static final String FIGURE = """
         <div class="fig">
-        <div class="fig-label">{{label}}</div>
-        <div class="fig-value">{{value}}</div>
-        <div class="fig-note">{{note}}</div>
+          <div class="fig-label">{{label}}</div>
+          <div class="fig-value">{{value}}</div>
+          <div class="fig-note">{{note}}</div>
         </div>
         """;
 
@@ -60,8 +66,10 @@ public final class SummaryView {
         <div class="sum-note">Every hop multiplies in another constant, so long chains
           are where rounding error accumulates.</div>
         <table class="sum-table sortable">
-        <thead><tr><th>route</th><th>conversions</th><th>share</th><th></th></tr></thead>
-        <tbody>{{rows}}</tbody>
+          <thead><tr><th>route</th><th>conversions</th><th>share</th><th></th></tr></thead>
+          <tbody>
+            {{rows}}
+          </tbody>
         </table>
         """;
 
@@ -73,9 +81,9 @@ public final class SummaryView {
 
     private static final String CARD = """
         <div class="sum-card {{tone}}">
-        <div class="c-value">{{value}}</div>
-        <div class="c-label">{{label}}</div>
-        <div class="c-note">{{note}}</div>
+          <div class="c-value">{{value}}</div>
+          <div class="c-label">{{label}}</div>
+          <div class="c-note">{{note}}</div>
         </div>
         """;
 
@@ -141,10 +149,10 @@ public final class SummaryView {
 
         return Html.fill("""
             <svg class="donut" viewBox="0 0 42 42" role="img">
-            <circle class="donut-hole" cx="21" cy="21" r="{{r}}" fill="none" stroke-width="5"></circle>
-            {{arcs}}
-            <text class="donut-mid" x="21" y="20.2">{{pct}}%</text>
-            <text class="donut-sub" x="21" y="24.6">covered</text>
+              <circle class="donut-hole" cx="21" cy="21" r="{{r}}" fill="none" stroke-width="5"></circle>
+              {{arcs}}
+              <text class="donut-mid" x="21" y="20.2">{{pct}}%</text>
+              <text class="donut-sub" x="21" y="24.6">covered</text>
             </svg>
             """)
             .put("r", RADIUS)
