@@ -9,10 +9,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
 
-public class SimpleInfixCalculator {
-    public static double calculate( String infix, double input ){
+public class SimplePostfixCalculator {
+    public static double calculate( String postfix, double input ){
         Queue<String> tokens = new LinkedList<>();
-        for(String token: infix.split("\\s+")){
+        for(String token: postfix.split("\\s+")){
             tokens.add(token);
         }
         Stack<Double> reg = new Stack<>();

@@ -16,7 +16,7 @@ import cwms.units.Loader;
 import cwms.units.Unit;
 
 import org.opendcs.jas.core.Mode;
-import net.hobbyscience.SimpleInfixCalculator;
+import net.hobbyscience.SimplePostfixCalculator;
 import net.hobbyscience.database.Conversion;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -182,17 +182,17 @@ class UnitConversionTest {
         var toUnit = getUnit(to);
         var conversion = getConversion(fromUnit,toUnit);
         var inverseConversion = getConversion(toUnit, fromUnit);
-        var infix = conversion.getMethod().getPostfix();
-        var inverseInfix = inverseConversion.getMethod().getPostfix();
+        var postfix = conversion.getMethod().getPostfix();
+        var inversePostfix = inverseConversion.getMethod().getPostfix();
 
         log.finest(()->"Forward conversion " + conversion.toString());
-        double forward = SimpleInfixCalculator.calculate(infix, in);
+        double forward = SimplePostfixCalculator.calculate(postfix, in);
         assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
         assertEquals(expected, forward, delta, () -> "Unable to perform forward conversion using " + conversion.toString() + " within " + delta);
         update_conversion_count(from, to);
 
         log.finest(()->"Inverse conversion " + inverseConversion.toString());
-        double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
+        double inverse = SimplePostfixCalculator.calculate(inversePostfix, forward);
         assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
         assertEquals(in, inverse, inverseDelta, () -> "Unable to perform inverse conversion using " + inverseConversion.toString() + " within " + inverseDelta);
         update_conversion_count(to, from);

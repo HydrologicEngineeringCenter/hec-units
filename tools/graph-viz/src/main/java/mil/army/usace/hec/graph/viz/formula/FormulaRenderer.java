@@ -2,6 +2,7 @@ package mil.army.usace.hec.graph.viz.formula;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
@@ -84,7 +85,7 @@ public final class FormulaRenderer {
         try {
             f0 = formula.applyAsDouble(0.0);
             f1 = formula.applyAsDouble(1.0);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException | EmptyStackException e) {
             return null;
         }
         if (!Double.isFinite(f0) || !Double.isFinite(f1)) {
@@ -99,7 +100,7 @@ public final class FormulaRenderer {
             double actual;
             try {
                 actual = formula.applyAsDouble(x);
-            } catch (RuntimeException e) {
+            } catch (IllegalArgumentException | EmptyStackException e) {
                 return null;
             }
             if (!Double.isFinite(actual)) {
