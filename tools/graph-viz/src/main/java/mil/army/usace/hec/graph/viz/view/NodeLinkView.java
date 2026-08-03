@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import mil.army.usace.hec.graph.viz.model.Edge;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
+import mil.army.usace.hec.graph.viz.model.Pair;
 
 /**
  * Renders a graph as one node-link drawing per group
@@ -90,7 +91,7 @@ public final class NodeLinkView {
     }
 
     private static int distinctPairs(List<Edge> edges) {
-        var pairs = new HashSet<String>();
+        var pairs = new HashSet<Pair>();
         for (Edge edge : edges) {
             pairs.add(pairKey(edge));
         }
@@ -146,14 +147,14 @@ public final class NodeLinkView {
 
     /** Edges sharing an unordered pair get spread bow offsets: -1, 1; -2, 0, 2... */
     private static Map<Edge, Double> bows(List<Edge> edges) {
-        var count = new HashMap<String, Integer>();
-        var seen = new HashMap<String, Integer>();
+        var count = new HashMap<Pair, Integer>();
+        var seen = new HashMap<Pair, Integer>();
         for (Edge edge : edges) {
             count.merge(pairKey(edge), 1, Integer::sum);
         }
         var bows = new HashMap<Edge, Double>();
         for (Edge edge : edges) {
-            String key = pairKey(edge);
+            Pair key = pairKey(edge);
             int n = count.get(key);
             int i = seen.merge(key, 1, Integer::sum) - 1;
             bows.put(edge, n == 1 ? 0.0 : (i - (n - 1) / 2.0) * 2.0);
@@ -161,9 +162,8 @@ public final class NodeLinkView {
         return bows;
     }
 
-    private static String pairKey(Edge edge) {
-        String lo = edge.from().compareTo(edge.to()) <= 0 ? edge.from() : edge.to();
-        return lo + "\u0000" + (edge.from().equals(lo) ? edge.to() : edge.from());
+    private static Pair pairKey(Edge edge) {
+        return Pair.unordered(edge.from(), edge.to());
     }
 
     private static void appendEdge(StringBuilder out, Edge edge, Map<String, double[]> pos,
@@ -171,10 +171,9 @@ public final class NodeLinkView {
         double[] a = pos.get(edge.from());
         double[] b = pos.get(edge.to());
 
-        String loId = edge.from().compareTo(edge.to()) <= 0 ? edge.from() : edge.to();
-        String hiId = edge.from().equals(loId) ? edge.to() : edge.from();
-        double[] lo = pos.get(loId);
-        double[] hi = pos.get(hiId);
+        Pair ends = pairKey(edge);
+        double[] lo = pos.get(ends.from());
+        double[] hi = pos.get(ends.to());
 
         String[] parts = (edge.label() == null ? "" : edge.label()).split("\\|", -1);
         String tag = parts.length > 0 ? parts[0] : "";

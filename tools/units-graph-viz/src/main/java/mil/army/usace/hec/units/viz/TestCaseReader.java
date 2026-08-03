@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mil.army.usace.hec.graph.viz.model.Pair;
+
 /**
  * Reads the test cases so a cell can show what was actually tried.
  */
@@ -18,8 +20,8 @@ final class TestCaseReader {
     }
 
     // Test cases grouped by the pair they exercise, in the direction written
-    static Map<String, List<TestCase>> read(Path csv) throws IOException {
-        var byPair = new HashMap<String, List<TestCase>>();
+    static Map<Pair, List<TestCase>> read(Path csv) throws IOException {
+        var byPair = new HashMap<Pair, List<TestCase>>();
         if (csv == null || !Files.isReadable(csv)) {
             return byPair;
         }
@@ -58,7 +60,7 @@ final class TestCaseReader {
         return Double.parseDouble(value);
     }
 
-    static String key(String from, String to) {
-        return from + "\u0000" + to;
+    static Pair key(String from, String to) {
+        return new Pair(from, to);
     }
 }

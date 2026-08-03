@@ -17,6 +17,7 @@ import mil.army.usace.hec.graph.viz.model.Edge;
 import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
+import mil.army.usace.hec.graph.viz.model.Pair;
 import net.hobbyscience.database.Conversion;
 
 /**
@@ -58,8 +59,8 @@ public final class GeneratedGraphSource {
     }
 
     // Edges from the report, each carrying its status and its description
-    private static List<Edge> withCoverage(Path report, Map<String, Conversion> conversions,
-                                           Map<String, List<TestCase>> tests,
+    private static List<Edge> withCoverage(Path report, Map<Pair, Conversion> conversions,
+                                           Map<Pair, List<TestCase>> tests,
                                            Map<String, String> names, HashSet<String> known)
             throws IOException, XMLStreamException {
         var edges = new ArrayList<Edge>();
@@ -85,8 +86,8 @@ public final class GeneratedGraphSource {
     /**
      * Edges straight from the algorithm, with every pair marked untested.
      */
-    private static List<Edge> withoutCoverage(Map<String, Conversion> conversions,
-                                              Map<String, List<TestCase>> tests,
+    private static List<Edge> withoutCoverage(Map<Pair, Conversion> conversions,
+                                              Map<Pair, List<TestCase>> tests,
                                               Map<String, String> names,
                                               HashSet<String> known) {
         var edges = new ArrayList<Edge>();
@@ -101,10 +102,10 @@ public final class GeneratedGraphSource {
     }
 
     private static Edge build(String from, String to, EdgeStatus status,
-                              Map<String, Conversion> conversions,
-                              Map<String, List<TestCase>> tests,
+                              Map<Pair, Conversion> conversions,
+                              Map<Pair, List<TestCase>> tests,
                               Map<String, String> names) {
-        Conversion conversion = conversions.get(pair(from, to));
+        Conversion conversion = conversions.get(new Pair(from, to));
         if (conversion == null) {
             return new Edge(from, to, status);
         }
@@ -113,7 +114,7 @@ public final class GeneratedGraphSource {
 
         // Reproducing a round-trip test needs the opposite conversion too: the
         // suite runs that one first and feeds its result back through this one.
-        String inversePostfix = postfixOf(conversions.get(pair(to, from)));
+        String inversePostfix = postfixOf(conversions.get(new Pair(to, from)));
 
         return new Edge(from, to, status,
                         Integer.toString(ConversionDetail.hops(conversion)),
@@ -135,9 +136,9 @@ public final class GeneratedGraphSource {
     /**
      * Runs the real conversion algorithm and indexes every pair it produces.
      */
-    private static Map<String, Conversion> conversionsByPair(Loader loader) {
+    private static Map<Pair, Conversion> conversionsByPair(Loader loader) {
         var generated = new ConversionGraph(loader.getConversions()).generateConversions();
-        var conversions = new HashMap<String, Conversion>();
+        var conversions = new HashMap<Pair, Conversion>();
 
         for (Conversion conversion : generated) {
             record(conversions, conversion);
@@ -152,16 +153,10 @@ public final class GeneratedGraphSource {
         return conversions;
     }
 
-    private static void record(Map<String, Conversion> conversions, Conversion conversion) {
-        conversions.putIfAbsent(pair(conversion.getFrom().getAbbreviation(),
-                                     conversion.getTo().getAbbreviation()),
+    private static void record(Map<Pair, Conversion> conversions, Conversion conversion) {
+        conversions.putIfAbsent(new Pair(conversion.getFrom().getAbbreviation(),
+                                        conversion.getTo().getAbbreviation()),
                                 conversion);
     }
 
-    /**
-     * Joins two abbreviations into a lookup key.
-     */
-    private static String pair(String from, String to) {
-        return from + "\u0000" + to;
-    }
 }

@@ -8,10 +8,6 @@ import java.util.Map;
 
 public final class Graph {
 
-    // Pairs and byPair is mainly used as a way to find whether there is an edge from X to Y in constant time
-    private record Pair(String from, String to) {
-    }
-
     private final List<Node> nodes;
     private final List<Edge> edges;
     private final Map<Pair, Edge> byPair;
