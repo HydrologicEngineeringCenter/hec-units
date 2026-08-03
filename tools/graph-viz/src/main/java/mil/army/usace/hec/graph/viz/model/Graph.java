@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public final class Graph {
@@ -39,8 +40,7 @@ public final class Graph {
         return edges;
     }
 
-    // Caller should null check
-    public Edge edge(String from, String to) {
-        return byPair.get(new Pair(from, to));
+    public Optional<Edge> edge(String from, String to) {
+        return Optional.ofNullable(byPair.get(new Pair(from, to)));
     }
 }

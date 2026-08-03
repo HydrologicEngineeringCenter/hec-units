@@ -3,6 +3,7 @@ package mil.army.usace.hec.graph.viz.view;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import mil.army.usace.hec.graph.viz.model.Edge;
@@ -79,7 +80,7 @@ public final class MatrixView {
         if (from.id().equals(to.id())) {
             return "<td class=\"self\"></td>";
         }
-        Edge edge = graph.edge(from.id(), to.id());
+        Optional<Edge> edge = graph.edge(from.id(), to.id());
         String state = stateOf(edge);
 
         return Html.tag("td")
@@ -89,24 +90,25 @@ public final class MatrixView {
             .attr("data-to", to.id())
             // The edge carries its own description, so the enlarged view needs no
             // second copy of the graph data.
-            .attr("data-detail", edge == null ? null : edge.detail())
+            .attr("data-detail", edge.map(Edge::detail).orElse(null))
             .html(label(edge))
             .toString();
     }
 
     /** Hidden by CSS at thumbnail size, where a 22px square cannot hold a digit. */
-    private static String label(Edge edge) {
-        if (edge == null || edge.label() == null) {
-            return "";
-        }
-        return Html.tag("span").attr("class", "lab").text(edge.label()).toString();
+    private static String label(Optional<Edge> edge) {
+        return edge.map(Edge::label)
+            .map(text -> Html.tag("span").attr("class", "lab").text(text).toString())
+            .orElse("");
     }
 
     /** Package-visible so Stats classifies cells exactly as the matrix draws them. */
-    static String stateOf(Edge edge) {
-        if (edge == null) {
-            return "missing";               // no conversion exists between this pair
-        }
+    static String stateOf(Optional<Edge> edge) {
+        return edge.map(MatrixView::state)
+            .orElse("missing");             // no conversion exists between this pair
+    }
+
+    private static String state(Edge edge) {
         if (edge.status() == EdgeStatus.PASSED) {
             return "passed";
         }
