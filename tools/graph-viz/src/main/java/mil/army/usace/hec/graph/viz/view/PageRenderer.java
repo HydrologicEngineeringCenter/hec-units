@@ -3,15 +3,11 @@ package mil.army.usace.hec.graph.viz.view;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 // Wraps view fragments in a complete, self-contained HTML document
 public final class PageRenderer {
 
-    /*
-     * The inlined stylesheet and script stay at the left margin. They are whole
-     * files pasted in, not part of this document's structure, and indenting two
-     * thousand lines to sit under a tag costs bytes for nothing.
-     */
     private static final String PAGE = """
         <!doctype html>
         <html lang="en">
@@ -40,6 +36,9 @@ public final class PageRenderer {
             {{overlay}}
             {{summary}}
             {{data}}
+            <script>
+        {{cyto}}
+            </script>
             <script>
         {{js}}
             </script>
@@ -81,12 +80,6 @@ public final class PageRenderer {
     private PageRenderer() {
     }
 
-    /**
-     * @param stats    counts for the key and the summary; null omits both
-     * @param seedBody the seed-graph tab's content; empty renders no tab bar
-     * @param data     a script emitted before the page script, for any dataset
-     *                 the page has to work with at runtime
-     */
     public static String render(String title, Stats stats, String body, String seedBody,
                                 String data) throws IOException {
         boolean tabbed = !seedBody.isEmpty();
@@ -102,7 +95,8 @@ public final class PageRenderer {
                  + "Each row converts into the columns. Click a card to enlarge it, then click "
                  + "any cell for its equation and test results.")
             .raw("css", resource("/viz.css"))
-            .raw("js", resource("/viz.js"))
+            .raw("js", pageScript())
+            .raw("cyto", tabbed ? resource("/cytoscape.min.js") : "")
             .raw("summaryButton", stats == null ? ""
                  : "<button id=\"sumopen\" type=\"button\">Summary</button>")
             .raw("tabbar", tabbed ? TABBAR : "")
@@ -176,9 +170,6 @@ public final class PageRenderer {
             """;
     }
 
-    /**
-     * The colour key, with each category's count and share.
-     */
     private static String legend(String className, Stats stats) {
         return Html.fill(LEGEND)
             .put("class", className)
@@ -226,10 +217,21 @@ public final class PageRenderer {
         return Html.fill(SUMMARY).raw("content", SummaryView.render(stats, "Route length")).render();
     }
 
-    /**
-     * CSS and JS live as real files but are inlined, so the output is one
-     * self-contained page that cannot arrive with a broken asset path.
-     */
+    private static final List<String> SCRIPTS = List.of(
+        "/viz/overlay.js",        // the enlarge overlay: open, close, detail panel
+        "/viz/tables.js",         // click-to-sort table headers
+        "/viz/graph.js",          // conversion-graph explorer (cytoscape + physics)
+        "/viz/chrome.js",         // tab bar and summary modal
+        "/viz/matrix-cells.js");  // hover and pin for enlarged matrix cells
+
+    private static String pageScript() throws IOException {
+        var script = new StringBuilder("(function () {\n");
+        for (String path : SCRIPTS) {
+            script.append(resource(path));
+        }
+        return script.append("})();\n").toString();
+    }
+
     private static String resource(String path) throws IOException {
         try (InputStream in = PageRenderer.class.getResourceAsStream(path)) {
             if (in == null) {

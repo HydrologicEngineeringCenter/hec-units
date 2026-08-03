@@ -458,36 +458,20 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 .ln{display:inline-block;width:26px;border-top:2px solid var(--ink-3);vertical-align:middle}
 .ln.dash{border-top-style:dashed}
 
-/* ============================================================ node-link svg */
-svg.nl{width:100%;height:auto;display:block}
-.nl text{font:14px var(--mono);text-anchor:middle;pointer-events:none;user-select:none}
-.nl-edge{fill:none;stroke:#94a3b8;stroke-width:1.6}
-.nl-edge.function{stroke-dasharray:6 4}
-.nl-node rect{fill:#e5e7eb;stroke:#6b7280;stroke-width:1.5}
-.nl-node text{fill:#374151}
-.nl-node.t-si rect{fill:#dbeafe;stroke:#2563eb}
-.nl-node.t-si text{fill:#1e3a5f}
-.nl-node.t-english rect{fill:#fee2e2;stroke:#dc2626}
-.nl-node.t-english text{fill:#5f1e1e}
+/* ============================================================ graph canvas
+   cytoscape draws into these containers and owns everything inside them, so
+   node and edge appearance lives in the stylesheet it is given in viz.js, not
+   here. What is left is the box the canvas fills. */
+.cy{width:100%;display:block;border-radius:var(--r-m)}
 
-/* the same drawing, enlarged and interactive */
-#overlay.seedmode #ostage{padding:0;overflow:hidden;cursor:grab;display:block}
-#overlay.seedmode #ostage.panning{cursor:grabbing}
-#ostage svg.nl{width:100%;height:100%}
-#ostage .nl text{font-size:17px}
-#ostage .nl-edge{stroke:#64748b;stroke-width:2.5}
-#ostage .nl-edge.function{stroke-dasharray:7 5}
-#ostage .nl-node rect{stroke-width:2}
-#ostage .nl-node{cursor:grab}
-.nl-hit{fill:none;stroke:transparent;stroke-width:20;cursor:pointer}
+/* A thumbnail is a preview: every click belongs to the card, which enlarges.
+   It is drawn once into a picture, so what is left here is an image box. */
+.seedcard .cy{pointer-events:none;
+ background-repeat:no-repeat;background-position:center;background-size:contain}
 
-/* hover/selection states - opacity fades ride the shared easing curve */
-#ostage .nl-edge,#ostage .nl-node{transition:opacity var(--med) var(--ease)}
-#ostage .nl-edge.dim,#ostage .nl-node.dim{opacity:.12}
-#ostage .nl-edge.sel{stroke:var(--edge-pick);stroke-width:4.5}
-#ostage .nl-edge.on-route{stroke:var(--accent-deep);stroke-width:5;opacity:1}
-#ostage .nl-node.pick-a rect{stroke:#fff;stroke-width:4}
-#ostage .nl-node.pick-b rect{stroke:#fff;stroke-width:4;stroke-dasharray:7 5}
+#overlay.seedmode #ostage{padding:0;overflow:hidden;display:block}
+#ocy{width:100%;height:100%;cursor:grab}
+#ocy:active{cursor:grabbing}
 
 /* ============================================================ route explorer */
 #odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--lt-ink)}
@@ -542,29 +526,6 @@ svg.nl{width:100%;height:auto;display:block}
 #overlay.seedmode .olegend.mkey{display:none}
 .olegend .ln{border-top-color:var(--lt-ink-3)}
 
-/* ---- node selection ----
-   Three states, written to be mutually exclusive via :not() rather than relying
-   on source order - a picked node must never pick up a hover style, whatever
-   the specificity works out to.
-
-   Colour says which slot at a glance; the numbered badge says it unambiguously,
-   so the pair is never told apart by hue alone. */
-#ostage .nl-node rect{transition:stroke var(--fast) var(--ease),
- stroke-width var(--fast) var(--ease)}
-
-#ostage .nl-node:not(.pick-a):not(.pick-b):hover rect{stroke-width:3.5}
-
-/* While one unit is chosen, hovering an unpicked node previews the ring it
-   would take - same colour as slot 2, dashed because it has not happened yet. */
-#ostage svg.picking .nl-node:not(.pick-a):not(.pick-b):hover rect{
- stroke:var(--pick-2);stroke-width:3;stroke-dasharray:5 4}
-
-#ostage .nl-node.pick-a rect{stroke:var(--pick-1);stroke-width:4;stroke-dasharray:none}
-#ostage .nl-node.pick-b rect{stroke:var(--pick-2);stroke-width:4;stroke-dasharray:none}
-#ostage .nl-node.pop rect{animation:pickpop .42s var(--ease)}
-
-@keyframes pickpop{0%{stroke-width:2}45%{stroke-width:9}100%{stroke-width:4}}
-
 /* The matrix's "pinned" hint is wrong here and redundant - the graph has an
    explicit Clear selection button instead. */
 #overlay.seedmode #odetail.locked::before{display:none}
@@ -573,17 +534,9 @@ svg.nl{width:100%;height:auto;display:block}
    cannot wrap underneath it. */
 .clearpick{float:none;display:block;margin:0 0 10px auto}
 
-/* ---- numbered pick badges ----
-   Inside the node's own <g>, so the simulation's transform carries them. */
-.pick-badge{pointer-events:none;animation:badgein .25s var(--ease) both}
-.pick-badge circle{stroke:#0f172a;stroke-width:2}
-.pick-badge.p1 circle{fill:var(--pick-1)}
-.pick-badge.p2 circle{fill:var(--pick-2)}
-#ostage .nl .pick-badge text{font:700 15px var(--sans);fill:#0f172a}
-
-@keyframes badgein{from{opacity:0}}
-
-/* the same 1/2 chips in the panel heading, tying it back to the graph */
+/* Picked units are marked on the canvas by cytoscape, which colours the border
+   and prefixes the label with a circled digit. These chips repeat the same two
+   colours in the panel heading, so the pair is never told apart by hue alone. */
 .pk{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;
  border-radius:50%;margin-right:7px;font:700 12px var(--sans);color:#0f172a;
  vertical-align:1px}
@@ -599,10 +552,3 @@ svg.nl{width:100%;height:auto;display:block}
 .clearpick:active{transform:scale(.96)}
 .clearpick:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 
-/* ---- edge hover ----
-   Brighten, thicken and glow, so an edge announces it is clickable. Excluded
-   on selected and on-route edges so a stronger state is never downgraded. */
-#ostage .nl-edge{transition:stroke var(--fast) var(--ease),
- stroke-width var(--fast) var(--ease),filter var(--fast) var(--ease)}
-#ostage .nl-edge.hot:not(.sel):not(.on-route){stroke:var(--edge-pick);stroke-width:4;
- filter:drop-shadow(0 0 6px #f59e0baa)}

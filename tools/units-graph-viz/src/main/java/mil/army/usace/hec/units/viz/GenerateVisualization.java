@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import cwms.units.Loader;
+import mil.army.usace.hec.graph.viz.view.CytoscapeData;
 import mil.army.usace.hec.graph.viz.view.MatrixView;
 import mil.army.usace.hec.graph.viz.view.NodeLinkView;
 import mil.army.usace.hec.graph.viz.view.PageRenderer;
@@ -28,9 +29,6 @@ public final class GenerateVisualization {
         Path report = Path.of(args[1]);
         Path testCsv = args.length > 2 ? Path.of(args[2]) : null;
 
-        // A missing report is not an error here. The page is still worth having -
-        // it just cannot say anything about coverage, so it says so instead of
-        // quietly showing every conversion as untested.
         boolean covered = GeneratedGraphSource.hasReport(report);
 
         // One Loader, shared: constructing it parses three JSON files, and both
@@ -44,7 +42,7 @@ public final class GenerateVisualization {
             new Stats(graph),
             (covered ? "" : missingReportNotice()) + MatrixView.render(graph),
             NodeLinkView.render(seedGraph),
-            SeedPaths.script(loader));
+            SeedPaths.script(loader) + CytoscapeData.script(seedGraph));
 
         Files.createDirectories(outputDir);
         Path index = outputDir.resolve("index.html");

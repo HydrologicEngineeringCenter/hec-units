@@ -1,0 +1,4 @@
+# Vendored third-party library, checked in unmodified. Marking it keeps a
+# 425KB minified blob out of review diffs and out of the language statistics.
+tools/graph-viz/src/main/resources/cytoscape.min.js linguist-vendored
+tools/graph-viz/src/main/resources/cytoscape.min.js -diff

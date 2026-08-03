@@ -1,0 +1,27 @@
+cytoscape.js 3.34.0
+MIT License - full text in cytoscape.LICENSE beside this file.
+
+Source:  https://registry.npmjs.org/cytoscape/-/cytoscape-3.34.0.tgz
+         (file taken from package/dist/cytoscape.min.js)
+sha1:    5fbe2eb1cf76b070a8ecd5647c35f65aa097c9c6   (of the .tgz, as published)
+sha256:  9c2a3bf2592e0b14a1f7bec07c03a54f16dedf32af9cd0af155c716aa6c87bc3   (of cytoscape.min.js)
+
+Vendored unmodified - verified byte-identical to the published tarball.
+
+This is the UMD build, so loading it in a plain <script> defines a global
+`cytoscape`. It has no runtime dependencies, which is what lets the generated
+page stay a single self-contained file.
+
+Only the layouts built into this file are available: grid, circle, concentric,
+breadthfirst, cose, random and preset. fcose, cola, dagre and elk are separate
+packages and would each be another vendored file.
+
+To update:
+  curl -sL -o cytoscape-<version>.tgz \
+    https://registry.npmjs.org/cytoscape/-/cytoscape-<version>.tgz
+  # compare against the "shasum" field of
+  #   https://registry.npmjs.org/cytoscape
+  tar xzf cytoscape-<version>.tgz package/dist/cytoscape.min.js package/LICENSE
+  cp package/dist/cytoscape.min.js cytoscape.min.js
+  cp package/LICENSE               cytoscape.LICENSE
+  # then refresh the version and hashes above
