@@ -2,47 +2,23 @@ package mil.army.usace.hec.graph.viz.formula;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ExpressionEvaluatorTest {
 
-    @Test
-    void evaluates_a_plain_number() {
-        assertEquals(5.0, ExpressionEvaluator.evaluate("5", 0.0), 1e-9);
-    }
-
-    @Test
-    void substitutes_the_variable() {
-        assertEquals(7.0, ExpressionEvaluator.evaluate("i", 7.0), 1e-9);
-    }
-
-    @Test
-    void respects_operator_precedence() {
-        assertEquals(14.0, ExpressionEvaluator.evaluate("2 + 3 * 4", 0.0), 1e-9);
-    }
-
-    @Test
-    void parentheses_override_precedence() {
-        assertEquals(20.0, ExpressionEvaluator.evaluate("(2 + 3) * 4", 0.0), 1e-9);
-    }
-
-    @Test
-    void power_is_right_associative() {
-        assertEquals(512.0, ExpressionEvaluator.evaluate("2 ^ 3 ^ 2", 0.0), 1e-9);
-    }
-
-    @Test
-    void handles_unary_minus() {
-        assertEquals(-4.0, ExpressionEvaluator.evaluate("-2 ^ 2", 0.0), 1e-9);
-    }
-
-    @Test
-    void handles_a_linear_conversion_formula() {
-        assertEquals(3.048, ExpressionEvaluator.evaluate("i * (3.048)", 1.0), 1e-9);
-    }
-
-    @Test
-    void handles_a_temperature_style_formula() {
-        assertEquals(0.0, ExpressionEvaluator.evaluate("(i - 32) * 5 / 9", 32.0), 1e-9);
+    @ParameterizedTest(name = "{3}")
+    @CsvSource(delimiter = '|', value = {
+        "5                | 0  | 5     | a plain number",
+        "i                | 7  | 7     | the variable stands in for the input",
+        "2 + 3 * 4        | 0  | 14    | multiplication binds tighter than addition",
+        "(2 + 3) * 4      | 0  | 20    | parentheses override precedence",
+        "2 ^ 3 ^ 2        | 0  | 512   | power is right associative",
+        "-2 ^ 2           | 0  | -4    | unary minus applies after the power",
+        "i * (3.048)      | 1  | 3.048 | a linear conversion",
+        "(i - 32) * 5 / 9 | 32 | 0     | a temperature style formula"
+    })
+    void evaluates(String expression, double input, double expected, String rule) {
+        assertEquals(expected, ExpressionEvaluator.evaluate(expression, input), 1e-9);
     }
 }
