@@ -879,9 +879,9 @@
     {
         "abstract-parameter": "Mass Concentration",
         "abbr": "kg/l",
-        "system": "English",
-        "name": "Kilograms per cubic meter",
-        "description": "Mass of 1 kilogram per volume of 1 cubic meter"
+        "system": "SI",
+        "name": "Kilograms per liter",
+        "description": "Mass of 1 kilogram per volume of 1 liter"
     },
     {
         "abstract-parameter": "Mass Concentration",
@@ -969,7 +969,7 @@
         "description": "Quanitity per 1 meter"
     },
     {
-        "abstract-parameter": "Temerature Index",
+        "abstract-parameter": "Temperature Index",
         "abbr": "C-day",
         "system": "SI",
         "name": "Celsius degree day",
@@ -977,7 +977,7 @@
         "aliases": ["degC-day","DEGC-D"]
     },
     {
-        "abstract-parameter": "Temerature Index",
+        "abstract-parameter": "Temperature Index",
         "abbr": "F-day",
         "system": "English",
         "name": "Fahrenheit degree day",

@@ -62,8 +62,8 @@
 	// ["cfs",         "mgd",         "[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [gal]/m3_per_gal[m3] | [mgal]/*_per_M*[gal] | s_per_day[s]/[day] | [mgd]/[mgal/day]"],
 	// ["cfs/mi2",     "cms/km2",     "[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [mi2]/km_per_mile^2[km2] | [cms]/[m3/s]"],
 	["kcfs",         "cfs",        "linear: unit_per_kilo 0"],
-	["cm",          "km",          "function: i * centi_per_unit * unit_per_kilo"],
-	["mm",			"cm",		   "function: i * centi_per_unit"],
+	["cm",          "km",          "function: i / centi_per_unit / unit_per_kilo"], // cm / 100 / 1000, 1 km = 100,000 cm
+	["mm",			"cm",		   "function: i / milli_per_unit * centi_per_unit"], // (mm / 1000) * 100, 1 cm = 10 mm 
 	["cm/day",      "mm/day",      "linear: deci_per_unit 0"],
 	// ["cm2",         "km2",         "[m2]/c*_per_*^2[cm2] | [km2]/*_per_k*^2[m2]"],
 	// ["cm2",         "mile2",       "[m2]/c*_per_*^2[cm2] | [ft2]/m_per_ft^2[m2] | [mile2]/ft_per_mile^2[ft2]"],
@@ -84,13 +84,13 @@
 	["ft",          "m",           "linear: m_per_ft 0"],
 	["mi",          "ft",          "linear: 5280 0"],
 	["m",		    "mm",		   "linear: 1000 0"],
-	["m",			"cm",		   "linear: 10 0"],
-	["ft/hr",       "ft/s",        "linear: s_per_hr 0"],
+	["m",			"cm",		   "linear: centi_per_unit 0"], // 1 m = 100 cm
+	["ft/hr",       "ft/s",        "function: i / s_per_hr"], // 3600 ft/hr = 1 ft/s
 	["ft/hr",       "in/hr",       "linear: in_per_ft 0"],
-	["ft/hr",       "knot",        "function: i * s_per_hr * m_per_ft * m_per_s_per_knot"],
+	["ft/hr",       "knot",        "function: i * m_per_ft / s_per_hr / m_per_s_per_knot"],
 	["ft/hr",       "m/hr",        "linear: m_per_ft 0"],
 	["ft/s",        "m/s",         "linear: m_per_ft 0"],
-	["ft/s",        "mph",         "function: (i / ft_per_mile)/s_per_hr"],
+	["ft/s",        "mph",         "function: (i / ft_per_mile) * s_per_hr"], // 1 mile/s = 3600 mph
 	["ft2/s",       "m2/s",        "function: i * (m_per_ft^2)"],
 	// ["ft2",         "km2",         "m_per_ft^2[m2]/[ft2] | [km2]/*_per_k*^2[m2]"],
 	// ["ft2",         "mile2",       "[mile2]/ft_per_mile^2[ft2]"],
@@ -113,7 +113,7 @@
 	["lbm/ft3",		 "ug/l",	   "linear: 1.602E7 0"],
 	// TODO: manually check the next two
 	["lbm/m3",       "ppm",        "linear: 453.59237 0"],
-	["lbm/m3",       "g/l",        "linear: 453.59237 0"],
+	["lbm/m3",       "g/l",        "function: i * kg_per_lbm"],
 	["lbm/l",       "lbm/ft3",     "linear: 28.316846599001 0"],
 	// ["gpm",         "KAF/mon",     "[gal/min]/[gpm] | [min]/s_per_min[s] | m3_per_gal[m3]/[gal] | [ft3]/m_per_ft^3[m3] | s_per_mon[s]/[mon] | [ac-ft]/ft2_per_acre[ft3] | [kaf]/*_per_k*[ac-ft] | [KAF]/[kaf]"],
 	// ["gpm",         "cfs",         "[gal/min]/[gpm] | m3_per_gal[m3]/[gal] | [ft3]/m_per_ft^3[m3] | [min]/s_per_min[s] | [cfs]/[ft3/s]"],
@@ -126,7 +126,7 @@
 	// ["ha",          "mile2",       "m2_per_ha[m2]/[ha] | [ft2]/m_per_ft^2[m2] | [mile2]/ft_per_mile^2[ft2]"],
 	["ha",          "m2",          "linear: m2_per_ha 0"],
 	["hr",          "min",         "linear: min_per_hr 0"],
-	["in/day",      "in/hr",       "linear: hr_per_day 0"],
+	["in/day",      "in/hr",       "function: i / hr_per_day"], // 24 in/day = 1 in/hr
 	["in/day",      "mm/day",      "function: i / in_per_ft * m_per_ft * milli_per_unit"],
 	["in/deg-day",  "mm/deg-day",  "function: i / in_per_ft * m_per_ft * milli_per_unit / C_per_F"],
 	["kaf",         "ac-ft",       "linear: unit_per_kilo 0"],
@@ -152,7 +152,7 @@
 	["lbm",         "ton",         "function: i / lbm_per_ton"],
 	// ["lb",          "N",           "[lbm*g]/[lb] | m/s2_per_g[m/s2]/[g] | kg_per_lbm[kg]/[lbm] | [N]/[kg*m/s2]"],
 	// ["langley/min", "W/m2",        "J/m2_per_langley[J/m2]/[langley] | [W]/[J/s] | [min]/s_per_min[s]"],
-	["m/hr",        "m/s",         "function: i * s_per_hr"],
+	["m/hr",        "m/s",         "function: i / s_per_hr"],
 	["m/hr",        "mm/hr",       "linear: milli_per_unit 0"],
 	["m/s",         "kph",         "function: i * s_per_hr / unit_per_kilo"],
 	// ["m2",          "km2",         "[km2]/*_per_k*^2[m2]"],
