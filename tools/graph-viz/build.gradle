@@ -1,0 +1,5 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+    id 'java-library'
+}

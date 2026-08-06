@@ -3,3 +3,9 @@ include 'units'
 
 include 'hec-units-compat'
 project(":hec-units-compat").projectDir = file("libraries/hec-units-compat")
+
+include 'graph-viz'
+project(":graph-viz").projectDir = file("tools/graph-viz")
+
+include 'units-graph-viz'
+project(":units-graph-viz").projectDir = file("tools/units-graph-viz")

@@ -1,0 +1,554 @@
+/* ============================================================ design tokens
+   Every colour, radius, shadow and duration lives here, so views written later
+   (the node-link graph, the path explorer) inherit the same language by using
+   the same variables. */
+:root{
+  /* surfaces */
+  --page:#f8fafc; --page-deep:#eef2f7;
+  --card:#ffffff; --line:#e2e8f0;
+  --dark:#0f172a; --dark-2:#1e293b; --dark-3:#334155;
+  --veil:rgba(10,15,28,.92);
+  --glass:#ffffff0a; --glass-line:#ffffff14; --glass-strong:#ffffff1f;
+
+  /* ink */
+  --ink:#0f172a; --ink-2:#475569; --ink-3:#64748b;
+  --lt-ink:#f1f5f9; --lt-ink-2:#cbd5e1; --lt-ink-3:#94a3b8; --lt-ink-4:#64748b;
+
+  /* status - the pair is CVD-checked (worst deutan/protan dE 19.9, was 7.7) */
+  --ok:#2fd06b; --bad:#c92a2a;
+  --untested:#a8b6c5; --untested-dark:#475569;
+  --missing:#f1f4f7; --missing-dark:#1e293b;
+  --seed:#6366f1;
+  --accent:#7dd3fc; --accent-deep:#38bdf8;
+  --pick-1:#34d399; --pick-2:#fbbf24; --edge-pick:#f59e0b;
+  --warn:#fbbf24;
+
+  /* shape + depth */
+  --r-s:4px; --r-m:8px; --r-l:12px; --r-pill:99px;
+  --shadow-s:0 1px 2px #0f172a0a,0 1px 6px #0f172a0f;
+  --shadow-m:0 6px 20px #0f172a1f;
+  --shadow-l:0 18px 50px #00000059;
+
+  /* motion - one easing curve everywhere is most of what "consistent" means */
+  --ease:cubic-bezier(.22,.7,.28,1);
+  --fast:.14s; --med:.26s; --slow:.44s;
+
+  --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --math:'Cambria Math','STIX Two Math','Latin Modern Math',Georgia,serif;
+}
+
+*{box-sizing:border-box}
+
+/* Reserve the scrollbar's width permanently.
+   Without this the page reflows twice: once when a modal sets overflow:hidden
+   and the page bar disappears, and again when an overlay scrollbar fades in as
+   the cursor nears a scrollable pane. Both read as a hitch. */
+html{scrollbar-gutter:stable}
+
+body{margin:0;padding:32px;color:var(--ink);
+ background:linear-gradient(180deg,var(--page) 0%,var(--page-deep) 100%) fixed;
+ font:15px/1.6 var(--sans)}
+
+h1{margin:0 0 6px;font-size:26px;letter-spacing:-.015em}
+.lede{margin:0 0 8px;color:var(--ink-2);max-width:78ch}
+
+/* ============================================================ shared pieces */
+
+/* Buttons: one primary, one ghost-on-dark. Everything clickable presses down. */
+button{font:inherit}
+#sumopen{flex:none;background:var(--dark);color:var(--page);border:1px solid var(--dark);
+ border-radius:var(--r-m);padding:9px 20px;cursor:pointer;font:600 13px var(--sans);
+ transition:transform var(--fast) var(--ease),box-shadow var(--fast) var(--ease)}
+#sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
+#sumopen:active{transform:translateY(0) scale(.97);box-shadow:none}
+
+#oclose,#sclose,#oreset,.pathbtn{background:var(--glass-strong);border:1px solid #ffffff2e;
+ color:var(--lt-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
+ font:12px var(--sans);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
+   transform var(--fast) var(--ease)}
+#oclose:hover,#sclose:hover,#oreset:hover,.pathbtn:hover{background:#ffffff2e;color:var(--lt-ink)}
+#oclose:active,#sclose:active,#oreset:active,.pathbtn:active{transform:scale(.97)}
+
+#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,#oreset:focus-visible,.pathbtn:focus-visible,
+.card:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+/* Amber: "the page cannot tell you something", never mistakable for a failure. */
+.notice{margin:0 0 22px;padding:12px 16px;border-radius:var(--r-m);font-size:13px;
+ background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.notice code{font:12px var(--mono);background:#00000014;padding:1px 6px;border-radius:var(--r-s)}
+
+.pagehead{display:flex;align-items:flex-start;gap:24px;justify-content:space-between}
+
+/* ============================================================ legend / key */
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 18px;
+ background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+ font-size:13px;box-shadow:var(--shadow-s)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend .hint{margin-left:auto;color:var(--ink-3);font:11.5px var(--mono)}
+.sw{display:inline-block;width:13px;height:13px;border-radius:var(--r-s);
+ border:1.5px solid #cbd5e1}
+.sw.passed{background:var(--ok)}
+.sw.failed{background:var(--bad)}
+.sw.untested{background:var(--untested)}
+.sw.missing{background:var(--missing)}
+
+.legend .key{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.legend .k-top{display:flex;align-items:center;gap:7px}
+.legend .k-num{font:600 15px var(--mono);color:var(--ink);padding-left:20px}
+.legend .k-num em{font-style:normal;font-weight:400;font-size:11.5px;
+ color:var(--ink-3);margin-left:7px}
+.legend .key.total{border-left:1px solid var(--line);padding-left:18px;margin-left:2px}
+.legend .key.total .k-top{font:10.5px var(--mono);color:var(--ink-3);
+ letter-spacing:.07em;text-transform:uppercase}
+.legend .key.total .k-num{padding-left:0;font-size:17px}
+
+/* the same key restyled for the dark backdrop of the enlarged view */
+.olegend{background:transparent;border:none;box-shadow:none;margin:10px 0 0;
+ padding:0 2px;color:var(--lt-ink-3);font-size:12px;gap:16px}
+.olegend .sw{border-color:#ffffff2e}
+.olegend .sw.untested{background:var(--untested-dark)}
+.olegend .sw.missing{background:var(--missing-dark)}
+.olegend .hint{color:var(--lt-ink-4)}
+.olegend .k-num{color:var(--lt-ink);font-size:13px}
+.olegend .k-num em{color:var(--lt-ink-4)}
+.olegend .key.total{border-left-color:#ffffff2e}
+
+/* ============================================================ matrix cards */
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
+ padding:16px;cursor:pointer;box-shadow:var(--shadow-s);
+ transition:transform var(--fast) var(--ease),box-shadow var(--med) var(--ease),
+   border-color var(--med) var(--ease);
+ animation:rise var(--slow) var(--ease) both;
+ animation-delay:calc(min(var(--i,0),14)*30ms)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-m);border-color:#cbd5e1}
+
+.card header{display:flex;align-items:baseline;gap:10px;justify-content:space-between;
+ margin-bottom:10px;flex-wrap:wrap}
+.card h2{margin:0;font-size:16px}
+
+.tally{display:inline-flex;gap:5px;flex:none}
+.badge{font:11px var(--mono);padding:2px 8px;border-radius:var(--r-pill);white-space:nowrap}
+.badge.passed{background:#d7f5e2;color:#14532d}
+.badge.failed{background:#fbe3e3;color:#8c1d1d}
+.badge.untested{background:#f1f5f9;color:var(--ink-3)}
+.badge.missing{background:var(--page);color:var(--lt-ink-3)}
+.badge.present{background:#e0e7ff;color:#3730a3}
+
+.scroll{overflow-x:auto}
+
+table.matrix{border-collapse:separate;border-spacing:2px}
+table.matrix th{font:11px var(--mono);font-weight:400;color:var(--ink-3);
+ padding:0 5px;text-align:right;white-space:nowrap}
+table.matrix td{width:22px;height:22px;border-radius:3px;padding:0;
+ transition:transform var(--fast) var(--ease),outline-color var(--fast) var(--ease)}
+
+/* Rotated headers cost one line-height of width, so the cells - not a label
+   like "1000 m3" - set the column width, and every matrix fits its card. */
+table.matrix thead th{writing-mode:vertical-rl;transform:rotate(180deg);
+ text-align:left;padding:5px 0;vertical-align:bottom}
+table.matrix thead th.corner{writing-mode:horizontal-tb;transform:none;padding:0}
+
+table.matrix td .lab{display:none}
+
+td.passed{background:var(--ok)}
+td.failed{background:var(--bad)}
+td.untested{background:var(--untested)}
+td.missing{background:var(--missing);box-shadow:inset 0 0 0 1px #e6ebf0}
+td.present{background:var(--seed)}
+td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8edf2 6px)}
+
+/* ============================================================ modal layers
+   #overlay and #summary share one entrance: the veil fades, the content rises.
+   .open mounts the layer; .in (added a frame later) runs the transition. */
+#overlay,#summary{position:fixed;inset:0;background:var(--veil);display:none;
+ z-index:50;backdrop-filter:blur(6px);padding:22px 26px;opacity:0;
+ transition:opacity var(--med) var(--ease)}
+#summary{z-index:60}
+#overlay.open,#summary.open{display:flex;flex-direction:column}
+#overlay.in,#summary.in{opacity:1}
+
+#overlay>*,#summary>*{opacity:0;transform:translateY(14px);
+ transition:opacity var(--slow) var(--ease),transform var(--slow) var(--ease)}
+#overlay.in>*,#summary.in>*{opacity:1;transform:none}
+#overlay.in>*:nth-child(2),#summary.in>*:nth-child(2){transition-delay:50ms}
+#overlay.in>*:nth-child(3){transition-delay:90ms}
+
+#obar,#sbar{display:flex;align-items:center;gap:14px;padding:0 2px 12px;
+ color:var(--lt-ink);border-bottom:1px solid var(--glass-strong);flex:none;flex-wrap:wrap}
+#obar h3,#sbar h3{margin:0;font-size:19px;letter-spacing:-.01em}
+#oclose,#sclose{margin-left:auto}
+
+#oaxis{font:11.5px var(--mono);color:var(--lt-ink-2);background:var(--glass-line);
+ border:1px solid var(--glass-strong);padding:2px 10px;border-radius:var(--r-pill)}
+
+/* dark panes scroll with a quiet thin bar, not the default chrome */
+#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--dark-3) transparent;
+ scrollbar-gutter:stable}
+#ostage::-webkit-scrollbar,#opanel::-webkit-scrollbar,#sbody::-webkit-scrollbar{
+ width:8px;height:8px}
+#ostage::-webkit-scrollbar-thumb,#opanel::-webkit-scrollbar-thumb,
+#sbody::-webkit-scrollbar-thumb{background:var(--dark-3);border-radius:var(--r-pill)}
+
+/* ============================================================ enlarged view */
+#ostagewrap{flex:1;min-height:0;display:flex;margin-top:12px}
+
+#ostage{flex:1;min-width:0;overflow:auto;padding:18px;
+ display:flex;justify-content:center;align-items:flex-start}
+
+/* --cell comes from script: only the browser knows how much room there is. */
+#ostage table.matrix td{width:var(--cell,34px);height:var(--cell,34px);border-radius:5px}
+#ostage table.matrix th{font-size:13px;color:var(--lt-ink-2);padding:0 10px;
+ transition:color var(--fast) var(--ease)}
+#ostage table.matrix thead th{padding:8px 0}
+#ostage table.matrix th.corner{font-size:10.5px;color:var(--lt-ink-4);text-align:right;
+ padding-right:10px;white-space:pre}
+
+#ostage td.untested{background:var(--untested-dark)}
+#ostage td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
+#ostage td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
+ var(--missing-dark) 4px,var(--dark-3) 4px,var(--dark-3) 8px)}
+
+#ostage table.matrix td .lab{display:flex;align-items:center;justify-content:center;
+ width:100%;height:100%;font:600 12px var(--mono);color:#0f172ab3}
+#ostage td.failed .lab{color:#ffffffe6}
+#ostage td.untested .lab{color:var(--lt-ink-2)}
+#ostage td.missing .lab{color:var(--untested-dark)}
+
+/* Hover marks position only - a ring, never a fill that would hide the status.
+   Must sit after the status colours: same specificity, source order decides. */
+#ostage td.hi{outline:2px solid var(--lt-ink-3);outline-offset:1px;transform:scale(1.06)}
+#ostage th.hi{color:var(--lt-ink);font-weight:600}
+#ostage td.pin,
+#ostage td.pin.hi{outline:3px solid #fff;outline-offset:1px}
+
+/* ============================================================ detail panel */
+#opanel{width:430px;flex:none;overflow-y:auto;background:#0f172acc;color:var(--lt-ink);
+ border-left:1px solid var(--glass-strong);padding:20px 22px;font-size:14.5px}
+#opanel .empty{color:var(--lt-ink-3);line-height:1.6}
+#opanel .empty b{color:var(--lt-ink)}
+
+/* freshly inserted content slides up - new node, so the animation replays */
+#odetail>.fx,#odetail>.empty{animation:rise var(--fast) var(--ease) both}
+
+#odetail.locked::before{content:'pinned - click the cell again to unpin';
+ display:block;margin-bottom:12px;padding:3px 9px;border-radius:var(--r-pill);
+ background:var(--glass-strong);border:1px solid #ffffff2e;color:var(--lt-ink-2);
+ font:10.5px var(--mono);letter-spacing:.04em;animation:rise var(--fast) var(--ease)}
+
+/* ---- typeset formula: serif face, real superscripts, upright unit symbols
+   (in SI notation italics mean a variable, and a unit is not one) ---- */
+.fx{font-size:15.5px;line-height:1.5}
+.fx sup{font-size:.68em;vertical-align:super;line-height:0}
+
+.u{font-family:var(--math);font-size:1.1em;white-space:nowrap}
+
+.fx-head{display:flex;align-items:center;gap:2px;flex-wrap:wrap;font-size:19px;
+ color:var(--lt-ink);padding-bottom:8px}
+.fx-head .arrow{margin:0 10px;color:var(--lt-ink-3);font-size:.9em}
+.fx-head .chip{margin-left:auto;font:10.5px var(--mono);padding:2px 9px;
+ border-radius:var(--r-pill)}
+.chip.passed{background:#14532d;color:#86efac}
+.chip.failed{background:#7f1d1d;color:#fca5a5}
+.chip.untested{background:var(--dark-3);color:var(--lt-ink-2)}
+
+.fx-names{color:var(--lt-ink-3);font-size:13px;padding-bottom:11px;
+ border-bottom:1px solid var(--glass-strong);margin-bottom:13px}
+
+.fx-eq{font-family:var(--math);font-size:20px;color:var(--lt-ink);
+ display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
+.fx-eq .eq{margin:0 12px;color:var(--lt-ink-3)}
+.fx-eq .op{margin:0 8px;color:var(--lt-ink-2)}
+.fx-eq .warn{color:var(--warn);font-size:.75em;font-family:var(--sans)}
+
+.fx-where{margin-top:14px;font-size:13px;color:var(--lt-ink-3);
+ display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.fx-where .kw{font-style:italic;margin-right:9px;font-family:var(--math)}
+.fx-where .arrow{margin:0 6px;color:var(--lt-ink-4)}
+.fx-where .hopcount{margin-left:9px;font:10.5px var(--mono);
+ background:var(--glass-line);border-radius:var(--r-pill);padding:1px 8px;white-space:nowrap}
+
+/* ---- test cases ---- */
+.fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid var(--glass-line)}
+.fx-tests .lbl{font:10.5px var(--mono);color:var(--accent);
+ letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
+.fx-tests table{width:100%;border-collapse:collapse;font-size:13.5px}
+.fx-tests td{padding:3px 6px 3px 0;vertical-align:baseline}
+.fx-tests .k{font:10px var(--mono);color:var(--lt-ink-4);white-space:nowrap;
+ text-transform:uppercase;letter-spacing:.04em}
+.fx-tests .got{color:var(--lt-ink)}
+.fx-tests .v{text-align:right;white-space:nowrap;font:12px var(--mono)}
+.fx-tests tr.ok .v{color:#86efac}
+.fx-tests tr.bad td{background:#7f1d1d33}
+.fx-tests tr.bad .v{color:#fca5a5}
+.fx-tests tr.want td{color:#7c8b9a;font-size:11.5px;padding-top:0;padding-bottom:7px;
+ font-family:var(--mono)}
+
+/* ---- routes ---- */
+.fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid var(--glass-line)}
+.pathbtn{width:100%;font:11.5px var(--mono)}
+.routes{margin-top:10px}
+.routes .rt{padding:7px 9px;border-radius:var(--r-m);margin-bottom:5px;
+ background:#ffffff0d;border:1px solid transparent;
+ animation:rise var(--med) var(--ease) both;
+ animation-delay:calc(min(var(--i,0),12)*25ms);
+ transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.routes .rt:hover{background:#ffffff17}
+.routes .rt.chosen{background:#38bdf814;border-color:#38bdf84d}
+.routes .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+ border-radius:var(--r-pill);padding:1px 7px;margin-right:7px}
+.routes .via{font:11.5px var(--mono);color:var(--lt-ink-2);word-break:break-word}
+.routes .fac{display:block;margin-top:4px;font-size:12px;color:var(--lt-ink-3)}
+.routes .disagree{color:var(--warn)}
+.routes .more{color:var(--lt-ink-4);font-size:11.5px;margin-top:8px}
+
+/* ============================================================ summary */
+#sbody{flex:1;min-height:0;overflow-y:auto;padding:20px 2px 40px}
+
+.sum{max-width:1000px;margin:0 auto;color:var(--lt-ink);font-size:13.5px}
+.sum h4{margin:30px 0 4px;font-size:15px;color:var(--lt-ink)}
+.sum-note{color:var(--lt-ink-4);font-size:12px;margin-bottom:12px;line-height:1.5}
+
+.sum-top{display:flex;align-items:center;gap:38px;flex-wrap:wrap;
+ background:var(--glass);border:1px solid var(--glass-line);
+ border-radius:var(--r-l);padding:22px 26px;box-shadow:var(--shadow-l)}
+
+.donut{width:160px;height:160px;flex:none}
+#summary.in .donut{animation:sweep .7s var(--ease) both}
+.donut-hole{stroke:var(--glass-line)}
+.donut .seg.passed{stroke:var(--ok)}
+.donut .seg.failed{stroke:var(--bad)}
+.donut .seg.untested{stroke:var(--untested-dark)}
+.donut .seg.missing{stroke:var(--dark-3)}
+.donut-mid{fill:var(--lt-ink);font:600 7px var(--sans);text-anchor:middle}
+.donut-sub{fill:var(--lt-ink-4);font:2.6px var(--mono);text-anchor:middle;
+ letter-spacing:.12em;text-transform:uppercase}
+
+.sum-figures{display:flex;gap:34px;flex-wrap:wrap}
+.fig-label{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+ text-transform:uppercase}
+.fig-value{font:600 30px var(--sans);color:var(--lt-ink);line-height:1.25}
+.fig-note{color:var(--lt-ink-4);font-size:11.5px;max-width:26ch;line-height:1.45}
+
+.sum-table{width:100%;border-collapse:collapse;font-size:13px}
+.sum-table td,.sum-table th{padding:5px 10px 5px 0;vertical-align:middle}
+/* Headers align the way their column's data does: numbers are right-aligned, so
+   their headings are too - a left heading over a right column reads as a
+   misalignment. Only the first (name) column is left. */
+.sum-table thead th{font:10.5px var(--mono);color:var(--lt-ink-4);text-align:right;
+ text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--glass-line)}
+.sum-table thead th:first-child{text-align:left}
+.sum-table .n{text-align:right;font:13px var(--mono);width:64px}
+.sum-table .p{text-align:right;font:13px var(--mono);color:var(--lt-ink-3);width:78px}
+.sum-table .n.ok{color:#86efac}
+.sum-table .n.bad{color:#fca5a5}
+.sum-table .name{color:var(--lt-ink)}
+.sum-table .hopn{font:13px var(--mono);color:var(--lt-ink-2);width:80px}
+.sum-table .barcell{width:38%}
+.sum-table .total td{border-top:1px solid var(--glass-line);color:var(--lt-ink-3);
+ padding-top:9px}
+.sum-table tbody tr{transition:background var(--fast) var(--ease)}
+.sum-table tbody tr:hover{background:#ffffff08}
+
+.bar{display:block;height:8px;border-radius:var(--r-pill);min-width:2px}
+#summary.in .bar{animation:grow var(--slow) var(--ease) both;animation-delay:.15s}
+.bar.passed{background:var(--ok)}
+.bar.failed{background:var(--bad)}
+.bar.untested{background:var(--untested-dark)}
+.bar.missing{background:var(--dark-3)}
+.bar.hops{background:var(--accent)}
+
+.sum-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.sum-card{background:var(--glass);border:1px solid var(--glass-line);
+ border-radius:var(--r-l);padding:16px 18px;
+ transition:border-color var(--med) var(--ease),background var(--med) var(--ease)}
+.sum-card:hover{border-color:#ffffff2e}
+.sum-card.bad{border-color:#ef444459;background:#7f1d1d26}
+.sum-card.warn{border-color:#f59e0b45;background:#78350f1f}
+.c-value{font:600 26px var(--sans);color:var(--lt-ink);line-height:1.2}
+.sum-card.bad .c-value{color:#fca5a5}
+.sum-card.warn .c-value{color:#fcd34d}
+.c-label{font-size:12.5px;color:var(--lt-ink-2);margin-bottom:7px}
+.c-note{font:11.5px var(--mono);color:var(--lt-ink-4);line-height:1.55;word-break:break-word}
+
+/* ---- sortable headers ----
+   The triangle sits with the label - inline, space always reserved, so nothing
+   shifts on click. nowrap + the negative vertical margins matter: without them
+   the triangle overflows a narrow column, wraps to its own line, and that
+   two-line cell rides up against its single-line neighbours. */
+.sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
+ white-space:nowrap;transition:color var(--fast) var(--ease)}
+.sum-table.sortable thead th.sortable-col:hover{color:var(--lt-ink-2)}
+.sum-table.sortable thead th.sortable-col::after{content:"";display:inline-block;
+ margin:-4px 0 -4px 6px;vertical-align:middle;border:4px solid transparent;
+ border-top-color:var(--untested-dark);transform:translateY(2px);
+ opacity:0;transition:opacity var(--fast) var(--ease)}
+.sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
+.sum-table.sortable thead th.desc::after{opacity:1;border-top-color:var(--accent)}
+.sum-table.sortable thead th.asc::after{opacity:1;border-top-color:transparent;
+ border-bottom-color:var(--accent);transform:translateY(-2px)}
+
+/* ============================================================ animation */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes grow{from{width:0}}
+@keyframes sweep{from{opacity:0;transform:rotate(-70deg) scale(.92)}}
+
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* ============================================================ dark mode */
+@media(prefers-color-scheme:dark){
+ body{color:var(--lt-ink);
+  background:linear-gradient(180deg,var(--dark) 0%,#0b1120 100%) fixed}
+ .card,.legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
+ .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--untested-dark)}
+ .olegend{background:transparent;border:none}
+ .lede{color:var(--lt-ink-3)}
+ .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
+ .notice code{background:var(--glass-line)}
+ .sw{border-color:var(--untested-dark)}
+ table.matrix th{color:var(--lt-ink-3)}
+ .badge.passed{background:#14532d;color:#86efac}
+ .badge.failed{background:#7f1d1d;color:#fca5a5}
+ .badge.untested{background:var(--dark-3);color:var(--lt-ink-2)}
+ .badge.missing{background:var(--dark-2);color:var(--lt-ink-4)}
+ td.untested{background:var(--untested-dark)}
+ td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
+ td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
+  var(--missing-dark) 3px,var(--dark-3) 3px,var(--dark-3) 6px)}
+ .sw.untested{background:var(--untested-dark)}
+ .sw.missing{background:var(--missing-dark)}
+ .legend .k-num{color:var(--lt-ink)}
+ .legend .key.total{border-left-color:var(--dark-3)}
+ #sumopen{background:var(--lt-ink);color:var(--dark);border-color:var(--lt-ink)}
+}
+
+/* ============================================================ tabs */
+.tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;margin-bottom:-1px;position:relative;
+ padding:9px 18px 11px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-3);
+ transition:color var(--fast) var(--ease)}
+.tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;
+ border-radius:var(--r-pill);background:var(--accent-deep);
+ transform:scaleX(0);transition:transform var(--med) var(--ease)}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--ink)}
+.tab.active::after{transform:scaleX(1)}
+.tab:focus-visible{outline:2px solid var(--accent-deep);outline-offset:-2px}
+
+.tabpane{display:none}
+.tabpane.active{display:block;animation:rise var(--med) var(--ease)}
+
+/* ============================================================ seed cards */
+.seedcard .meta{margin:6px 0 2px;font:12px var(--mono);color:var(--ink-3)}
+.card.cyclic{border-color:#f59e0b73}
+.card.dup{border-color:#818cf8a6}
+.badge.tree{background:#f1f5f9;color:var(--ink-3)}
+.badge.cyclic{background:#fef3c7;color:#92400e}
+.badge.dup{background:#e0e7ff;color:#3730a3}
+
+/* legend swatches for the seed tab */
+.sw.t-si{background:#dbeafe;border-color:#2563eb}
+.sw.t-english{background:#fee2e2;border-color:#dc2626}
+.sw.t-null{background:#e5e7eb;border-color:#6b7280}
+.ln{display:inline-block;width:26px;border-top:2px solid var(--ink-3);vertical-align:middle}
+.ln.dash{border-top-style:dashed}
+
+/* ============================================================ graph canvas
+   cytoscape draws into these containers and owns everything inside them, so
+   node and edge appearance lives in the stylesheet it is given in viz.js, not
+   here. What is left is the box the canvas fills. */
+.cy{width:100%;display:block;border-radius:var(--r-m)}
+
+/* A thumbnail is a preview: every click belongs to the card, which enlarges.
+   It is drawn once into a picture, so what is left here is an image box. */
+.seedcard .cy{pointer-events:none;
+ background-repeat:no-repeat;background-position:center;background-size:contain}
+
+#overlay.seedmode #ostage{padding:0;overflow:hidden;display:block}
+#ocy{width:100%;height:100%;cursor:grab}
+#ocy:active{cursor:grabbing}
+
+/* ============================================================ route explorer */
+#odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--lt-ink)}
+.pth-sub{color:var(--lt-ink-4);font:11.5px var(--mono);margin-bottom:12px}
+.pth-warn{background:#78350f66;border:1px solid #f59e0b66;border-radius:var(--r-m);
+ padding:9px 12px;margin:10px 0;color:#fcd34d;font-size:12.5px;line-height:1.5}
+.pth-ok{color:#86efac;font-size:12.5px;margin:10px 0}
+#optoggle{display:flex;align-items:center;gap:7px;margin:0 0 12px;cursor:pointer;
+ font:11.5px var(--mono);color:var(--lt-ink-3);user-select:none}
+#optoggle input{accent-color:var(--accent-deep)}
+
+.prow{padding:8px 10px;border-radius:var(--r-m);margin-bottom:6px;background:#ffffff0d;
+ border:1px solid transparent;cursor:pointer;
+ animation:rise var(--med) var(--ease) both;animation-delay:calc(min(var(--i,0),12)*22ms);
+ transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.prow:hover{background:#ffffff17}
+.prow.best{background:#38bdf814;border-color:#38bdf84d}
+.prow .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.prow .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+ border-radius:var(--r-pill);padding:1px 8px;flex:none}
+.prow .route{font:12px var(--mono);color:var(--lt-ink);line-height:1.5;word-break:break-word}
+.prow .res{margin-top:4px;font-size:13px;color:var(--lt-ink-3)}
+.prow .res .u{font-size:1.05em}
+.grp{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
+ vertical-align:0}
+
+/* ============================================================ fx additions */
+.fx-eq.cont{font-size:18px;color:var(--lt-ink-2)}
+.fx-note{margin-top:8px;font-size:12px;color:var(--warn)}
+.fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid var(--glass-line);
+ font:12px var(--mono);color:var(--lt-ink-4);word-break:break-all}
+.fx-where i{font-style:italic;font-family:var(--math)}
+.fx-where .sep{margin-right:6px}
+.fx .fx-eq i{font-style:italic;font-family:var(--math)}
+.chip.kind{background:var(--dark-3);color:var(--lt-ink-2)}
+
+@media(prefers-color-scheme:dark){
+ .tabs{border-bottom-color:var(--dark-3)}
+ .tab:hover,.tab.active{color:var(--lt-ink)}
+ .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
+ .badge.cyclic{background:#78350f66;color:#fcd34d}
+ .badge.dup{background:#312e81;color:#c7d2fe}
+ .ln{border-top-color:var(--lt-ink-3)}
+}
+
+/* reset button and the per-mode keys in the enlarged view */
+#oreset{display:none;margin-left:auto}
+#overlay.seedmode #oreset{display:inline-block}
+#overlay.seedmode #oclose{margin-left:0}
+.olegend.skey{display:none}
+#overlay.seedmode .olegend.skey{display:flex}
+#overlay.seedmode .olegend.mkey{display:none}
+.olegend .ln{border-top-color:var(--lt-ink-3)}
+
+/* The matrix's "pinned" hint is wrong here and redundant - the graph has an
+   explicit Clear selection button instead. */
+#overlay.seedmode #odetail.locked::before{display:none}
+
+/* Sits above the heading rather than floating beside it, so a long unit name
+   cannot wrap underneath it. */
+.clearpick{float:none;display:block;margin:0 0 10px auto}
+
+/* Picked units are marked on the canvas by cytoscape, which colours the border
+   and prefixes the label with a circled digit. These chips repeat the same two
+   colours in the panel heading, so the pair is never told apart by hue alone. */
+.pk{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;
+ border-radius:50%;margin-right:7px;font:700 12px var(--sans);color:#0f172a;
+ vertical-align:1px}
+.pk.p1{background:var(--pick-1)}
+.pk.p2{background:var(--pick-2)}
+
+.clearpick{float:right;margin:-2px 0 8px 10px;background:var(--glass-strong);
+ border:1px solid #ffffff2e;color:var(--lt-ink-2);border-radius:var(--r-m);
+ padding:4px 11px;cursor:pointer;font:11.5px var(--sans);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
+   transform var(--fast) var(--ease)}
+.clearpick:hover{background:#ffffff2e;color:var(--lt-ink)}
+.clearpick:active{transform:scale(.96)}
+.clearpick:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+

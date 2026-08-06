@@ -1,0 +1,46 @@
+plugins {
+    id 'hec-units.deps-conventions'
+    id 'hec-units.java-conventions'
+}
+
+dependencies {
+    implementation project(':graph-viz')
+    implementation project(':units')
+}
+
+def outputDir = layout.buildDirectory.dir("reports/viz")
+
+/*
+ * A failing conversion is the most interesting thing the visualizer has to show,
+ * so it must not stop the visualizer from being built - otherwise the tool is
+ * unavailable in exactly the situation it exists for.
+ *
+ * This relaxes :units:test only when the visualizer is what was asked for.
+ * Running `gradlew :units:test` on its own, or in CI, still fails the build.
+ */
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(':units-graph-viz:visualize')) {
+        project(':units').tasks.named('test').get().ignoreFailures = true
+    }
+}
+
+tasks.register('visualize', JavaExec) {
+    group = 'documentation'
+    description = 'Generate the conversion-graph visualization'
+    dependsOn classes, ':units:test'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.viz.GenerateVisualization'
+    args = [outputDir.get().asFile.absolutePath,
+            rootProject.file('units/build/reports/unit_conversion_report.xml').absolutePath,
+            rootProject.file('units/src/test/resources/units/conversions_to_test.csv').absolutePath]
+    outputs.dir(outputDir)
+}
+
+tasks.register('vizServe', JavaExec) {
+    group = 'documentation'
+    description = 'Serve the visualization on localhost'
+    dependsOn 'visualize'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'mil.army.usace.hec.units.viz.VizServer'
+    args = [outputDir.get().asFile.absolutePath, '8080']
+}

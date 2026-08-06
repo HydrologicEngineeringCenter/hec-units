@@ -16,7 +16,7 @@ import cwms.units.Loader;
 import cwms.units.Unit;
 
 import org.opendcs.jas.core.Mode;
-import net.hobbyscience.SimpleInfixCalculator;
+import net.hobbyscience.SimplePostfixCalculator;
 import net.hobbyscience.database.Conversion;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -205,11 +205,11 @@ class UnitConversionTest {
         var toUnit = getUnit(to);
         var conversion = getConversion(fromUnit,toUnit);
         var inverseConversion = getConversion(toUnit, fromUnit);
-        var infix = conversion.getMethod().getPostfix();
-        var inverseInfix = inverseConversion.getMethod().getPostfix();
+        var postfix = conversion.getMethod().getPostfix();
+        var inversePostfix = inverseConversion.getMethod().getPostfix();
 
         log.finest(()->"Forward conversion " + conversion.toString());
-        double forward = SimpleInfixCalculator.calculate(infix, in);
+        double forward = SimplePostfixCalculator.calculate(postfix, in);
         boolean forwardOk = false; // assume false unless we pass
         try {
             assertTrue(Double.isFinite(forward), () -> "Forward conversion produced non-finite value using " + conversion.toString());
@@ -220,7 +220,7 @@ class UnitConversionTest {
         }
 
         log.finest(()->"Inverse conversion " + inverseConversion.toString());
-        double inverse = SimpleInfixCalculator.calculate(inverseInfix, forward);
+        double inverse = SimplePostfixCalculator.calculate(inversePostfix, forward);
         boolean inverseOk = false;
         try {
             assertTrue(Double.isFinite(inverse), () -> "Inverse conversion produced non-finite value using " + inverseConversion.toString());
