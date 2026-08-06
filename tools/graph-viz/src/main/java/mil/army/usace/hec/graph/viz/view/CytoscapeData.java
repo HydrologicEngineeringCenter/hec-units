@@ -91,9 +91,9 @@ public final class CytoscapeData {
 
     private static String node(Node node, GraphLayout.Placed placed) {
         double[] at = placed.positions().get(node.id());
-        double[] fraction = placed.normalised().get(node.id());
+        double[] fraction = placed.normalized().get(node.id());
         return "{\"data\":{\"id\":" + Json.str(node.id())
-             + ",\"label\":" + Json.str(node.id())
+             + ",\"label\":" + Json.str(Labels.plain(node.id()))
              + ",\"name\":" + Json.str(node.label())
              + (fraction == null ? ""
                 : ",\"nx\":" + round(fraction[0]) + ",\"ny\":" + round(fraction[1]))

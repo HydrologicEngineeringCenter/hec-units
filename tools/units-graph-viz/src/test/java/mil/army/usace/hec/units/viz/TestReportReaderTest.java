@@ -9,39 +9,13 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 
 class TestReportReaderTest {
 
-    @ParameterizedTest(name = "{2}")
-    @CsvSource(delimiter = '|', value = {
-        "status=\"passed\"        | PASSED   | passed is passed",
-        "status=\"failed\"        | FAILED   | failed is failed",
-        "status=\"not-tested\"    | UNTESTED | not-tested is untested",
-        "status=\"something-new\" | UNTESTED | an unrecognised status reads as untested",
-        "                         | UNTESTED | a missing status reads as untested"
-    })
-    void maps_a_report_status(String attribute, EdgeStatus expected, String rule,
-                              @TempDir Path dir) throws Exception {
-        Path report = dir.resolve("report.xml");
-        Files.writeString(report, """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <unit-conversions>
-              <conversion from="ft" to="m" ATTR/>
-            </unit-conversions>
-            """.replace("ATTR", attribute == null ? "" : attribute));
-
-        var edges = TestReportReader.read(report);
-
-        assertEquals(1, edges.size());
-        assertEquals(expected, edges.get(0).status());
-    }
-
     @Test
-    void reads_every_conversion_in_order(@TempDir Path dir) throws Exception {
+    void reads_each_status_the_report_can_contain(@TempDir Path dir) throws Exception {
         Path report = dir.resolve("report.xml");
         Files.writeString(report, """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -55,10 +29,30 @@ class TestReportReaderTest {
         var edges = TestReportReader.read(report);
 
         assertEquals(3, edges.size());
+
         assertEquals("ft", edges.get(0).from());
         assertEquals("m", edges.get(0).to());
-        assertEquals("C", edges.get(2).from());
-        assertEquals("K", edges.get(2).to());
+        assertEquals(EdgeStatus.PASSED, edges.get(0).status());
+
+        assertEquals(EdgeStatus.FAILED, edges.get(1).status());
+        assertEquals(EdgeStatus.UNTESTED, edges.get(2).status());
+    }
+
+    /** An unrecognised status must look uncovered, never falsely green. */
+    @Test
+    void treats_an_unknown_status_as_untested(@TempDir Path dir) throws Exception {
+        Path report = dir.resolve("report.xml");
+        Files.writeString(report, """
+            <unit-conversions>
+              <conversion from="ft" to="m" status="something-new"/>
+              <conversion from="m" to="ft"/>
+            </unit-conversions>
+            """);
+
+        var edges = TestReportReader.read(report);
+
+        assertEquals(EdgeStatus.UNTESTED, edges.get(0).status());
+        assertEquals(EdgeStatus.UNTESTED, edges.get(1).status());
     }
 
     @Test

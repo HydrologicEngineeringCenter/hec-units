@@ -1,5 +1,5 @@
 /* ============================================================ design tokens
-   Every colour, radius, shadow and duration lives here, so views written later
+   Every color, radius, shadow and duration lives here, so views written later
    (the node-link graph, the path explorer) inherit the same language by using
    the same variables. */
 :root{
@@ -7,8 +7,14 @@
   --page:#f8fafc; --page-deep:#eef2f7;
   --card:#ffffff; --line:#e2e8f0;
   --dark:#0f172a; --dark-2:#1e293b; --dark-3:#334155;
-  --veil:rgba(10,15,28,.92);
-  --glass:#ffffff0a; --glass-line:#ffffff14; --glass-strong:#ffffff1f;
+  --veil:rgba(248,250,252,.93);
+
+  /* panels: the overlay, the summary and the search detail card */
+  --panel:#ffffffe0; --panel-deep:#ffffff; --panel-2:#e7edf5;
+  --panel-ink:#0f172a; --panel-ink-2:#475569; --panel-ink-3:#64748b; --panel-ink-4:#7c8ba1;
+  --panel-line:#0f172a24;
+  --grid:#0f172a0d; --stage-glow:#38bdf814;
+  --glass:#0f172a08; --glass-line:#0f172a12; --glass-strong:#0f172a14;
 
   /* ink */
   --ink:#0f172a; --ink-2:#475569; --ink-3:#64748b;
@@ -18,10 +24,16 @@
   --ok:#2fd06b; --bad:#c92a2a;
   --untested:#a8b6c5; --untested-dark:#475569;
   --missing:#f1f4f7; --missing-dark:#1e293b;
+  --stripe:#e8edf2;
   --seed:#6366f1;
   --accent:#7dd3fc; --accent-deep:#38bdf8;
   --pick-1:#34d399; --pick-2:#fbbf24; --edge-pick:#f59e0b;
   --warn:#fbbf24;
+  /* the idle route walk. Brighter than --warn so it reads as a lamp coming
+     on rather than a caution color; deeper on a light stage, where a pale
+     yellow would disappear into the background. */
+  /* the idle route walk; the same neon yellow in both themes */
+  --glow:#faff00;
 
   /* shape + depth */
   --r-s:4px; --r-m:8px; --r-l:12px; --r-pill:99px;
@@ -32,6 +44,8 @@
   /* motion - one easing curve everywhere is most of what "consistent" means */
   --ease:cubic-bezier(.22,.7,.28,1);
   --fast:.14s; --med:.26s; --slow:.44s;
+
+  --arrow-svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 12h16M13.5 6.5 19 12l-5.5 5.5' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
   --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
   --sans:ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
@@ -50,26 +64,29 @@ body{margin:0;padding:32px;color:var(--ink);
  background:linear-gradient(180deg,var(--page) 0%,var(--page-deep) 100%) fixed;
  font:15px/1.6 var(--sans)}
 
-h1{margin:0 0 6px;font-size:26px;letter-spacing:-.015em}
-.lede{margin:0 0 8px;color:var(--ink-2);max-width:78ch}
+h1{margin:0;font-size:26px;letter-spacing:-.015em}
 
 /* ============================================================ shared pieces */
 
 /* Buttons: one primary, one ghost-on-dark. Everything clickable presses down. */
 button{font:inherit}
-#sumopen{flex:none;background:var(--dark);color:var(--page);border:1px solid var(--dark);
- border-radius:var(--r-m);padding:9px 20px;cursor:pointer;font:600 13px var(--sans);
- transition:transform var(--fast) var(--ease),box-shadow var(--fast) var(--ease)}
-#sumopen:hover{transform:translateY(-1px);box-shadow:0 4px 14px #0f172a33}
-#sumopen:active{transform:translateY(0) scale(.97);box-shadow:none}
+/* Matches .filterbtn: one button style for anything sitting on the page
+   itself, so Summary does not read as a different kind of control. */
+#sumopen{flex:none;padding:9px 20px;cursor:pointer;border-radius:var(--r-pill);
+ border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+ font:13px var(--sans);box-shadow:var(--shadow-s);
+ transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease),
+  transform var(--fast) var(--ease)}
+#sumopen:hover{border-color:#cbd5e1;color:var(--ink)}
+#sumopen:active{transform:scale(.97)}
 
-#oclose,#sclose,#oreset,.pathbtn{background:var(--glass-strong);border:1px solid #ffffff2e;
- color:var(--lt-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
+#oclose,#sclose,#oreset,#ocycle,.pathbtn{background:var(--glass-strong);border:1px solid var(--panel-line);
+ color:var(--panel-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
  font:12px var(--sans);
  transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
    transform var(--fast) var(--ease)}
-#oclose:hover,#sclose:hover,#oreset:hover,.pathbtn:hover{background:#ffffff2e;color:var(--lt-ink)}
-#oclose:active,#sclose:active,#oreset:active,.pathbtn:active{transform:scale(.97)}
+#oclose:hover,#sclose:hover,#oreset:hover,#ocycle:hover,.pathbtn:hover{background:var(--glass-strong);color:var(--panel-ink)}
+#oclose:active,#sclose:active,#oreset:active,#ocycle:active,.pathbtn:active{transform:scale(.97)}
 
 #sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,#oreset:focus-visible,.pathbtn:focus-visible,
 .card:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
@@ -79,7 +96,7 @@ button{font:inherit}
  background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
 .notice code{font:12px var(--mono);background:#00000014;padding:1px 6px;border-radius:var(--r-s)}
 
-.pagehead{display:flex;align-items:flex-start;gap:24px;justify-content:space-between}
+.pagehead{display:flex;align-items:center;gap:24px;justify-content:space-between}
 
 /* ============================================================ legend / key */
 .legend{display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 28px;padding:14px 18px;
@@ -106,14 +123,14 @@ button{font:inherit}
 
 /* the same key restyled for the dark backdrop of the enlarged view */
 .olegend{background:transparent;border:none;box-shadow:none;margin:10px 0 0;
- padding:0 2px;color:var(--lt-ink-3);font-size:12px;gap:16px}
-.olegend .sw{border-color:#ffffff2e}
-.olegend .sw.untested{background:var(--untested-dark)}
-.olegend .sw.missing{background:var(--missing-dark)}
-.olegend .hint{color:var(--lt-ink-4)}
-.olegend .k-num{color:var(--lt-ink);font-size:13px}
-.olegend .k-num em{color:var(--lt-ink-4)}
-.olegend .key.total{border-left-color:#ffffff2e}
+ padding:0 2px;color:var(--panel-ink-3);font-size:12px;gap:16px}
+.olegend .sw{border-color:var(--panel-line)}
+.olegend .sw.untested{background:var(--untested)}
+.olegend .sw.missing{background:var(--missing)}
+.olegend .hint{color:var(--panel-ink-4)}
+.olegend .k-num{color:var(--panel-ink);font-size:13px}
+.olegend .k-num em{color:var(--panel-ink-4)}
+.olegend .key.total{border-left-color:var(--panel-line)}
 
 /* ============================================================ matrix cards */
 .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
@@ -126,19 +143,25 @@ button{font:inherit}
  animation-delay:calc(min(var(--i,0),14)*30ms)}
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-m);border-color:#cbd5e1}
 
+.card{display:flex;flex-direction:column}
 .card header{display:flex;align-items:baseline;gap:10px;justify-content:space-between;
  margin-bottom:10px;flex-wrap:wrap}
 .card h2{margin:0;font-size:16px}
+.card .meta{font:11.5px var(--mono);color:var(--ink-3);margin:0;flex:1}
+.card .scroll{display:flex;align-items:center;justify-content:center;width:100%}
 
 .tally{display:inline-flex;gap:5px;flex:none}
 .badge{font:11px var(--mono);padding:2px 8px;border-radius:var(--r-pill);white-space:nowrap}
 .badge.passed{background:#d7f5e2;color:#14532d}
 .badge.failed{background:#fbe3e3;color:#8c1d1d}
 .badge.untested{background:#f1f5f9;color:var(--ink-3)}
-.badge.missing{background:var(--page);color:var(--lt-ink-3)}
+.badge.missing{background:var(--page);color:var(--ink-3)}
 .badge.present{background:#e0e7ff;color:#3730a3}
 
-.scroll{overflow-x:auto}
+/* Scaled to fit rather than scrolled: a scrollbar inside a preview is
+   noise, and the card enlarges on click anyway. */
+.thumb.scroll{overflow:hidden}
+.thumb.scroll table{transition:transform var(--med) var(--ease)}
 
 table.matrix{border-collapse:separate;border-spacing:2px}
 table.matrix th{font:11px var(--mono);font-weight:400;color:var(--ink-3);
@@ -159,7 +182,8 @@ td.failed{background:var(--bad)}
 td.untested{background:var(--untested)}
 td.missing{background:var(--missing);box-shadow:inset 0 0 0 1px #e6ebf0}
 td.present{background:var(--seed)}
-td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8edf2 6px)}
+td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
+ var(--stripe) 3px,var(--stripe) 6px)}
 
 /* ============================================================ modal layers
    #overlay and #summary share one entrance: the veil fades, the content rises.
@@ -178,20 +202,21 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 #overlay.in>*:nth-child(3){transition-delay:90ms}
 
 #obar,#sbar{display:flex;align-items:center;gap:14px;padding:0 2px 12px;
- color:var(--lt-ink);border-bottom:1px solid var(--glass-strong);flex:none;flex-wrap:wrap}
+ color:var(--panel-ink);border-bottom:1px solid var(--glass-strong);flex:none;flex-wrap:wrap}
 #obar h3,#sbar h3{margin:0;font-size:19px;letter-spacing:-.01em}
 #oclose,#sclose{margin-left:auto}
 
-#oaxis{font:11.5px var(--mono);color:var(--lt-ink-2);background:var(--glass-line);
+#oaxis .arrow{margin:0 6px;font-size:1.3em}
+#oaxis{font:11.5px var(--mono);color:var(--panel-ink-2);background:var(--glass-line);
  border:1px solid var(--glass-strong);padding:2px 10px;border-radius:var(--r-pill)}
 
 /* dark panes scroll with a quiet thin bar, not the default chrome */
-#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--dark-3) transparent;
+#ostage,#opanel,#sbody{scrollbar-width:thin;scrollbar-color:var(--panel-line) transparent;
  scrollbar-gutter:stable}
 #ostage::-webkit-scrollbar,#opanel::-webkit-scrollbar,#sbody::-webkit-scrollbar{
  width:8px;height:8px}
 #ostage::-webkit-scrollbar-thumb,#opanel::-webkit-scrollbar-thumb,
-#sbody::-webkit-scrollbar-thumb{background:var(--dark-3);border-radius:var(--r-pill)}
+#sbody::-webkit-scrollbar-thumb{background:var(--panel-line);border-radius:var(--r-pill)}
 
 /* ============================================================ enlarged view */
 #ostagewrap{flex:1;min-height:0;display:flex;margin-top:12px}
@@ -201,42 +226,47 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 /* --cell comes from script: only the browser knows how much room there is. */
 #ostage table.matrix td{width:var(--cell,34px);height:var(--cell,34px);border-radius:5px}
-#ostage table.matrix th{font-size:13px;color:var(--lt-ink-2);padding:0 10px;
+#ostage table.matrix th{font-size:13px;color:var(--panel-ink-2);padding:0 10px;
  transition:color var(--fast) var(--ease)}
 #ostage table.matrix thead th{padding:8px 0}
-#ostage table.matrix th.corner{font-size:10.5px;color:var(--lt-ink-4);text-align:right;
+#ostage table.matrix th.corner{font-size:10.5px;color:var(--panel-ink-4);text-align:right;
  padding-right:10px;white-space:pre}
 
-#ostage td.untested{background:var(--untested-dark)}
-#ostage td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
-#ostage td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
- var(--missing-dark) 4px,var(--dark-3) 4px,var(--dark-3) 8px)}
+#ostage td.untested{background:var(--untested)}
+#ostage td.missing{background:var(--missing);box-shadow:inset 0 0 0 1px var(--panel-line)}
+#ostage td.self{background:repeating-linear-gradient(45deg,var(--missing),
+ var(--missing) 4px,var(--stripe) 4px,var(--stripe) 8px)}
 
 #ostage table.matrix td .lab{display:flex;align-items:center;justify-content:center;
  width:100%;height:100%;font:600 12px var(--mono);color:#0f172ab3}
 #ostage td.failed .lab{color:#ffffffe6}
-#ostage td.untested .lab{color:var(--lt-ink-2)}
-#ostage td.missing .lab{color:var(--untested-dark)}
+#ostage td.untested .lab{color:var(--panel-ink-2)}
+#ostage td.missing .lab{color:var(--panel-ink-4)}
 
 /* Hover marks position only - a ring, never a fill that would hide the status.
-   Must sit after the status colours: same specificity, source order decides. */
-#ostage td.hi{outline:2px solid var(--lt-ink-3);outline-offset:1px;transform:scale(1.06)}
-#ostage th.hi{color:var(--lt-ink);font-weight:600}
+   Must sit after the status colors: same specificity, source order decides. */
+#ostage td.hi{outline:2px solid var(--panel-ink-3);outline-offset:1px;transform:scale(1.06)}
+#ostage th.hi{color:var(--panel-ink);font-weight:600}
 #ostage td.pin,
-#ostage td.pin.hi{outline:3px solid #fff;outline-offset:1px}
+#ostage td.pin.hi{outline:3px solid var(--panel-ink);outline-offset:1px}
 
 /* ============================================================ detail panel */
-#opanel{width:430px;flex:none;overflow-y:auto;background:#0f172acc;color:var(--lt-ink);
- border-left:1px solid var(--glass-strong);padding:20px 22px;font-size:14.5px}
-#opanel .empty{color:var(--lt-ink-3);line-height:1.6}
-#opanel .empty b{color:var(--lt-ink)}
+#opanel{flex:none;display:flex;flex-direction:column;min-width:0;min-height:0;
+ background:var(--panel);color:var(--panel-ink);font-size:14.5px}
+#odetail{flex:1;min-height:0;overflow-y:auto;padding:16px 20px 20px}
+#opanel .empty{color:var(--panel-ink-3);line-height:1.6}
+
+/* The heading is its own line with room under it, or the prompt below reads as
+   a run-on sentence. */
+#opanel .empty b,.infopage .empty b{display:block;margin-bottom:9px;font-size:16px;
+ color:var(--panel-ink)}
 
 /* freshly inserted content slides up - new node, so the animation replays */
 #odetail>.fx,#odetail>.empty{animation:rise var(--fast) var(--ease) both}
 
 #odetail.locked::before{content:'pinned - click the cell again to unpin';
  display:block;margin-bottom:12px;padding:3px 9px;border-radius:var(--r-pill);
- background:var(--glass-strong);border:1px solid #ffffff2e;color:var(--lt-ink-2);
+ background:var(--glass-strong);border:1px solid var(--panel-line);color:var(--panel-ink-2);
  font:10.5px var(--mono);letter-spacing:.04em;animation:rise var(--fast) var(--ease)}
 
 /* ---- typeset formula: serif face, real superscripts, upright unit symbols
@@ -246,145 +276,229 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 .u{font-family:var(--math);font-size:1.1em;white-space:nowrap}
 
+/* Direction is the point of every one of these panels, so the arrow is sized
+   and colored to be read, not inferred. */
+/* inline-flex centers the glyph on the line box instead of hanging it off the
+   text baseline, which is what made it sit low next to larger unit names. */
+/* A fixed square box with the glyph centered in it, so placement comes from the
+   box and not from where a given font happens to hang U+2192 on the baseline.
+   line-height:0 collapsed that box, which is what left it sitting low. */
+/* Drawn rather than typed. A font glyph sits wherever that font hangs U+2192
+   on the baseline, which is why it kept reading low next to larger text; a
+   masked SVG is centered on its own box by construction. The mask takes its
+   color from background-color, so it still follows the palette. */
+.arrow{display:inline-block;width:1.15em;height:1.15em;vertical-align:middle;
+ margin:0 9px;flex:none;font-size:1.25em;
+ background-color:var(--accent-deep);
+ -webkit-mask:no-repeat center/contain var(--arrow-svg);
+ mask:no-repeat center/contain var(--arrow-svg);
+ text-indent:-999em;overflow:hidden}
+
 .fx-head{display:flex;align-items:center;gap:2px;flex-wrap:wrap;font-size:19px;
- color:var(--lt-ink);padding-bottom:8px}
-.fx-head .arrow{margin:0 10px;color:var(--lt-ink-3);font-size:.9em}
-.fx-head .chip{margin-left:auto;font:10.5px var(--mono);padding:2px 9px;
- border-radius:var(--r-pill)}
+ color:var(--panel-ink);padding-bottom:8px}
+.fx-head .arrow{margin:0 11px}
+.chip{display:inline-block;font:10.5px var(--mono);padding:2px 9px;border-radius:var(--r-pill)}
+.fx-head .chip{margin-left:auto}
 .chip.passed{background:#14532d;color:#86efac}
 .chip.failed{background:#7f1d1d;color:#fca5a5}
-.chip.untested{background:var(--dark-3);color:var(--lt-ink-2)}
+.chip.untested{background:var(--panel-2);color:var(--panel-ink-2)}
 
-.fx-names{color:var(--lt-ink-3);font-size:13px;padding-bottom:11px;
+.fx-names{color:var(--panel-ink-3);font-size:13px;padding-bottom:11px;
  border-bottom:1px solid var(--glass-strong);margin-bottom:13px}
 
-.fx-eq{font-family:var(--math);font-size:20px;color:var(--lt-ink);
+.fx-eq{font-family:var(--math);font-size:20px;color:var(--panel-ink);
  display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
-.fx-eq .eq{margin:0 12px;color:var(--lt-ink-3)}
-.fx-eq .op{margin:0 8px;color:var(--lt-ink-2)}
+.fx-eq .eq{margin:0 12px;color:var(--panel-ink-3)}
+.fx-eq .op{margin:0 8px;color:var(--panel-ink-2)}
 .fx-eq .warn{color:var(--warn);font-size:.75em;font-family:var(--sans)}
 
-.fx-where{margin-top:14px;font-size:13px;color:var(--lt-ink-3);
+.fx-where{margin-top:14px;font-size:13px;color:var(--panel-ink-3);
  display:flex;align-items:center;flex-wrap:wrap;gap:2px}
 .fx-where .kw{font-style:italic;margin-right:9px;font-family:var(--math)}
-.fx-where .arrow{margin:0 6px;color:var(--lt-ink-4)}
+.fx-where .arrow{margin:0 7px}
 .fx-where .hopcount{margin-left:9px;font:10.5px var(--mono);
  background:var(--glass-line);border-radius:var(--r-pill);padding:1px 8px;white-space:nowrap}
 
-/* ---- test cases ---- */
+/* ---- test cases ----
+   One card per direction. The top line is what ran, the bottom line is how far
+   off it landed - absolute and relative, since only the pair says whether a
+   miss is rounding or a wrong constant. */
 .fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid var(--glass-line)}
 .fx-tests .lbl{font:10.5px var(--mono);color:var(--accent);
  letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
-.fx-tests table{width:100%;border-collapse:collapse;font-size:13.5px}
-.fx-tests td{padding:3px 6px 3px 0;vertical-align:baseline}
-.fx-tests .k{font:10px var(--mono);color:var(--lt-ink-4);white-space:nowrap;
- text-transform:uppercase;letter-spacing:.04em}
-.fx-tests .got{color:var(--lt-ink)}
-.fx-tests .v{text-align:right;white-space:nowrap;font:12px var(--mono)}
-.fx-tests tr.ok .v{color:#86efac}
-.fx-tests tr.bad td{background:#7f1d1d33}
-.fx-tests tr.bad .v{color:#fca5a5}
-.fx-tests tr.want td{color:#7c8b9a;font-size:11.5px;padding-top:0;padding-bottom:7px;
- font-family:var(--mono)}
+.tc{padding:8px 11px;border-radius:var(--r-m);margin-bottom:7px;background:var(--glass);
+ border:1px solid var(--glass-line);animation:rise var(--fast) var(--ease) both}
+.tc.bad{background:#7f1d1d33;border-color:#ef444459}
+/* A flex container throws away whitespace-only children, so the space the
+   template puts between a value and its unit vanished and 5 1/ft read as
+   51/ft. The gap has to be a real property. */
+.tc-top{display:flex;align-items:baseline;flex-wrap:wrap;font-size:14.5px;
+ color:var(--panel-ink)}
+.tc-top .arrow,.tc-top .tc-mark{align-self:center}
+.tc-top .u{margin-left:.34em}
+.tc-top .arrow{margin:0 9px}
+.tc-mark{margin-left:auto;padding-left:10px;font:11px var(--mono);white-space:nowrap}
+.tc.ok .tc-mark{color:#86efac}
+.tc.bad .tc-mark{color:#fca5a5}
+.tc-sub{display:flex;flex-wrap:wrap;gap:4px 15px;margin-top:6px;
+ font:11.5px var(--mono);color:var(--panel-ink-4)}
+.tc-sub b{font-weight:400;color:var(--panel-ink-2)}
+.tc.bad .tc-sub b{color:#fca5a5}
 
 /* ---- routes ---- */
 .fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid var(--glass-line)}
 .pathbtn{width:100%;font:11.5px var(--mono)}
 .routes{margin-top:10px}
 .routes .rt{padding:7px 9px;border-radius:var(--r-m);margin-bottom:5px;
- background:#ffffff0d;border:1px solid transparent;
+ background:var(--glass);border:1px solid transparent;
  animation:rise var(--med) var(--ease) both;
  animation-delay:calc(min(var(--i,0),12)*25ms);
  transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
-.routes .rt:hover{background:#ffffff17}
+.routes .rt:hover{background:var(--glass-line)}
 .routes .rt.chosen{background:#38bdf814;border-color:#38bdf84d}
-.routes .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+.routes .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--panel-ink-2);
  border-radius:var(--r-pill);padding:1px 7px;margin-right:7px}
-.routes .via{font:11.5px var(--mono);color:var(--lt-ink-2);word-break:break-word}
-.routes .fac{display:block;margin-top:4px;font-size:12px;color:var(--lt-ink-3)}
+.routes .via{font:11.5px var(--mono);color:var(--panel-ink-2);word-break:break-word}
+.routes .fac{display:block;margin-top:4px;font-size:12px;color:var(--panel-ink-3)}
 .routes .disagree{color:var(--warn)}
-.routes .more{color:var(--lt-ink-4);font-size:11.5px;margin-top:8px}
+.routes .more{color:var(--panel-ink-4);font-size:11.5px;margin-top:8px}
 
 /* ============================================================ summary */
 #sbody{flex:1;min-height:0;overflow-y:auto;padding:20px 2px 40px}
 
-.sum{max-width:1000px;margin:0 auto;color:var(--lt-ink);font-size:13.5px}
-.sum h4{margin:30px 0 4px;font-size:15px;color:var(--lt-ink)}
-.sum-note{color:var(--lt-ink-4);font-size:12px;margin-bottom:12px;line-height:1.5}
+.sum{max-width:1000px;margin:0 auto;color:var(--panel-ink);font-size:13.5px}
+.sum h4{margin:30px 0 4px;font-size:15px;color:var(--panel-ink)}
+.sum-note{color:var(--panel-ink-4);font-size:12px;margin-bottom:12px;line-height:1.5}
 
 .sum-top{display:flex;align-items:center;gap:38px;flex-wrap:wrap;
  background:var(--glass);border:1px solid var(--glass-line);
  border-radius:var(--r-l);padding:22px 26px;box-shadow:var(--shadow-l)}
 
-.donut{width:160px;height:160px;flex:none}
-#summary.in .donut{animation:sweep .7s var(--ease) both}
+/* ---- the donut, and its closer look ----
+   Growing in normal flow is what pushes the rest of the summary down, so the
+   whole panel reflows as one movement instead of anything being overlaid. */
+.donutbtn{background:none;border:none;padding:0;cursor:pointer;flex:none;
+ border-radius:50%;line-height:0;
+ transition:transform var(--med) var(--ease),filter var(--med) var(--ease)}
+.donutbtn:hover{transform:scale(1.03);filter:drop-shadow(0 0 14px #38bdf844)}
+.donutbtn:active{transform:scale(.99)}
+.donutbtn:focus-visible{outline:2px solid var(--accent-deep);outline-offset:6px}
+
+.donut{width:160px;height:160px;flex:none;
+ transition:width var(--slow) var(--ease),height var(--slow) var(--ease)}
+.sum-top.open .donut{width:300px;height:300px}
+
+.donutkey{flex-basis:100%;overflow:hidden;max-height:0;opacity:0;
+ transition:max-height var(--slow) var(--ease),opacity var(--med) var(--ease),
+   margin-top var(--slow) var(--ease)}
+.sum-top.open .donutkey{max-height:520px;opacity:1;margin-top:14px}
+/* ---- folded rows ----
+   The same idea as the donut: show what fits, keep the rest one click away.
+   Collapsing the row itself rather than a wrapper keeps the table markup
+   valid, so sorting still works on everything including the hidden rows. */
+/* ---- folded tables ----
+   Every row is always rendered and laid out; the wrapper simply clips how
+   much of them shows. Nothing appears or disappears, so there is no layout
+   jump to hide - the height itself is the animation, and it runs identically
+   in both directions. */
+.foldwrap{overflow:hidden;transition:max-height .5s var(--ease)}
+.foldbtn{margin-top:10px;padding:7px 16px;cursor:pointer;border-radius:var(--r-pill);
+ border:1px solid var(--glass-line);background:var(--glass);color:var(--panel-ink-3);
+ font:11.5px var(--mono);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease)}
+.foldbtn:hover{background:var(--glass-strong);color:var(--panel-ink)}
+.foldbtn:active{transform:scale(.97)}
+.foldbtn:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+.dk-block{margin-bottom:18px}
+.dk-block:last-child{margin-bottom:0}
+.dk-title{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+ text-transform:uppercase;margin-bottom:3px}
+.dk-note{color:var(--panel-ink-4);font-size:11.5px;margin-bottom:9px}
+.dk-row{display:flex;align-items:center;gap:12px;padding:5px 2px;font-size:13px}
+.dk-label{width:150px;flex:none;color:var(--panel-ink-2);
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dk-bar{flex:1;min-width:0}
+.dk-count{font:600 14px var(--mono);color:var(--panel-ink);min-width:44px;text-align:right}
+
+/* Every conversion slot: a status row opens the search filtered to it. */
+.sum-table tbody tr[data-state]:not([data-state=""]){cursor:pointer}
+.sum-table tbody tr[data-state]:not([data-state=""]):hover td{background:var(--glass)}
+.sum-table tbody tr[data-state]:not([data-state=""]):hover .barcell::after{
+ content:"search \2192";font:10px var(--mono);color:var(--accent);
+ margin-left:8px;white-space:nowrap}
+/* Each slice draws itself from nothing, passed first, the rest following.
+   The dash length it grows to arrives inline as --dash. */
+.donut .seg{stroke-dasharray:0 100}
+#summary.in .donut .seg{animation-name:draw;animation-fill-mode:both;
+ animation-timing-function:linear}   /* linear, or the pen would speed up per slice */
 .donut-hole{stroke:var(--glass-line)}
 .donut .seg.passed{stroke:var(--ok)}
 .donut .seg.failed{stroke:var(--bad)}
-.donut .seg.untested{stroke:var(--untested-dark)}
-.donut .seg.missing{stroke:var(--dark-3)}
-.donut-mid{fill:var(--lt-ink);font:600 7px var(--sans);text-anchor:middle}
-.donut-sub{fill:var(--lt-ink-4);font:2.6px var(--mono);text-anchor:middle;
+.donut .seg.untested{stroke:var(--untested)}
+.donut .seg.missing{stroke:var(--panel-2)}
+.donut-mid{fill:var(--panel-ink);font:600 7px var(--sans);text-anchor:middle}
+.donut-sub{fill:var(--panel-ink-4);font:2.6px var(--mono);text-anchor:middle;
  letter-spacing:.12em;text-transform:uppercase}
 
 .sum-figures{display:flex;gap:34px;flex-wrap:wrap}
 .fig-label{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
  text-transform:uppercase}
-.fig-value{font:600 30px var(--sans);color:var(--lt-ink);line-height:1.25}
-.fig-note{color:var(--lt-ink-4);font-size:11.5px;max-width:26ch;line-height:1.45}
+.fig-value{font:600 30px var(--sans);color:var(--panel-ink);line-height:1.25}
+.fig-note{color:var(--panel-ink-4);font-size:11.5px;max-width:26ch;line-height:1.45}
 
 .sum-table{width:100%;border-collapse:collapse;font-size:13px}
 .sum-table td,.sum-table th{padding:5px 10px 5px 0;vertical-align:middle}
 /* Headers align the way their column's data does: numbers are right-aligned, so
    their headings are too - a left heading over a right column reads as a
    misalignment. Only the first (name) column is left. */
-.sum-table thead th{font:10.5px var(--mono);color:var(--lt-ink-4);text-align:right;
+.sum-table thead th{font:10.5px var(--mono);color:var(--panel-ink-4);text-align:right;
  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--glass-line)}
 .sum-table thead th:first-child{text-align:left}
 .sum-table .n{text-align:right;font:13px var(--mono);width:64px}
-.sum-table .p{text-align:right;font:13px var(--mono);color:var(--lt-ink-3);width:78px}
+.sum-table .p{text-align:right;font:13px var(--mono);color:var(--panel-ink-3);width:78px}
 .sum-table .n.ok{color:#86efac}
 .sum-table .n.bad{color:#fca5a5}
-.sum-table .name{color:var(--lt-ink)}
-.sum-table .hopn{font:13px var(--mono);color:var(--lt-ink-2);width:80px}
+.sum-table .name{color:var(--panel-ink)}
+.sum-table .hopn{font:13px var(--mono);color:var(--panel-ink-2);width:80px}
 .sum-table .barcell{width:38%}
-.sum-table .total td{border-top:1px solid var(--glass-line);color:var(--lt-ink-3);
+.sum-table .total td{border-top:1px solid var(--glass-line);color:var(--panel-ink-3);
  padding-top:9px}
 .sum-table tbody tr{transition:background var(--fast) var(--ease)}
-.sum-table tbody tr:hover{background:#ffffff08}
+.sum-table tbody tr:hover{background:var(--glass)}
 
 .bar{display:block;height:8px;border-radius:var(--r-pill);min-width:2px}
 #summary.in .bar{animation:grow var(--slow) var(--ease) both;animation-delay:.15s}
 .bar.passed{background:var(--ok)}
 .bar.failed{background:var(--bad)}
-.bar.untested{background:var(--untested-dark)}
-.bar.missing{background:var(--dark-3)}
+.bar.untested{background:var(--untested)}
+.bar.missing{background:var(--panel-2)}
 .bar.hops{background:var(--accent)}
 
 .sum-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
 .sum-card{background:var(--glass);border:1px solid var(--glass-line);
  border-radius:var(--r-l);padding:16px 18px;
  transition:border-color var(--med) var(--ease),background var(--med) var(--ease)}
-.sum-card:hover{border-color:#ffffff2e}
+.sum-card:hover{border-color:var(--panel-line)}
 .sum-card.bad{border-color:#ef444459;background:#7f1d1d26}
 .sum-card.warn{border-color:#f59e0b45;background:#78350f1f}
-.c-value{font:600 26px var(--sans);color:var(--lt-ink);line-height:1.2}
+.c-value{font:600 26px var(--sans);color:var(--panel-ink);line-height:1.2}
 .sum-card.bad .c-value{color:#fca5a5}
 .sum-card.warn .c-value{color:#fcd34d}
-.c-label{font-size:12.5px;color:var(--lt-ink-2);margin-bottom:7px}
-.c-note{font:11.5px var(--mono);color:var(--lt-ink-4);line-height:1.55;word-break:break-word}
+.c-label{font-size:12.5px;color:var(--panel-ink-2);margin-bottom:7px}
+.c-note{font:11.5px var(--mono);color:var(--panel-ink-4);line-height:1.55;word-break:break-word}
 
 /* ---- sortable headers ----
    The triangle sits with the label - inline, space always reserved, so nothing
    shifts on click. nowrap + the negative vertical margins matter: without them
    the triangle overflows a narrow column, wraps to its own line, and that
-   two-line cell rides up against its single-line neighbours. */
+   two-line cell rides up against its single-line neighbors. */
 .sum-table.sortable thead th.sortable-col{cursor:pointer;user-select:none;
  white-space:nowrap;transition:color var(--fast) var(--ease)}
-.sum-table.sortable thead th.sortable-col:hover{color:var(--lt-ink-2)}
+.sum-table.sortable thead th.sortable-col:hover{color:var(--panel-ink-2)}
 .sum-table.sortable thead th.sortable-col::after{content:"";display:inline-block;
  margin:-4px 0 -4px 6px;vertical-align:middle;border:4px solid transparent;
- border-top-color:var(--untested-dark);transform:translateY(2px);
+ border-top-color:var(--panel-ink-4);transform:translateY(2px);
  opacity:0;transition:opacity var(--fast) var(--ease)}
 .sum-table.sortable thead th.sortable-col:hover::after{opacity:1}
 .sum-table.sortable thead th.desc::after{opacity:1;border-top-color:var(--accent)}
@@ -393,51 +507,56 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
 
 /* ============================================================ animation */
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes fadein{from{opacity:0}}
 @keyframes grow{from{width:0}}
-@keyframes sweep{from{opacity:0;transform:rotate(-70deg) scale(.92)}}
+@keyframes draw{from{stroke-dasharray:0 100}to{stroke-dasharray:var(--dash)}}
 
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;transition:none!important}
 }
 
 /* ============================================================ dark mode */
-@media(prefers-color-scheme:dark){
- body{color:var(--lt-ink);
-  background:linear-gradient(180deg,var(--dark) 0%,#0b1120 100%) fixed}
- .card,.legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
- .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--untested-dark)}
- .olegend{background:transparent;border:none}
- .lede{color:var(--lt-ink-3)}
- .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
- .notice code{background:var(--glass-line)}
- .sw{border-color:var(--untested-dark)}
- table.matrix th{color:var(--lt-ink-3)}
- .badge.passed{background:#14532d;color:#86efac}
- .badge.failed{background:#7f1d1d;color:#fca5a5}
- .badge.untested{background:var(--dark-3);color:var(--lt-ink-2)}
- .badge.missing{background:var(--dark-2);color:var(--lt-ink-4)}
- td.untested{background:var(--untested-dark)}
- td.missing{background:var(--missing-dark);box-shadow:inset 0 0 0 1px var(--dark-3)}
- td.self{background:repeating-linear-gradient(45deg,var(--missing-dark),
-  var(--missing-dark) 3px,var(--dark-3) 3px,var(--dark-3) 6px)}
- .sw.untested{background:var(--untested-dark)}
- .sw.missing{background:var(--missing-dark)}
- .legend .k-num{color:var(--lt-ink)}
- .legend .key.total{border-left-color:var(--dark-3)}
- #sumopen{background:var(--lt-ink);color:var(--dark);border-color:var(--lt-ink)}
+
+:root[data-theme=dark]{
+  --page:#0f172a; --page-deep:#0b1120;
+  --card:#1e293b; --line:#334155;
+  --ink:#f1f5f9; --ink-2:#cbd5e1; --ink-3:#94a3b8;
+  --veil:rgba(10,15,28,.92);
+  --panel:#0f172acc; --panel-deep:#0b1220; --panel-2:#334155;
+  --panel-ink:#f1f5f9; --panel-ink-2:#cbd5e1; --panel-ink-3:#94a3b8; --panel-ink-4:#64748b;
+  --panel-line:#ffffff2e;
+  --grid:#ffffff0a; --stage-glow:#38bdf81f;
+  --glass:#ffffff0a; --glass-line:#ffffff14; --glass-strong:#ffffff1f;
+  --untested:#475569; --missing:#1e293b; --stripe:#334155;
 }
+:root[data-theme=dark] .card, :root[data-theme=dark] .legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
+:root[data-theme=dark] .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--panel-ink-4)}
+:root[data-theme=dark] .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
+:root[data-theme=dark] .notice code{background:var(--glass-line)}
+:root[data-theme=dark] .sw{border-color:var(--panel-ink-4)}
+:root[data-theme=dark] .badge.passed{background:#14532d;color:#86efac}
+:root[data-theme=dark] .badge.failed{background:#7f1d1d;color:#fca5a5}
+:root[data-theme=dark] .badge.untested{background:var(--dark-3);color:var(--lt-ink-2)}
+:root[data-theme=dark] .badge.missing{background:var(--dark-2);color:var(--lt-ink-4)}
+:root[data-theme=dark] td.missing{box-shadow:inset 0 0 0 1px var(--dark-3)}
+:root[data-theme=dark] .legend .key.total{border-left-color:var(--dark-3)}
+:root[data-theme=dark] #sumopen{background:var(--dark-2);border-color:var(--dark-3);color:var(--lt-ink-2)}
+:root[data-theme=dark] #sumopen:hover{border-color:var(--untested-dark);color:var(--lt-ink)}
 
 /* ============================================================ tabs */
-.tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--line);
+ position:relative}
 .tab{background:none;border:none;margin-bottom:-1px;position:relative;
  padding:9px 18px 11px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-3);
  transition:color var(--fast) var(--ease)}
-.tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;
- border-radius:var(--r-pill);background:var(--accent-deep);
- transform:scaleX(0);transition:transform var(--med) var(--ease)}
+/* One indicator that travels, rather than three that blink on and off - the
+   movement itself says which way you went. */
+.tabink{position:absolute;bottom:-1px;left:0;height:2px;width:0;
+ border-radius:var(--r-pill);background:var(--accent-deep);pointer-events:none;
+ transition:transform var(--med) var(--ease),width var(--med) var(--ease)}
 .tab:hover{color:var(--ink)}
 .tab.active{color:var(--ink)}
-.tab.active::after{transform:scaleX(1)}
+
 .tab:focus-visible{outline:2px solid var(--accent-deep);outline-offset:-2px}
 
 .tabpane{display:none}
@@ -464,91 +583,757 @@ td.self{background:repeating-linear-gradient(45deg,#fff,#fff 3px,#e8edf2 3px,#e8
    here. What is left is the box the canvas fills. */
 .cy{width:100%;display:block;border-radius:var(--r-m)}
 
-/* A thumbnail is a preview: every click belongs to the card, which enlarges.
-   It is drawn once into a picture, so what is left here is an image box. */
-.seedcard .cy{pointer-events:none;
- background-repeat:no-repeat;background-position:center;background-size:contain}
+/* ---- thumbnails ----
+   Every card gets the same size window on its drawing, whatever shape that
+   drawing happens to be. Letting each one keep its own proportions meant a
+   wide graph and a square one produced wildly different cards; the drawing
+   is scaled to fit instead, so the grid reads as a set. */
+.thumb{height:212px;flex:none;border-radius:var(--r-m);overflow:hidden}
+
+.seedcard .cy{pointer-events:none;height:100%;
+ background-repeat:no-repeat;background-position:center;background-size:contain;
+ opacity:0;transform:scale(.94);
+ transition:opacity var(--slow) var(--ease),transform var(--slow) var(--ease)}
+
+/* Set once the picture has actually been drawn, so a card resolves into view
+   rather than the image popping in at full size. */
+.seedcard .cy.ready{opacity:1;transform:none}
+
+/* A little life on hover. The drawing leans in; the card itself already
+   lifts, so the two read as one movement. */
+.seedcard:hover .cy.ready{transform:scale(1.05)}
+.card .scroll{transition:transform var(--med) var(--ease)}
+.card:hover .scroll{transform:scale(1.03)}
 
 #overlay.seedmode #ostage{padding:0;overflow:hidden;display:block}
-#ocy{width:100%;height:100%;cursor:grab}
+#ocy{width:100%;height:100%;cursor:grab;position:relative;
+ background:
+  radial-gradient(120% 85% at 50% 42%,var(--stage-glow),transparent 68%),
+  linear-gradient(var(--grid) 1px,transparent 1px) 0 0/46px 46px,
+  linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/46px 46px}
+.flowlayer{position:absolute;left:0;top:0;pointer-events:none;z-index:5}
 #ocy:active{cursor:grabbing}
 
 /* ============================================================ route explorer */
-#odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--lt-ink)}
-.pth-sub{color:var(--lt-ink-4);font:11.5px var(--mono);margin-bottom:12px}
-.pth-warn{background:#78350f66;border:1px solid #f59e0b66;border-radius:var(--r-m);
- padding:9px 12px;margin:10px 0;color:#fcd34d;font-size:12.5px;line-height:1.5}
+#odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--panel-ink)}
+.pth-sub{color:var(--panel-ink-4);font:11.5px var(--mono);margin-bottom:12px}
+.pth-warn{background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--r-m);
+ padding:9px 12px;margin:10px 0;color:#78350f;font-size:12.5px;line-height:1.5}
+.pth-warn b{color:#7c2d12}
+:root[data-theme=dark] .pth-warn{background:#78350f66;border-color:#f59e0b66;
+ color:#fcd34d}
+:root[data-theme=dark] .pth-warn b{color:#fde68a}
 .pth-ok{color:#86efac;font-size:12.5px;margin:10px 0}
-#optoggle{display:flex;align-items:center;gap:7px;margin:0 0 12px;cursor:pointer;
- font:11.5px var(--mono);color:var(--lt-ink-3);user-select:none}
-#optoggle input{accent-color:var(--accent-deep)}
 
-.prow{padding:8px 10px;border-radius:var(--r-m);margin-bottom:6px;background:#ffffff0d;
+.prow{padding:8px 10px;border-radius:var(--r-m);margin-bottom:6px;background:var(--glass);
  border:1px solid transparent;cursor:pointer;
  animation:rise var(--med) var(--ease) both;animation-delay:calc(min(var(--i,0),12)*22ms);
  transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
-.prow:hover{background:#ffffff17}
+.prow{cursor:pointer}
+.prow:hover{background:var(--glass-line);border-color:var(--panel-line)}
+.prow.held{background:#38bdf826;border-color:var(--accent-deep);
+ box-shadow:0 0 0 1px var(--accent-deep) inset}
+.prow.held .hops{background:var(--accent-deep);color:#062033}
 .prow.best{background:#38bdf814;border-color:#38bdf84d}
 .prow .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.prow .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--lt-ink-2);
+.prow .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--panel-ink-2);
  border-radius:var(--r-pill);padding:1px 8px;flex:none}
-.prow .route{font:12px var(--mono);color:var(--lt-ink);line-height:1.5;word-break:break-word}
-.prow .res{margin-top:4px;font-size:13px;color:var(--lt-ink-3)}
+.prow .route{font:12px var(--mono);color:var(--panel-ink);line-height:1.5;word-break:break-word}
+.prow .res{margin-top:4px;font-size:13px;color:var(--panel-ink-3)}
 .prow .res .u{font-size:1.05em}
 .grp{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
  vertical-align:0}
 
 /* ============================================================ fx additions */
-.fx-eq.cont{font-size:18px;color:var(--lt-ink-2)}
+.fx-eq.cont{font-size:18px;color:var(--panel-ink-2)}
 .fx-note{margin-top:8px;font-size:12px;color:var(--warn)}
 .fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid var(--glass-line);
- font:12px var(--mono);color:var(--lt-ink-4);word-break:break-all}
+ font:12px var(--mono);color:var(--panel-ink-4);word-break:break-all}
 .fx-where i{font-style:italic;font-family:var(--math)}
 .fx-where .sep{margin-right:6px}
 .fx .fx-eq i{font-style:italic;font-family:var(--math)}
-.chip.kind{background:var(--dark-3);color:var(--lt-ink-2)}
+.chip.kind{background:var(--panel-2);color:var(--panel-ink-2)}
 
-@media(prefers-color-scheme:dark){
- .tabs{border-bottom-color:var(--dark-3)}
- .tab:hover,.tab.active{color:var(--lt-ink)}
- .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
- .badge.cyclic{background:#78350f66;color:#fcd34d}
- .badge.dup{background:#312e81;color:#c7d2fe}
- .ln{border-top-color:var(--lt-ink-3)}
-}
+:root[data-theme=dark] .tabs{border-bottom-color:var(--dark-3)}
+:root[data-theme=dark] .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
+:root[data-theme=dark] .badge.cyclic{background:#78350f66;color:#fcd34d}
+:root[data-theme=dark] .badge.dup{background:#312e81;color:#c7d2fe}
+:root[data-theme=dark] .ln{border-top-color:var(--lt-ink-3)}
 
 /* reset button and the per-mode keys in the enlarged view */
-#oreset{display:none;margin-left:auto}
+#oreset{display:none}
 #overlay.seedmode #oreset{display:inline-block}
 #overlay.seedmode #oclose{margin-left:0}
 .olegend.skey{display:none}
 #overlay.seedmode .olegend.skey{display:flex}
 #overlay.seedmode .olegend.mkey{display:none}
-.olegend .ln{border-top-color:var(--lt-ink-3)}
+.olegend .ln{border-top-color:var(--panel-ink-3)}
 
 /* The matrix's "pinned" hint is wrong here and redundant - the graph has an
    explicit Clear selection button instead. */
 #overlay.seedmode #odetail.locked::before{display:none}
 
-/* Sits above the heading rather than floating beside it, so a long unit name
-   cannot wrap underneath it. */
-.clearpick{float:none;display:block;margin:0 0 10px auto}
-
-/* Picked units are marked on the canvas by cytoscape, which colours the border
+/* Picked units are marked on the canvas by cytoscape, which colors the border
    and prefixes the label with a circled digit. These chips repeat the same two
-   colours in the panel heading, so the pair is never told apart by hue alone. */
+   colors in the panel heading, so the pair is never told apart by hue alone. */
 .pk{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;
  border-radius:50%;margin-right:7px;font:700 12px var(--sans);color:#0f172a;
  vertical-align:1px}
 .pk.p1{background:var(--pick-1)}
 .pk.p2{background:var(--pick-2)}
 
-.clearpick{float:right;margin:-2px 0 8px 10px;background:var(--glass-strong);
- border:1px solid #ffffff2e;color:var(--lt-ink-2);border-radius:var(--r-m);
+/* Not floated: the panel below it carries an entrance animation, and an
+   animated transform makes a stacking context that paints over the float
+   layer - which put an invisible panel on top of this button and swallowed
+   every click on it. In flow it cannot be covered. */
+.clearpick{display:block;margin:0 0 10px auto;background:var(--glass-strong);
+ border:1px solid var(--panel-line);color:var(--panel-ink-2);border-radius:var(--r-m);
  padding:4px 11px;cursor:pointer;font:11.5px var(--sans);
  transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
    transform var(--fast) var(--ease)}
-.clearpick:hover{background:#ffffff2e;color:var(--lt-ink)}
+.clearpick:hover{background:var(--glass-strong);color:var(--panel-ink)}
 .clearpick:active{transform:scale(.96)}
 .clearpick:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 
+/* ============================================================ search + filter */
+.toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 20px}
+
+.find{position:relative;display:flex;align-items:center;flex:1;min-width:260px;max-width:460px}
+.find svg{position:absolute;left:13px;width:16px;height:16px;fill:none;
+ stroke:var(--ink-3);stroke-width:2;stroke-linecap:round;pointer-events:none}
+.find input{width:100%;padding:10px 34px 10px 38px;border-radius:var(--r-pill);
+ border:1px solid var(--line);background:var(--card);color:var(--ink);
+ font:14px var(--sans);box-shadow:var(--shadow-s);
+ transition:border-color var(--fast) var(--ease),box-shadow var(--fast) var(--ease)}
+.find input:focus{outline:none;border-color:var(--accent-deep);
+ box-shadow:0 0 0 3px #38bdf833}
+.find input::-webkit-search-cancel-button{display:none}
+.clearfind{position:absolute;right:8px;width:22px;height:22px;border:none;padding:0;
+ border-radius:50%;background:none;color:var(--ink-3);cursor:pointer;font-size:17px;
+ line-height:1;opacity:0;pointer-events:none;transition:opacity var(--fast) var(--ease)}
+.find.filled .clearfind{opacity:1;pointer-events:auto}
+.clearfind:hover{background:var(--line);color:var(--ink)}
+
+/* ---- filter menu ----
+   Every surface filters through the same popup, so a page can offer many
+   choices without a row of chips growing across the layout. */
+.filter{position:relative;flex:none;display:inline-flex;align-items:center}
+.filterbtn{display:flex;align-items:center;gap:8px;padding:9px 16px;cursor:pointer;
+ border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+ border-radius:var(--r-pill);font:13px var(--sans);box-shadow:var(--shadow-s);
+ transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease),
+  transform var(--fast) var(--ease)}
+.filterbtn svg{width:15px;height:15px;fill:none;stroke:currentColor;
+ stroke-width:2;stroke-linecap:round}
+.filterbtn:hover{border-color:#cbd5e1;color:var(--ink)}
+.filterbtn:active{transform:scale(.97)}
+.filterbtn:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.filter.on .filterbtn{background:var(--dark);border-color:var(--dark);color:var(--page)}
+.fnum{min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);
+ font:11px var(--mono);line-height:18px;text-align:center}
+.filter.on .fnum{background:var(--page);color:var(--dark)}
+
+.filtermenu{position:absolute;top:calc(100% + 8px);left:0;z-index:40;width:260px;
+ padding:14px 16px 12px;border-radius:var(--r-l);background:var(--card);
+ border:1px solid var(--line);box-shadow:var(--shadow-m);
+ animation:rise var(--fast) var(--ease)}
+.filtermenu[hidden]{display:none}
+.fgroup{margin-bottom:13px}
+.flbl{font:10px var(--mono);color:var(--ink-3);letter-spacing:.06em;
+ text-transform:uppercase;margin-bottom:6px}
+.fopt{display:flex;align-items:center;gap:9px;padding:4px 0;cursor:pointer;
+ font-size:13px;color:var(--ink-2)}
+.fopt:hover{color:var(--ink)}
+.fopt input{accent-color:var(--accent-deep);width:15px;height:15px;margin:0;cursor:pointer}
+.frow{display:flex;align-items:center;gap:8px}
+.funit{font:11.5px var(--mono);color:var(--ink-3)}
+.filtermenu select,.filtermenu input[type=number]{padding:6px 9px;border-radius:var(--r-m);
+ border:1px solid var(--line);background:var(--card);color:var(--ink);font:13px var(--sans)}
+.filtermenu select{width:100%}
+.frow select{width:auto;flex:1}
+.filtermenu input[type=number]{width:66px}
+.filtermenu input[type=number]:disabled{opacity:.4}
+.fclear{width:100%;margin-top:4px;padding:7px;cursor:pointer;border-radius:var(--r-m);
+ border:1px solid var(--line);background:none;color:var(--ink-3);font:11.5px var(--mono);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease)}
+.fclear:hover{background:var(--page-deep);color:var(--ink)}
+
+.count{font:11.5px var(--mono);color:var(--ink-3);margin-left:auto}
+
+/* Cards leave by shrinking rather than vanishing, so the grid reflow reads. */
+.card.hidden{display:none}
+.card.leaving{animation:fadeout var(--fast) var(--ease) both}
+@keyframes fadeout{to{opacity:0;transform:scale(.96)}}
+
+.emptystate{padding:44px 8px;text-align:center;color:var(--ink-3);font-size:14px;
+ animation:rise var(--med) var(--ease)}
+.emptystate b{color:var(--ink);display:block;margin-bottom:5px;font-size:15px}
+
+/* ============================================================ wiki tab */
+.wiki{display:flex;flex-direction:column;gap:14px;padding-top:24px}
+.find.big{max-width:none;flex:1}
+.find.big input{padding:14px 38px 14px 44px;font-size:16px;border-radius:var(--r-l)}
+.find.big svg{left:16px;width:19px;height:19px}
+
+/* Conversions and units are different questions, so they get different boxes
+   rather than one query string that has to mean both. */
+.modes{display:inline-flex;gap:3px;padding:3px;border-radius:var(--r-pill);
+ background:var(--page-deep);border:1px solid var(--line);align-self:flex-start}
+.mode{border:none;background:none;cursor:pointer;padding:7px 18px;color:var(--ink-3);
+ border-radius:var(--r-pill);font:13px var(--sans);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease)}
+.mode:hover{color:var(--ink)}
+.mode.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow-s)}
+.mode:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+.findbar{display:flex;align-items:center;gap:4px}
+.findbar[hidden]{display:none}
+.findsep{font-size:26px;margin:0 4px}
+.findtools{display:flex;align-items:center;gap:14px}
+@media(max-width:700px){
+ .findbar{flex-wrap:wrap}
+ .findsep{display:none}
+}
+
+.wikibody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;
+ align-items:start}
+@media(max-width:900px){.wikibody{grid-template-columns:1fr}}
+
+.results{max-height:66vh;overflow-y:auto;scrollbar-width:thin;
+ scrollbar-color:var(--line) transparent;scrollbar-gutter:stable}
+.results .res{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-m);
+ cursor:pointer;border:1px solid transparent;
+ animation:rise var(--fast) var(--ease) both;animation-delay:calc(min(var(--i,0),16)*14ms);
+ transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.results .res:hover{background:var(--card);border-color:var(--line)}
+.results .res.on{background:var(--card);border-color:var(--accent-deep)}
+.results .res .pairs{font:13.5px var(--mono);color:var(--ink);flex:1;min-width:0;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.results .res .pairs .arrow{margin:0 8px}
+.results .res .sub{color:var(--ink-3);font-size:12px;margin-left:10px}
+.results .res .dim{font:11px var(--mono);color:var(--ink-3);white-space:nowrap}
+.results .res .dot{width:9px;height:9px;border-radius:3px;flex:none}
+.results .res .dot.passed{background:var(--ok)}
+.results .res .dot.failed{background:var(--bad)}
+.results .res .dot.untested{background:var(--untested)}
+.results .res .dot.missing{background:var(--missing);box-shadow:inset 0 0 0 1px var(--untested)}
+.results .res mark{background:#38bdf840;color:inherit;border-radius:2px;padding:0 1px}
+
+.infopage{position:sticky;top:16px;background:var(--panel-deep);border:1px solid var(--panel-line);
+ border-radius:var(--r-l);padding:20px 22px;color:var(--panel-ink);min-height:220px;
+ max-height:72vh;overflow-y:auto;scrollbar-width:thin;
+ scrollbar-color:var(--panel-line) transparent;scrollbar-gutter:stable}
+.infopage .empty{color:var(--panel-ink-3);line-height:1.6}
+.infopage>.fx,.infopage>.info{animation:rise var(--fast) var(--ease) both}
+.info-sec{margin-top:16px;padding-top:13px;border-top:1px solid var(--glass-line)}
+.info-sec .lbl{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+ text-transform:uppercase;margin-bottom:8px}
+
+/* The term is smaller than its value, so only a shared baseline lines them up -
+   stretch leaves the label riding above text like "Area". */
+.info-facts{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:13px;
+ align-items:baseline}
+.info-facts dt{color:var(--panel-ink-4);font:11.5px var(--mono)}
+.info-facts dd{margin:0;color:var(--panel-ink-2);line-height:1.5}
+
+.info-text{color:var(--panel-ink-2);font-size:13.5px;line-height:1.55}
+.info-note{color:var(--panel-ink-4);font-size:11.5px;line-height:1.5;margin-top:8px}
+.info-tally{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Each neighbor is a shortcut back into the conversion search. */
+.nbs{display:flex;gap:7px;flex-wrap:wrap}
+.nb{display:flex;align-items:center;padding:5px 11px;cursor:pointer;
+ border-radius:var(--r-pill);border:1px solid var(--glass-line);background:var(--glass);
+ color:var(--panel-ink-2);font:12px var(--mono);
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease)}
+.nb:hover{background:var(--glass-strong);color:var(--panel-ink)}
+.nb:active{transform:scale(.97)}
+.nb:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.nb .arrow{margin:0 7px;font-size:1.35em}
+
+/* ============================================================ matrix search */
+#ofind{flex:none;width:190px}
+#ofind input{padding:6px 12px 6px 30px;font-size:12.5px;background:var(--glass-strong);
+ border-color:var(--panel-line);color:var(--panel-ink);box-shadow:none}
+#ofind input::placeholder{color:var(--panel-ink-4)}
+#ofind svg{left:10px;width:14px;height:14px;stroke:var(--panel-ink-4)}
+#ofind .clearfind{color:var(--panel-ink-3)}
+#ofind .clearfind:hover{background:var(--glass-strong);color:var(--panel-ink)}
+#overlay.seedmode #ofind{display:none}
+
+#ostage td.faded{opacity:.14}
+#ostage td.found{outline:2px solid var(--accent-deep);outline-offset:1px;
+ animation:foundpulse .5s var(--ease)}
+#ostage th.found{color:var(--accent);font-weight:600}
+@keyframes foundpulse{0%{outline-color:transparent}60%{outline-color:var(--panel-ink)}}
+
+:root[data-theme=dark] .find input, :root[data-theme=dark] .filterbtn, :root[data-theme=dark] .filtermenu, :root[data-theme=dark] .filtermenu select, :root[data-theme=dark] .filtermenu input[type=number]{background:var(--dark-2);border-color:var(--dark-3);color:var(--lt-ink-2)}
+:root[data-theme=dark] .filterbtn:hover{border-color:var(--untested-dark);color:var(--lt-ink)}
+:root[data-theme=dark] .filter.on .filterbtn{background:var(--lt-ink);border-color:var(--lt-ink);color:var(--dark)}
+:root[data-theme=dark] .filter.on .fnum{background:var(--dark);color:var(--lt-ink)}
+:root[data-theme=dark] .flbl{color:var(--lt-ink-4)}
+:root[data-theme=dark] .fclear{border-color:var(--dark-3);color:var(--lt-ink-3)}
+:root[data-theme=dark] .fclear:hover{background:var(--dark-3);color:var(--lt-ink)}
+:root[data-theme=dark] .modes{background:var(--dark);border-color:var(--dark-3)}
+
+/* Summary rows open the matching conversions in the search tab. */
+.sum-table tbody tr.clickable{cursor:pointer}
+.sum-table tbody tr.clickable .name,
+.sum-table tbody tr.clickable .hopn{transition:color var(--fast) var(--ease)}
+.sum-table tbody tr.clickable:hover .name,
+.sum-table tbody tr.clickable:hover .hopn{color:var(--accent)}
+.sum-table tbody tr.clickable:hover .barcell::after{content:"search \2192";
+ font:10px var(--mono);color:var(--accent);margin-left:8px;white-space:nowrap}
+
+/* ====================================================== reduced motion
+   Someone who has asked their system for less motion still gets every state
+   change - the transitions collapse to near-instant rather than disappearing,
+   so nothing that was communicated by movement is silently lost. */
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation-duration:.01ms !important;
+  animation-iteration-count:1 !important;
+  transition-duration:.01ms !important;
+  scroll-behavior:auto !important}
+}
+
+/* theme toggle */
+.headbtns{display:flex;align-items:center;gap:8px;flex:none}
+#themetoggle,#keysopen{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+ font:inherit;font-size:.83rem;font-weight:600;padding:7px 13px;
+ border-radius:var(--r-pill);background:var(--card);border:1px solid var(--line);
+ color:var(--ink-2);transition:border-color var(--fast) var(--ease),
+ color var(--fast) var(--ease),background var(--fast) var(--ease)}
+#themetoggle:hover,#keysopen:hover{border-color:var(--ink-3);color:var(--ink)}
+#themetoggle svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;
+ stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#themetoggle .i-moon{fill:currentColor;stroke:none}
+:root[data-theme=light] #themetoggle .i-sun{display:none}
+:root[data-theme=dark] #themetoggle .i-moon{display:none}
+:root[data-theme=dark] #themetoggle,:root[data-theme=dark] #keysopen{background:var(--dark-2);border-color:var(--dark-3);
+ color:var(--lt-ink-2)}
+:root[data-theme=dark] #themetoggle:hover,:root[data-theme=dark] #keysopen:hover{border-color:var(--untested-dark);color:var(--lt-ink)}
+@media(prefers-reduced-motion:reduce){#themetoggle{transition:none}}
+
+/* legend keys and the jump-to-graph button are controls, not labels */
+.legend .key,.seedlegend button,.olegend button{font:inherit;cursor:pointer;
+ background:none;border:none;padding:2px 6px;margin:-2px -2px;color:inherit;
+ border-radius:var(--r-s);display:inline-flex;align-items:center;gap:8px;
+ transition:background var(--fast) var(--ease),color var(--fast) var(--ease)}
+.legend .key:not(.total):hover,.seedlegend button:hover{background:var(--page-deep);color:var(--ink)}
+.olegend button:hover{background:var(--glass-strong);color:var(--panel-ink)}
+.legend .key:focus-visible,.seedlegend button:focus-visible,
+.olegend button:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.legend .key.total{cursor:default}
+.jumps{display:flex;gap:9px;flex-wrap:wrap}
+.jumps .gograph,.jumps .goconv{flex:1 1 160px;margin-top:0}
+.goconv{display:flex;align-items:center;justify-content:center;width:100%;
+ gap:2px;font:600 12px var(--mono);letter-spacing:.03em;cursor:pointer;
+ padding:11px 14px;border-radius:var(--r-m);background:var(--glass);
+ border:1px solid var(--panel-line);color:var(--panel-ink-2);
+ transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease)}
+.goconv:hover{border-color:var(--accent-deep);color:var(--panel-ink)}
+.goconv .arrow{margin:0 8px}
+.gograph{display:flex;align-items:center;justify-content:center;width:100%;
+ gap:2px;font:600 12px var(--mono);letter-spacing:.03em;cursor:pointer;
+ padding:11px 14px;border-radius:var(--r-m);background:var(--accent-deep);
+ border:1px solid var(--accent-deep);color:#062033;
+ box-shadow:0 1px 0 #0f172a1f,0 6px 18px -8px #38bdf8a6;
+ transition:filter var(--fast) var(--ease),transform var(--fast) var(--ease),
+ box-shadow var(--fast) var(--ease)}
+.gograph:hover{filter:brightness(1.08);transform:translateY(-1px);
+ box-shadow:0 2px 0 #0f172a1f,0 10px 24px -10px #38bdf8cc}
+.gograph:active{transform:translateY(0) scale(.985);
+ box-shadow:0 1px 0 #0f172a1f,0 4px 12px -6px #38bdf88c}
+.gograph:focus-visible{outline:2px solid var(--panel-ink);outline-offset:3px}
+/* the shared arrow glyph is a mask, so it takes the button's own ink */
+.gograph .arrow{margin:0 8px;background-color:#062033}
+@media(prefers-reduced-motion:reduce){.gograph,.gograph:hover,.gograph:active{
+ transition:none;transform:none}}
+@media(prefers-reduced-motion:reduce){.legend .key,.seedlegend button,
+ .olegend button,.gograph{transition:none}}
+
+/* screen-reader-only: present in the accessibility tree, absent on screen */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+ clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.matrix td:focus-visible{outline:3px solid var(--accent-deep);outline-offset:-3px;
+ position:relative;z-index:2}
+
+/* coverage bands: a bar that reads as a verdict, with the 80% target marked */
+.bar.warn{background:var(--warn)}
+.bar.low{background:var(--bad)}
+.barcell{position:relative}
+.barcell .target{position:absolute;left:80%;top:50%;width:1px;height:11px;
+ transform:translateY(-50%);background:var(--panel-ink-4);opacity:.55}
+
+/* ================================================ converter, suggestions, keys */
+.cv{display:flex;flex-direction:column;gap:16px;padding-top:24px}
+.cv-in{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cv-in .ed-lbl{color:var(--ink-3)}
+.cv-in input{font:15px var(--sans);padding:10px 13px;border-radius:var(--r-m);
+ background:var(--card);color:var(--ink);border:1px solid var(--line);outline:none}
+.cv-in input:focus{border-color:var(--accent-deep)}
+#cvvalue{width:150px}
+#cvunit{width:130px;font-family:var(--mono)}
+.cv-body{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);
+ gap:24px;align-items:start}
+.cv-out{display:flex;flex-direction:column;gap:5px;min-width:0}
+.cv-side{min-width:0;position:sticky;top:16px;max-height:calc(100vh - 40px);
+ overflow-y:auto;scrollbar-width:thin;scrollbar-gutter:stable}
+@media(max-width:1000px){.cv-body{grid-template-columns:1fr}
+ .cv-side{position:static;max-height:none}}
+.cv-note{font:11px var(--mono);color:var(--ink-3);letter-spacing:.04em;
+ text-transform:uppercase;margin-bottom:3px}
+.cv-item{position:relative}
+.cv-row{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
+ padding:9px 46px 9px 13px;cursor:pointer;font:inherit;color:inherit;
+ border-radius:var(--r-m);background:var(--card);border:1px solid var(--line);
+ animation:rise var(--fast) var(--ease) both;
+ animation-delay:calc(min(var(--i,0),14)*16ms)}
+.cv-row:hover{border-color:var(--accent-deep)}
+.cv-row.open{border-color:var(--accent-deep);
+ box-shadow:0 0 0 1px var(--accent-deep)}
+.cv-row:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.cv-more{margin-left:12px;font:10px var(--mono);color:var(--ink-3);opacity:0;
+ white-space:nowrap;transition:opacity var(--fast) var(--ease)}
+.cv-row:hover .cv-more,.cv-row:focus-visible .cv-more{opacity:1}
+.cv-row.open .cv-more{opacity:0}
+.cv-val{font:15px var(--mono);color:var(--ink);min-width:170px;
+ word-break:break-all}
+.cv-row .u{color:var(--ink-2)}
+.cv-hops{margin-left:auto;font:10.5px var(--mono);color:var(--ink-3);cursor:help}
+.cv-copy{position:absolute;top:7px;right:9px;background:none;border:none;
+ cursor:pointer;color:var(--ink-3);font-size:13px;padding:3px 7px;
+ border-radius:var(--r-s)}
+.cv-copy:hover{color:var(--accent-deep);background:var(--page-deep)}
+:root[data-theme=dark] .cv-in input{background:var(--dark-2);border-color:var(--dark-3);
+ color:var(--lt-ink)}
+:root[data-theme=dark] .cv-row{background:var(--dark-2);border-color:var(--dark-3)}
+:root[data-theme=dark] .cv-copy:hover{background:var(--dark-3)}
+
+/* what to test next, and the units nothing covers */
+.sum-table .why{color:var(--panel-ink-3);font-size:11.5px;white-space:normal}
+tr.suggest{cursor:pointer}
+.nevers{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.never{font:11px var(--mono);cursor:pointer;padding:5px 10px;border-radius:var(--r-pill);
+ background:var(--glass);color:var(--panel-ink-2);border:1px solid var(--glass-line)}
+.never:hover{border-color:var(--accent-deep);color:var(--panel-ink)}
+
+/* the error budget under each route */
+.budget{margin-top:5px;font-size:11.5px;color:var(--panel-ink-3)}
+.budget.agrees{opacity:.55}
+.budget.warn{color:var(--warn)}
+.budget.bad{color:#fca5a5}
+:root[data-theme=light] .budget.bad{color:var(--bad)}
+
+/* keyboard help */
+#keyhelp{position:fixed;inset:0;z-index:85;background:var(--veil);display:flex;
+ align-items:center;justify-content:center;padding:20px;
+ opacity:0;transition:opacity var(--med) var(--ease)}
+#keyhelp.in{opacity:1}
+.kh-card{background:var(--panel-deep);border:1px solid var(--panel-line);
+ border-radius:var(--r-l);padding:22px 26px;color:var(--panel-ink);
+ box-shadow:var(--shadow-l);min-width:280px;
+ transform:translateY(14px) scale(.98);transition:transform var(--med) var(--ease)}
+#keyhelp.in .kh-card{transform:none}
+.kh-card h3{margin:0 0 14px}
+.kh-card dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0 0 18px}
+.kh-card dt{margin:0}
+.kh-card dd{margin:0;color:var(--panel-ink-2);font-size:13.5px}
+kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
+ background:var(--glass-strong);border:1px solid var(--panel-line)}
+.kh-x{font:inherit;font-size:.85rem;cursor:pointer;padding:8px 18px;
+ border-radius:var(--r-m);background:var(--accent-deep);border:none;color:#062033}
+
+/* ============================================================ narrow screens */
+@media(max-width:860px){
+  body{padding:18px 14px}
+  .pagehead{flex-direction:column;align-items:flex-start;gap:12px}
+  .headbtns{width:100%}
+  .grid{grid-template-columns:1fr}
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .findbar{flex-direction:column;align-items:stretch}
+  .findsep{display:none}
+  .wikibody{grid-template-columns:1fr}
+  .infopage{position:static}
+  #opanel{width:100%;flex:none;border-left:none;
+   border-top:1px solid var(--glass-line);max-height:46vh}
+  #overlay .obody,#overlay #ostage{min-height:0}
+  #overlay.seedmode #ostage{min-height:46vh}
+  .cv-in{flex-direction:column;align-items:stretch}
+  #cvvalue,#cvunit{width:100%}
+  .cv-val{min-width:0}
+  .sum-top{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:560px){
+  .fig{min-width:0}
+  .sum-table .p,.sum-table .why{display:none}
+  .cv-hops{display:none}
+}
+
+/* ================================================================== printing */
+@media print{
+  :root{--page:#fff;--card:#fff;--ink:#000;--ink-2:#333;--ink-3:#555;--line:#bbb}
+  body{padding:0;background:#fff;color:#000}
+  /* interactive furniture has no meaning on paper */
+  .tabs,.headbtns,.findtools,.modebar,.filter,.foldbtn,#sumopen,#themetoggle,
+  #overlay,#summary,#keyhelp,#toast,#editor,.addbtn,.addnew,.gograph{display:none!important}
+  /* every pane prints, not just the one that happened to be open */
+  .tabpane{display:block!important;page-break-before:always}
+  .tabpane:first-of-type{page-break-before:auto}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #bbb}
+  .thumb{height:auto;overflow:visible}
+  .thumb.scroll table{transform:none!important}
+  .foldwrap{max-height:none!important}
+  a[href]::after{content:" (" attr(href) ")";font-size:10px}
+}
+
+/* ============================================================ toast + keys */
+#toast{position:fixed;left:50%;bottom:24px;z-index:90;
+ transform:translate(-50%,12px);max-width:min(560px,86vw);
+ padding:11px 18px;border-radius:var(--r-pill);cursor:pointer;
+ background:var(--card);border:1px solid var(--line);color:var(--ink);
+ font-size:13.5px;box-shadow:var(--shadow-m);
+ opacity:0;pointer-events:none;
+ transition:opacity var(--med) var(--ease),transform var(--med) var(--ease)}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+:root[data-theme=dark] #toast{background:var(--dark-2);border-color:var(--dark-3);
+ color:var(--lt-ink);box-shadow:0 10px 30px #0008}
+
+#keysopen svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;
+ stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.kh-head{display:flex;align-items:center;justify-content:space-between;gap:20px;
+ margin-bottom:4px}
+.kh-card h4{margin:16px 0 6px;font-size:11px;letter-spacing:.06em;
+ text-transform:uppercase;color:var(--panel-ink-4);font-family:var(--mono)}
+.kh-card dt{display:flex;gap:4px;flex-wrap:wrap}
+.kh-card{max-width:min(460px,92vw);max-height:86vh;overflow-y:auto}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+
+/* ================================================== converter unit picker */
+.cv-combo{position:relative;display:inline-flex;align-items:center}
+.cv-combo #cvunit{padding-right:34px}
+#cvpick{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+ display:flex;align-items:center;justify-content:center;width:26px;height:26px;
+ background:none;border:none;cursor:pointer;color:var(--ink-3);border-radius:var(--r-s)}
+#cvpick:hover{color:var(--accent-deep);background:var(--page-deep)}
+#cvpick svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;
+ stroke-linecap:round;stroke-linejoin:round}
+#cvlist{position:absolute;top:calc(100% + 6px);left:0;z-index:40;
+ width:max(260px,100%);max-height:340px;overflow-y:auto;padding:5px;
+ border-radius:var(--r-m);background:var(--card);border:1px solid var(--line);
+ box-shadow:var(--shadow-m)}
+.cv-group{position:sticky;top:-5px;padding:7px 9px 4px;font:10px var(--mono);
+ letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+ background:var(--card)}
+.cv-opt{display:flex;align-items:baseline;gap:9px;width:100%;text-align:left;
+ padding:6px 9px;border:none;background:none;cursor:pointer;border-radius:var(--r-s);
+ color:var(--ink)}
+.cv-opt:hover,.cv-opt:focus{background:var(--page-deep);outline:none}
+.cv-opt:focus-visible{box-shadow:inset 0 0 0 2px var(--accent-deep)}
+.cv-optname{font-size:12px;color:var(--ink-3)}
+.cv-none{padding:12px;font-size:13px;color:var(--ink-3)}
+:root[data-theme=dark] #cvlist{background:var(--dark-2);border-color:var(--dark-3)}
+:root[data-theme=dark] .cv-group{background:var(--dark-2)}
+:root[data-theme=dark] .cv-opt{color:var(--lt-ink)}
+:root[data-theme=dark] .cv-opt:hover,:root[data-theme=dark] .cv-opt:focus{
+ background:var(--dark-3)}
+:root[data-theme=dark] #cvpick:hover{background:var(--dark-3)}
+@media(max-width:860px){.cv-combo{width:100%}}
+
+/* ============================================ explain a route, hop by hop */
+.explain{margin-top:6px;font:10.5px var(--mono);cursor:pointer;padding:4px 10px;
+ border-radius:var(--r-pill);background:var(--glass);color:var(--panel-ink-3);
+ border:1px solid var(--glass-line)}
+.explain:hover{color:var(--panel-ink);border-color:var(--accent-deep)}
+.steps{margin-top:7px;padding:8px 10px;border-radius:var(--r-m);
+ background:var(--glass);border:1px solid var(--glass-line)}
+.steps-lbl{font:9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;
+ color:var(--panel-ink-4);margin-bottom:6px}
+/* Two rows rather than four columns: a constant can be twenty characters long
+   and the panel is resizable, so nothing may depend on there being room. */
+.step{display:grid;grid-template-columns:16px minmax(0,1fr);gap:1px 8px;
+ padding:5px 0;font:11.5px var(--mono);color:var(--panel-ink-2)}
+.step + .step{border-top:1px solid var(--glass-line)}
+.step-n{grid-row:1/span 2;color:var(--panel-ink-4)}
+.step-pair{grid-column:2;color:var(--panel-ink);min-width:0;overflow-wrap:anywhere}
+.step-calc{grid-column:2;display:flex;justify-content:space-between;gap:4px 14px;
+ flex-wrap:wrap;min-width:0}
+.step-op,.step-run{min-width:0;overflow-wrap:anywhere}
+.step-op em{margin-left:5px;padding:1px 5px;border-radius:var(--r-s);font-style:normal;
+ font-size:9.5px;background:var(--glass-strong);color:var(--panel-ink-4);cursor:help}
+.step-run{color:var(--panel-ink-3)}
+
+/* the precision budget */
+.sum-table td.ok{color:var(--ok)}
+.sum-table td.warn{color:var(--warn)}
+.sum-table td.bad{color:#fca5a5}
+:root[data-theme=light] .sum-table td.bad{color:var(--bad)}
+
+/* ====================================================== the detail panel */
+/* Width lives in --pn and is clamped in JS against the overlay's own box, so
+   the panel cannot outgrow the window whatever the content asks for. */
+#opanel{width:var(--pn,430px);border-left:1px solid var(--glass-strong);
+ position:relative}
+
+#osplit{flex:none;width:7px;cursor:col-resize;position:relative;background:none;
+ border:none;padding:0}
+#osplit::after{content:"";position:absolute;inset:0;margin:auto;width:3px;height:36px;
+ border-radius:var(--r-pill);background:var(--glass-strong);
+ transition:background var(--fast) var(--ease)}
+#osplit:hover::after,#osplit:focus-visible::after,.sizing #osplit::after{
+ background:var(--accent-deep)}
+#osplit:focus-visible{outline:2px solid var(--accent-deep);outline-offset:-2px}
+/* while dragging, the pointer must not select text or land on the graph */
+.sizing{user-select:none}
+.sizing #ostage,.sizing #opanel{pointer-events:none}
+
+#opanelfold{position:absolute;top:10px;left:-13px;z-index:2;
+ display:flex;align-items:center;justify-content:center;width:26px;height:26px;
+ padding:0;cursor:pointer;border-radius:50%;font-size:15px;line-height:1;
+ background:var(--panel-deep);border:1px solid var(--panel-line);
+ color:var(--panel-ink-3);transition:color var(--fast) var(--ease)}
+#opanelfold:hover{color:var(--panel-ink);border-color:var(--accent-deep)}
+#opanelfold:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+/* hidden: the stage takes the whole width, the button stays reachable */
+.folded #opanel{width:auto;border-left:none;background:none}
+.folded #odetail{display:none}
+.folded #osplit{display:none}
+.folded #opanelfold{left:auto;right:6px}
+
+/* the route the idle walk is currently showing */
+.prow.lit{border-color:var(--glow);box-shadow:0 0 0 1px var(--glow) inset,
+ 0 0 14px -4px var(--glow)}
+.prow.lit .hops{background:var(--glow);color:#1f2937}
+@media(prefers-reduced-motion:reduce){.prow.lit{transition:none}}
+
+/* ================================================ the worked-out conversion */
+.cv-side .cvwork{border:1px solid var(--line);border-radius:var(--r-l);
+ background:var(--card);padding:20px 22px 22px;
+ /* fade only: a translate here would overflow the scroll parent while it ran */
+ animation:fadein var(--fast) var(--ease) both}
+.cv-hint{padding:22px;border-radius:var(--r-l);border:1px dashed var(--line);
+ color:var(--ink-3);font-size:13.5px;line-height:1.6}
+.cv-hint b{display:block;color:var(--ink);margin-bottom:4px;font-size:14.5px}
+:root[data-theme=dark] .cv-side .cvwork{background:var(--dark-2);
+ border-color:var(--dark-3)}
+:root[data-theme=dark] .cv-hint{border-color:var(--dark-3)}
+.cvwork-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+ margin-bottom:4px}
+.cvwork-q{font-size:15px;color:var(--ink);flex:1;min-width:0}
+.cvgraph{display:inline-flex;align-items:center;gap:2px;flex:none;cursor:pointer;
+ font:600 11px var(--mono);padding:7px 13px;border-radius:var(--r-pill);
+ background:var(--accent-deep);border:1px solid var(--accent-deep);color:#062033;
+ transition:filter var(--fast) var(--ease)}
+.cvgraph:hover{filter:brightness(1.08)}
+.cvgraph .arrow{margin:0 6px;background-color:#062033}
+.cvwork-note{font-size:12px;color:var(--ink-3);line-height:1.55;margin-bottom:14px}
+.cvwork-note code{font:11px var(--mono);background:var(--page-deep);padding:1px 5px;
+ border-radius:var(--r-s)}
+
+.cvsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.cvstep{padding:11px 14px;border-radius:var(--r-m);background:var(--page-deep);
+ border:1px solid var(--line)}
+.cvstep-head{display:flex;align-items:center;gap:8px;font-size:13.5px;
+ color:var(--ink);margin-bottom:5px}
+.cvstep-n{display:flex;align-items:center;justify-content:center;width:19px;
+ height:19px;flex:none;border-radius:50%;font:600 10.5px var(--mono);
+ background:var(--ink-3);color:var(--card)}
+.cvstep-src{font-size:11.5px;color:var(--ink-3);line-height:1.6;margin-bottom:7px;
+ overflow-wrap:anywhere}
+.cvstep-eq{font:14px var(--math);color:var(--ink);line-height:1.8;
+ overflow-wrap:anywhere}
+.cvstep-eq b{font-weight:600}
+.cvstep-eq .eq{margin:0 10px;color:var(--ink-3)}
+.cvstep-eq .op,.cvstep-src .op{margin:0 5px;color:var(--ink-3)}
+.cvwork-sum{margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
+.cvwork-lbl{font:10px var(--mono);letter-spacing:.06em;text-transform:uppercase;
+ color:var(--ink-3);margin-bottom:7px}
+.cvstep-eq.answer{margin-top:5px;font-size:16px}
+
+:root[data-theme=dark] .cv-work{background:var(--dark-2)}
+:root[data-theme=dark] .cvstep{background:var(--dark);border-color:var(--dark-3)}
+:root[data-theme=dark] .cvstep-n{background:var(--lt-ink-3);color:var(--dark)}
+:root[data-theme=dark] .cvwork-note code{background:var(--dark-3)}
+
+/* the option the field currently holds */
+.cv-opt.here{background:var(--page-deep);font-weight:600}
+:root[data-theme=dark] .cv-opt.here{background:var(--dark-3)}
+
+/* the authored formula and the constants behind a hop */
+.cvstep-raw{font-size:11.5px;color:var(--ink-3);margin-bottom:5px;
+ overflow-wrap:anywhere}
+.cvstep-raw code{font:11px var(--mono);background:var(--card);padding:2px 6px;
+ border-radius:var(--r-s)}
+.cvstep-where{font-size:11.5px;color:var(--ink-3);margin-bottom:8px;
+ display:flex;flex-wrap:wrap;gap:2px 4px;align-items:baseline}
+.cvstep-where .kw{font:10px var(--mono);letter-spacing:.06em;text-transform:uppercase;
+ color:var(--ink-3);margin-right:5px}
+.cv-const{font:11.5px var(--math);color:var(--ink-2);white-space:nowrap}
+.cv-const i{font-style:italic;color:var(--ink)}
+.cvstep-where .sep{margin-right:4px}
+:root[data-theme=dark] .cvstep-raw code{background:var(--dark-3)}
+
+/* what the two units are */
+.cv-units{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.cv-unit{padding:11px 13px;border-radius:var(--r-m);background:var(--page-deep);
+ border:1px solid var(--line);margin-top:8px}
+.cv-unit-h{font-size:15px;color:var(--ink)}
+.cv-unit-n{font-size:12.5px;color:var(--ink-2);margin:1px 0 7px}
+.cv-unit-d{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;
+ margin:0;font-size:11.5px}
+.cv-unit-d dt{color:var(--ink-3);font:10px var(--mono);letter-spacing:.04em;
+ text-transform:uppercase;padding-top:2px}
+.cv-unit-d dd{margin:0;color:var(--ink-2);overflow-wrap:anywhere}
+:root[data-theme=dark] .cv-unit{background:var(--dark);border-color:var(--dark-3)}
+
+/* ===================================================== consistency pass */
+/* One focus ring for everything that can take focus. Nineteen interactive
+   things had none, so tabbing through the page kept losing the caret; the
+   handful with their own ring are more specific and still win. */
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,
+summary:focus-visible,[tabindex]:focus-visible{
+ outline:2px solid var(--accent-deep);outline-offset:2px}
+
+/* And one press response, so every button acknowledges the click the same way. */
+button:active:not(:disabled){transform:scale(.97)}
+.mode:active,.tab:active,.cv-opt:active,.fopt:active,#toast:active{transform:none}
+@media(prefers-reduced-motion:reduce){button:active:not(:disabled){transform:none}}
+
+/* small radii were 2, 3 and 5px by hand; the scale starts at --r-s */
+.results .res .dot{border-radius:var(--r-s)}
+#ostage table.matrix td{border-radius:var(--r-s)}
+
+/* the route-cycling toggle: a dot that says whether it is running */
+#ocycle{display:none;align-items:center;gap:8px;margin-left:auto}
+#overlay.seedmode #ocycle{display:inline-flex}
+#ocycle::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;
+ background:var(--glow);box-shadow:0 0 7px -1px var(--glow);
+ transition:background var(--fast) var(--ease),box-shadow var(--fast) var(--ease)}
+#ocycle.off{color:var(--panel-ink-4)}
+#ocycle.off::before{background:var(--panel-line);box-shadow:none}
+
+/* ============================================== the theme sweep */
+/* The default cross-fade would show both themes at once through each other.
+   The new page is uncovered by the travelling diagonal instead, so the old one
+   just sits still underneath it. */
+::view-transition-old(root),
+::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}
+::view-transition-new(root){z-index:2}
+
+/* clear every filter without opening the menu */
+.fwipe{display:inline-flex;align-items:center;justify-content:center;
+ width:28px;height:28px;margin-left:5px;flex:none;cursor:pointer;font-size:17px;
+ line-height:1;border-radius:var(--r-pill);background:none;
+ border:1px solid transparent;color:var(--ink-3);
+ transition:color var(--fast) var(--ease),border-color var(--fast) var(--ease),
+ opacity var(--fast) var(--ease)}
+.fwipe:hover:not(:disabled){color:var(--bad);border-color:var(--line)}
+.fwipe:disabled{opacity:.3;cursor:default}
+:root[data-theme=dark] .fwipe{color:var(--lt-ink-3)}
+:root[data-theme=dark] .fwipe:hover:not(:disabled){color:#fca5a5;
+ border-color:var(--dark-3)}

@@ -17,7 +17,7 @@ class MatrixViewTest {
     private static Graph sample() {
         return new Graph(
             List.of(new Node("ft", "Feet", "Length"),
-                    new Node("m", "Metres", "Length"),
+                    new Node("m", "Meters", "Length"),
                     new Node("in", "Inches", "Length")),
             List.of(new Edge("ft", "m", EdgeStatus.PASSED),
                     new Edge("m", "ft", EdgeStatus.FAILED),
@@ -25,28 +25,42 @@ class MatrixViewTest {
     }
 
     @Test
-    void renders_a_table_for_the_group() {
+    void renders_a_card_for_the_group() {
         var html = MatrixView.render(sample());
 
         assertTrue(html.contains("<h2>Length"));
-        assertTrue(html.contains("<table class=\"matrix\">"));
+        assertTrue(html.contains("data-name=\"Length\""));
+        assertTrue(html.contains("<div class=\"mx\" data-group=\"Length\">"));
     }
 
     @Test
-    void labels_each_cell_with_its_pair_and_status() {
+    void carries_no_table_markup_of_its_own() {
         var html = MatrixView.render(sample());
 
-        assertTrue(html.contains("title=\"ft \u2192 m: passed\""));
-        assertTrue(html.contains("title=\"m \u2192 ft: failed\""));
-        assertTrue(html.contains("title=\"ft \u2192 in: untested\""));
+        assertFalse(html.contains("<table"), "the table is assembled in the browser");
+        assertFalse(html.contains("data-detail"), "detail travels on the INDEX row");
     }
 
     @Test
-    void marks_an_absent_pair_as_missing_not_untested() {
+    void counts_every_state_for_the_heading() {
         var html = MatrixView.render(sample());
 
-        assertTrue(html.contains("title=\"in \u2192 ft: missing\""));
-        assertFalse(html.contains("title=\"in \u2192 ft: untested\""));
+        // 3 units, 6 ordered pairs: ft->m passed, m->ft failed, ft->in untested,
+        // and the remaining three have no conversion at all.
+        assertTrue(html.contains("badge passed\">1"));
+        assertTrue(html.contains("badge failed\">1"));
+        assertTrue(html.contains("badge untested\">1"));
+        assertTrue(html.contains("badge missing\">3"));
+    }
+
+    @Test
+    void flags_the_card_for_the_grid_filters() {
+        var html = MatrixView.render(sample());
+
+        assertTrue(html.contains("data-failed=\"1\""));
+        assertTrue(html.contains("data-untested=\"1\""));
+        // members are sorted by id, so ft, in, m - not declaration order
+        assertTrue(html.contains("data-find=\"length ft feet in inches m meters\""));
     }
 
     @Test

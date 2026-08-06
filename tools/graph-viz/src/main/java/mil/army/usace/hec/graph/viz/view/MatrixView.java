@@ -21,21 +21,11 @@ public final class MatrixView {
         """;
 
     private static final String CARD = """
-        <div class="card" style="--i:{{index}}">
-          <header><h2>{{group}}</h2>{{tally}}</header>
-          <div class="scroll">
-            <table class="matrix">
-              <thead><tr><th class="corner"></th>{{columns}}</tr></thead>
-              <tbody>
-                {{rows}}
-              </tbody>
-            </table>
-          </div>
+        <div class="card" style="--i:{{index}}" data-name="{{group}}" data-find="{{find}}"
+         data-failed="{{failed}}" data-untested="{{untested}}">
+          <header><h2>{{group}}</h2><span class="meta">{{units}} units</span>{{tally}}</header>
+          <div class="thumb scroll"><div class="mx" data-group="{{group}}"></div></div>
         </div>
-        """;
-
-    private static final String ROW = """
-        <tr><th>{{unit}}</th>{{cells}}</tr>
         """;
 
     private MatrixView() {
@@ -64,46 +54,16 @@ public final class MatrixView {
     }
 
     private static String card(String group, List<Node> members, Graph graph, int index) {
+        var counts = counts(members, graph);
         return Html.fill(CARD)
             .put("group", group)
             .put("index", index)
+            .put("units", members.size())
+            .put("find", searchText(group, members))
+            .put("failed", counts.getOrDefault("failed", 0))
+            .put("untested", counts.getOrDefault("untested", 0))
             .raw("tally", tally(members, graph))
-            .raw("columns", Html.each(members, to -> Html.tag("th").text(to.id()).toString()))
-            .raw("rows", Html.each(members, from -> row(from, members, graph)))
             .render();
-    }
-
-    private static String row(Node from, List<Node> members, Graph graph) {
-        return Html.fill(ROW)
-            .put("unit", from.id())
-            .raw("cells", Html.each(members, to -> cell(from, to, graph)))
-            .render();
-    }
-
-    private static String cell(Node from, Node to, Graph graph) {
-        if (from.id().equals(to.id())) {
-            return "<td class=\"self\"></td>";
-        }
-        Optional<Edge> edge = graph.edge(from.id(), to.id());
-        String state = stateOf(edge);
-
-        return Html.tag("td")
-            .attr("class", state)
-            .attr("title", from.id() + " → " + to.id() + ": " + state)
-            .attr("data-from", from.id())
-            .attr("data-to", to.id())
-            // The edge carries its own description, so the enlarged view needs no
-            // second copy of the graph data.
-            .attr("data-detail", edge.map(Edge::detail).orElse(null))
-            .html(label(edge))
-            .toString();
-    }
-
-    /** Hidden by CSS at thumbnail size, where a 22px square cannot hold a digit. */
-    private static String label(Optional<Edge> edge) {
-        return edge.map(Edge::label)
-            .map(text -> Html.tag("span").attr("class", "lab").text(text).toString())
-            .orElse("");
     }
 
     /** Package-visible so Stats classifies cells exactly as the matrix draws them. */
@@ -125,8 +85,7 @@ public final class MatrixView {
         return "present";                   // a seed edge, carrying no status
     }
 
-    /** Counts beside the heading, so dimensions can be triaged without opening them. */
-    private static String tally(List<Node> members, Graph graph) {
+    private static TreeMap<String, Integer> counts(List<Node> members, Graph graph) {
         var counts = new TreeMap<String, Integer>();
         for (Node from : members) {
             for (Node to : members) {
@@ -135,6 +94,21 @@ public final class MatrixView {
                 }
             }
         }
+        return counts;
+    }
+
+    /** Everything a card should match on: its group and every unit inside it. */
+    private static String searchText(String group, List<Node> members) {
+        var text = new StringBuilder(group);
+        for (Node node : members) {
+            text.append(' ').append(node.id()).append(' ').append(node.label());
+        }
+        return text.toString().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** Counts beside the heading, so dimensions can be triaged without opening them. */
+    private static String tally(List<Node> members, Graph graph) {
+        var counts = counts(members, graph);
         var badges = new StringBuilder();
         counts.forEach((state, count) -> badges.append(
             Html.tag("span").attr("class", "badge " + state).text(count)));

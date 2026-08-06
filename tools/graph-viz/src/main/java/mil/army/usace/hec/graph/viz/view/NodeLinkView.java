@@ -16,10 +16,11 @@ import mil.army.usace.hec.graph.viz.model.Node;
 public final class NodeLinkView {
 
     private static final String CARD = """
-        <div class="card seedcard {{shape}}" style="--i:{{index}}">
-          <header><h2>{{group}}</h2><span class="badge {{shape}}">{{badge}}</span></header>
-          <p class="meta">{{meta}}</p>
-          <div class="cy" data-group="{{group2}}" style="aspect-ratio:{{ratio}}"></div>
+        <div class="card seedcard {{shape}}" style="--i:{{index}}" data-name="{{group}}"
+         data-find="{{find}}" data-shape="{{shape}}">
+          <header><h2>{{group}}</h2><span class="meta">{{meta}}</span>
+          <span class="tally"><span class="badge {{shape}}">{{badge}}</span></span></header>
+          <div class="thumb"><div class="cy" data-group="{{group2}}"></div></div>
         </div>
         """;
 
@@ -78,12 +79,15 @@ public final class NodeLinkView {
             .put("shape", kind)
             .put("badge", badge)
             .put("meta", nodes.size() + " units")
-            .put("ratio", ratio(nodes, edges))
+            .put("find", searchText(group, nodes))
             .render();
     }
-    private static String ratio(List<Node> nodes, List<Edge> edges) {
-        GraphLayout.Placed placed = GraphLayout.of(nodes, edges);
-        return String.format(java.util.Locale.ROOT, "%.0f/%.0f",
-                             placed.width(), placed.height());
+    /** Everything a card should match on: its group and every unit inside it. */
+    private static String searchText(String group, List<Node> nodes) {
+        var text = new StringBuilder(group);
+        for (Node node : nodes) {
+            text.append(' ').append(node.id()).append(' ').append(node.label());
+        }
+        return text.toString().toLowerCase(java.util.Locale.ROOT);
     }
 }

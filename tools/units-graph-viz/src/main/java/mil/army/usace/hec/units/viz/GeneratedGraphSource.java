@@ -52,8 +52,8 @@ public final class GeneratedGraphSource {
         var tests = TestCaseReader.read(testCsv);
 
         List<Edge> edges = hasReport(report)
-            ? withCoverage(report, conversions, tests, names, known)
-            : withoutCoverage(conversions, tests, names, known);
+            ? withCoverage(report, conversions, tests, known)
+            : withoutCoverage(conversions, tests, known);
 
         return new Graph(nodes, edges);
     }
@@ -61,14 +61,14 @@ public final class GeneratedGraphSource {
     // Edges from the report, each carrying its status and its description
     private static List<Edge> withCoverage(Path report, Map<Pair, Conversion> conversions,
                                            Map<Pair, List<TestCase>> tests,
-                                           Map<String, String> names, HashSet<String> known)
+                                           HashSet<String> known)
             throws IOException, XMLStreamException {
         var edges = new ArrayList<Edge>();
         var stale = new ArrayList<String>();
 
         for (Edge edge : TestReportReader.read(report)) {
             if (known.contains(edge.from()) && known.contains(edge.to())) {
-                edges.add(build(edge.from(), edge.to(), edge.status(), conversions, tests, names));
+                edges.add(build(edge.from(), edge.to(), edge.status(), conversions, tests));
             } else {
                 stale.add(edge.from() + " -> " + edge.to());
             }
@@ -88,14 +88,13 @@ public final class GeneratedGraphSource {
      */
     private static List<Edge> withoutCoverage(Map<Pair, Conversion> conversions,
                                               Map<Pair, List<TestCase>> tests,
-                                              Map<String, String> names,
                                               HashSet<String> known) {
         var edges = new ArrayList<Edge>();
         for (Conversion conversion : conversions.values()) {
             String from = conversion.getFrom().getAbbreviation();
             String to = conversion.getTo().getAbbreviation();
             if (known.contains(from) && known.contains(to)) {
-                edges.add(build(from, to, EdgeStatus.UNTESTED, conversions, tests, names));
+                edges.add(build(from, to, EdgeStatus.UNTESTED, conversions, tests));
             }
         }
         return edges;
@@ -103,8 +102,7 @@ public final class GeneratedGraphSource {
 
     private static Edge build(String from, String to, EdgeStatus status,
                               Map<Pair, Conversion> conversions,
-                              Map<Pair, List<TestCase>> tests,
-                              Map<String, String> names) {
+                              Map<Pair, List<TestCase>> tests) {
         Conversion conversion = conversions.get(new Pair(from, to));
         if (conversion == null) {
             return new Edge(from, to, status);
@@ -118,8 +116,7 @@ public final class GeneratedGraphSource {
 
         return new Edge(from, to, status,
                         Integer.toString(ConversionDetail.hops(conversion)),
-                        ConversionDetail.of(conversion, inversePostfix, status, names,
-                                            direct, roundTrip));
+                        ConversionDetail.of(conversion, inversePostfix, direct, roundTrip));
     }
 
     private static String postfixOf(Conversion conversion) {

@@ -8,45 +8,33 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 class FormulaRendererTest {
 
-    @ParameterizedTest(name = "{2}")
-    @CsvSource(delimiter = '|', value = {
-        "function: i * m_per_ft^3    | i * m_per_ft^3       | a function body passes through unchanged",
-        "linear: unit_per_kilo 0     | i * unit_per_kilo    | a linear scale becomes a multiplication",
-        "linear: 1 273.15            | i + 273.15           | a scale of one drops but the offset stays",
-        "linear: milli_per_unit 0.0  | i * milli_per_unit   | a zero offset drops however it is spelled",
-        "linear: 1 0                 | i                    | an identity conversion reduces to the variable"
-    })
-    void renders_a_method_as_an_expression(String method, String expected, String rule) {
-        assertEquals(expected, FormulaRenderer.symbolic(method));
+    @Test
+    void passes_a_function_body_through_unchanged() {
+        assertEquals("i * m_per_ft^3", FormulaRenderer.symbolic("function: i * m_per_ft^3"));
     }
 
-    @ParameterizedTest(name = "{2}")
-    @CsvSource(delimiter = '|', value = {
-        "5280.0                 | 5280                        | a whole number keeps no decimal point",
-        "1.47197952E11          | 147197952000                | a large whole number is not made exponential",
-        "1.7999999999999972     | 1.8                         | floating point noise is trimmed",
-        "273.15                 | 273.15                      | a genuine decimal survives",
-        "0.028316846592         | 0.028316846592              | every significant digit of a factor is kept",
-        "2.390057361376673E-5   | 2.3900573614 × 10⁻⁵         | only an extreme value goes exponential"
-    })
-    void formats_a_number_for_reading(double value, String expected, String rule) {
-        assertEquals(expected, FormulaRenderer.formatNumber(value));
+    @Test
+    void turns_a_linear_scale_into_an_expression() {
+        assertEquals("i * unit_per_kilo", FormulaRenderer.symbolic("linear: unit_per_kilo 0"));
     }
 
-    @ParameterizedTest(name = "{1}")
-    @CsvSource(delimiter = '|', value = {
-        "(i^2)/1000            | the exponent applies to the input, not a constant",
-        "1 / i                 | dividing by the input yields Infinity rather than throwing",
-        "i * still_a_name      | an unresolved constant cannot be evaluated at all",
-        "i * (i - 1) * (i - 2) | a cubic that is collinear at 0, 1 and 2"
-    })
-    void rejects_a_formula_that_is_not_affine(String expression, String why) {
-        assertNull(FormulaRenderer.affineOf(expression));
+    @Test
+    void drops_a_scale_of_one_but_keeps_the_offset() {
+        assertEquals("i + 273.15", FormulaRenderer.symbolic("linear: 1 273.15"));
+    }
+
+    /** Some entries write the offset as "0.0" rather than "0". */
+    @Test
+    void treats_a_zero_offset_the_same_however_it_is_spelled() {
+        assertEquals("i * milli_per_unit", FormulaRenderer.symbolic("linear: milli_per_unit 0.0"));
+    }
+
+    @Test
+    void reduces_an_identity_conversion_to_the_variable() {
+        assertEquals("i", FormulaRenderer.symbolic("linear: 1 0"));
     }
 
     /** The whole chain, end to end, on a linear conversion. */
@@ -58,6 +46,29 @@ class FormulaRendererTest {
 
         assertEquals(1.0, form.m(), 1e-9);
         assertEquals(273.15, form.b(), 1e-9);
+    }
+
+    @Test
+    void drops_the_decimal_point_on_whole_numbers() {
+        assertEquals("5280", FormulaRenderer.formatNumber(5280.0));
+        assertEquals("147197952000", FormulaRenderer.formatNumber(1.47197952E11));
+    }
+
+    @Test
+    void trims_floating_point_noise() {
+        assertEquals("1.8", FormulaRenderer.formatNumber(1.7999999999999972));
+        assertEquals("273.15", FormulaRenderer.formatNumber(273.15));
+    }
+
+    @Test
+    void keeps_the_significant_digits_of_a_conversion_factor() {
+        assertEquals("0.028316846592", FormulaRenderer.formatNumber(0.028316846592));
+    }
+
+    @Test
+    void uses_scientific_notation_only_for_extreme_values() {
+        assertEquals("2.3900573614 \u00d7 10\u207b\u2075",
+                    FormulaRenderer.formatNumber(2.390057361376673E-5));
     }
 
     @Test
@@ -102,5 +113,28 @@ class FormulaRendererTest {
 
         assertEquals(1.8, form.m(), 1e-9);
         assertEquals(32.0, form.b(), 1e-9);
+    }
+
+    /** Hz -> B: the exponent is on i itself, so no single a and b can describe it. */
+    @Test
+    void rejects_a_formula_whose_exponent_applies_to_the_input() {
+        assertNull(FormulaRenderer.affineOf("(i^2)/1000"));
+    }
+
+    /** Java yields Infinity here instead of throwing, so this needs its own guard. */
+    @Test
+    void rejects_a_formula_that_divides_by_the_input() {
+        assertNull(FormulaRenderer.affineOf("1 / i"));
+    }
+
+    @Test
+    void rejects_an_expression_it_cannot_evaluate() {
+        assertNull(FormulaRenderer.affineOf("i * still_a_name"));
+    }
+
+    /** Collinear at 0, 1 and 2 - only the extra verification points reject it. */
+    @Test
+    void rejects_a_cubic_that_fools_a_three_point_probe() {
+        assertNull(FormulaRenderer.affineOf("i * (i - 1) * (i - 2)"));
     }
 }
