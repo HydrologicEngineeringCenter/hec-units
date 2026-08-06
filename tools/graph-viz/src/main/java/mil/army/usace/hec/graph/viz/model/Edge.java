@@ -6,7 +6,6 @@ package mil.army.usace.hec.graph.viz.model;
  */
 public record Edge(String from, String to, EdgeStatus status, String label, String detail) {
 
-    /** An edge with no label or detail attached. */
     public Edge(String from, String to, EdgeStatus status) {
         this(from, to, status, null, null);
     }

@@ -1,19 +1,9 @@
-/*
- * Search: the third tab, plus the filter bars on the two card grids and the
- * highlight box inside an enlarged matrix.
- *
- * Runs off two datasets emitted by SearchIndex.java - INDEX, every conversion,
- * and UNITS, every unit. Rendered detail is never duplicated here; it is read
- * back off the matrix cells and graph edges that already carry it.
- */
-  /* ================================================================= search
-     One index drives three surfaces: the card grids, the search tab, and the
-     in-matrix highlight. Rendered detail is never duplicated here - it already
-     sits on the matrix cells and graph edges, and is read back from there. */
+// Search tab
 
   var hasIndex = typeof INDEX !== 'undefined';
   var UNIT = typeof UNITS !== 'undefined' ? UNITS : {};
 
+  // text matching
   function norm(text) {
     return (text || '').toLowerCase().trim();
   }
@@ -51,7 +41,7 @@
   var NOTHING = '<div class="emptystate"><b>Nothing matches</b>'
               + 'Try a shorter query, or clear the filters.</div>';
 
-  /* Clear button, Escape-to-clear, and the filled state every box shares. */
+  // search box
   function wireFind(label, onInput) {
     var input = label.querySelector('input');
     var clear = label.querySelector('.clearfind');
@@ -76,11 +66,7 @@
     return {input: input, sync: sync};
   }
 
-  /* ----------------------------------------------------------- filter menus
-     One popup everywhere: a button that says how many rules are on, a panel of
-     controls, and a clear. The owner decides what the controls mean; this only
-     handles opening, closing and counting. */
-
+  // filter menu
   function wireMenu(wrap, onChange) {
     var button = wrap.querySelector('.filterbtn');
     var menu = wrap.querySelector('.filtermenu');
@@ -122,7 +108,6 @@
 
     menu.querySelector('.fclear').addEventListener('click', clearAll);
 
-    /* The same clear, without having to open the menu to reach it. */
     wipe.addEventListener('click', function (event) {
       event.stopPropagation();
       clearAll();
@@ -158,8 +143,7 @@
     return set;
   }
 
-  /* ------------------------------------------------------------ card grids */
-
+  // Card grids
   var EXCLUSIVE = {untested: ['complete'], complete: ['untested'],
                    tree: ['cyclic', 'dup'], cyclic: ['tree', 'dup'], dup: ['tree', 'cyclic']};
 
@@ -230,11 +214,7 @@
 
   document.querySelectorAll('.toolbar').forEach(wireGrid);
 
-  /* -------------------------------------------------------------- search tab
-     Two questions, two shapes. A conversion is a pair, so it gets a box per
-     end, either of which may be left blank. A unit is one thing, so it gets one
-     box and the categories it is filed under. */
-
+  // Search tab
   var wlist = document.getElementById('wlist');
   var winfo = document.getElementById('winfo');
   var wcount = document.getElementById('wcount');
@@ -261,9 +241,6 @@
 
   var UNIT_ONLY = {hasfail: true, hasuntested: true, isolated: true};
 
-  /* The matrix has a cell for every ordered pair inside a dimension; the index
-     only carries the ones a conversion reaches. The rest are built here, once,
-     and only ever shown when someone asks for them by name. */
   var noRoute = null;
 
   function missingRows() {
@@ -296,8 +273,6 @@
     return name.indexOf('sys:') === 0 || !!UNIT_ONLY[name];
   }
 
-  /* Reads every control into the module state, and reports how many of them are
-     doing something in the mode currently showing. */
   function readFilters() {
     var names = checkedIn(wmenu.menu);
     var hopn = document.getElementById('whopn');
@@ -340,6 +315,7 @@
     return hopMode === 'min' ? hops >= hopCount : hops <= hopCount;
   }
 
+  // decide what matches the search query
   function convKeeps(row, fromList, toList) {
     if (fromList.length && !hasAll(norm(row.f + ' ' + row.fn), fromList)) {
       return false;
@@ -384,16 +360,12 @@
     return true;
   }
 
-  /* Worst news first, so a red dot always means something to look at. */
   function unitTone(unit) {
     if (unit.c[1] > 0) { return 'failed'; }
     if (unit.c[2] > 0) { return 'untested'; }
     return unit.c[0] > 0 ? 'passed' : 'missing';
   }
 
-  /* Matching is by substring, so "ft" also finds ac-ft and lbm/ft3. Ranking an
-     exact abbreviation above a prefix above a substring keeps the conversion
-     that was actually asked for at the top. */
   function rank(value, query) {
     var wanted = norm(query);
     if (!wanted) {
@@ -427,6 +399,7 @@
     show();
   }
 
+  // actually showing the results
   function drawConversions() {
     var rows = picked.missing ? INDEX.concat(missingRows()) : INDEX;
     var fromList = terms(qFrom);
@@ -496,10 +469,7 @@
     }
   }
 
-  /* ------------------------------------------------------------ detail pages */
-
-  /* The detail already rendered into the page: the matrix cell holds the
-     derived form, the graph edge holds the conversion as authored. */
+  // right panel for when you click on a result
   function renderedDetail(from, to) {
     var out = '';
     out += detailHtml(from, to);
@@ -520,7 +490,6 @@
     }).join('') + '</dl>';
   }
 
-  /* The graph tab groups its cards by dimension, which is what a row carries. */
   function graphCardFor(dimension) {
     var host = document.querySelector('#tab-seed .cy[data-group="'
                                       + cssValue(dimension) + '"]');
@@ -635,8 +604,6 @@
     });
   }
 
-  /* ------------------------------------------------------------------ wiring */
-
   function setMode(next) {
     var changed = mode !== next;
     mode = next;
@@ -660,7 +627,6 @@
     input.closest('.find').classList.toggle('filled', value.length > 0);
   }
 
-  /* Opens the search tab with a question already asked. */
   function openFind(opts) {
     var tab = document.querySelector('.tab[data-pane="tab-find"]');
     if (!tab || !wlist || !hasIndex) {
@@ -689,8 +655,6 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
-  /* Dimensions and systems come from the data rather than a list written here,
-     so adding a unit cannot leave the filters behind. */
   function fillCategories() {
     var dims = [];
     var kinds = [];
@@ -745,10 +709,6 @@
     draw();
   }
 
-  /* --------------------------------------------------- legend keys deep-link */
-
-  /* Every key already says what a color means; clicking one asks the question
-     it describes. The keys inside the overlay close it on the way out. */
   document.querySelectorAll('.legend [data-status], .legend [data-system],'
                           + ' .legend [data-kind]').forEach(function (key) {
     key.classList.add('clickable');
@@ -767,8 +727,6 @@
       }
     });
   });
-
-  /* -------------------------------------------------- summary rows deep-link */
 
   document.querySelectorAll('#sbody .sum-table tbody tr').forEach(function (row) {
     var name = row.querySelector('.name');
@@ -791,8 +749,6 @@
       }
     });
   });
-
-  /* -------------------------------------------------------- in-matrix search */
 
   var ofind = document.getElementById('ofind');
   if (ofind) {

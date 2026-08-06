@@ -4,15 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A whole-project read-out: how much of the graph is covered, where the gaps
- * are, and what needs attention.
- */
 public final class SummaryView {
 
-    // How long the pen takes to travel the whole circle once
-    // How long the pen takes to go all the way round. Matched to the bars and
-    // the counting figures so the whole summary settles at once.
     private static final double SWEEP = 0.7;
 
     // Radius chosen so the circumference is exactly 100, making arcs percentages
@@ -103,11 +96,6 @@ public final class SummaryView {
         </div>
         """;
 
-    /**
-     * The dash length carried as a custom property, so the arc can be animated
-     * from nothing up to it - the same growing motion the bars use, rather
-     * than the whole circle spinning into place.
-     */
     private static final String ARC = """
         <circle class="seg {{cls}}" cx="21" cy="21" r="{{r}}" fill="none" stroke-width="5"
           style="--dash:{{share}} {{rest}};animation-delay:{{delay}}s;animation-duration:{{dur}}s"
@@ -155,7 +143,6 @@ public final class SummaryView {
         return rows.toString();
     }
 
-    /** Nothing to open when the table is already short enough to read. */
     private static String foldToggle(int total) {
         if (total <= VISIBLE_DIMENSIONS) {
             return "";
@@ -181,9 +168,6 @@ public final class SummaryView {
         return Html.fill(FIGURE).put("label", label).put("value", value).put("note", note).render();
     }
 
-    /**
-     * A donut drawn as SVG arcs.
-     */
     private static String donut(Stats stats) {
         record Slice(String cls, int count) { }
         var slices = List.of(new Slice("passed", stats.passed()),
@@ -195,10 +179,7 @@ public final class SummaryView {
         double offset = 25;                     // rotates the start to twelve o'clock
         double traveled = 0;                   // how far round the pen already is
 
-        // One pen going round once, changing color at each boundary. Each arc
-        // waits for the pen to reach it and then takes exactly as long as its
-        // own share, so the speed never changes and the slices read as one
-        // stroke rather than as several growing separately.
+
         for (Slice slice : slices) {
             double share = stats.percentOfPairs(slice.count());
             if (share <= 0) {

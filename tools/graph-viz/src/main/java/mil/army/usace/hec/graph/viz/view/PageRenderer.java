@@ -325,11 +325,13 @@ public final class PageRenderer {
         "/viz/overlay.js",        // the enlarge overlay: open, close, detail panel
         "/viz/panel.js",          // the detail panel: dock, resize, collapse
         "/viz/tables.js",         // click-to-sort table headers
+        "/viz/graph-style.js",    // the cytoscape stylesheet for the graph
         "/viz/graph.js",          // conversion-graph explorer (cytoscape + physics)
         "/viz/chrome.js",         // tab bar and summary modal
         "/viz/matrix-cells.js",   // hover and pin for enlarged matrix cells
         "/viz/search.js",         // search tab, grid filters, in-matrix highlight
-        "/viz/extras.js");        // converter, suggestions, links, keyboard
+        "/viz/converter.js",      // the converter tab and its worked derivations
+        "/viz/extras.js");        // suggestions, precision budget, links, keyboard
 
     private static String pageScript() throws IOException {
         var script = new StringBuilder("(function () {\n");

@@ -2,20 +2,11 @@ package mil.army.usace.hec.graph.viz.view;
 
 import java.util.List;
 
-/**
- * The search surfaces: the filter menu every grid shares, and the shell the
- * search tab fills in from data at runtime.
- *
- * Filters live behind one button rather than in a row of always-visible chips,
- * so a surface can offer many without crowding the page.
- */
 public final class SearchView {
 
-    /** One checkbox. `test` names the rule the page applies for it. */
     public record Option(String test, String label) {
     }
 
-    /** A titled block of options inside a filter menu. */
     public record Group(String label, List<Option> options) {
     }
 
@@ -79,11 +70,6 @@ public final class SearchView {
         </div>
         """;
 
-    /**
-     * The search tab's menu. The dimension and system choices are left empty
-     * because the page fills them from the data it already carries, which keeps
-     * them right without anyone remembering to update a list here.
-     */
     private static final String FIND_FILTER = """
         <div class="fgroup"><div class="flbl">dimension</div>
         <select id="wdim"><option value="">any dimension</option></select></div>
@@ -112,7 +98,6 @@ public final class SearchView {
     private SearchView() {
     }
 
-    /** The filter bar above a card grid. */
     public static String bar(String grid, String placeholder, List<Group> groups) {
         return Html.fill(BAR)
             .put("grid", grid)

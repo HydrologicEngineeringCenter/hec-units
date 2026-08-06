@@ -12,7 +12,6 @@ import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
 
 // One card per group, each holding a container that cytoscape draws into.
- 
 public final class NodeLinkView {
 
     private static final String CARD = """
@@ -82,7 +81,6 @@ public final class NodeLinkView {
             .put("find", searchText(group, nodes))
             .render();
     }
-    /** Everything a card should match on: its group and every unit inside it. */
     private static String searchText(String group, List<Node> nodes) {
         var text = new StringBuilder(group);
         for (Node node : nodes) {

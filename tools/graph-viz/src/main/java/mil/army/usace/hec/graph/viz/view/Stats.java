@@ -67,8 +67,6 @@ public final class Stats {
         }
 
         // Route length comes from the edge label, which the adapter fills in.
-        // Only numeric labels are counted, so a graph that labels edges some
-        // other way simply produces no distribution rather than nonsense.
         for (Edge edge : graph.edges()) {
             Integer length = asInteger(edge.label());
             if (length != null) {

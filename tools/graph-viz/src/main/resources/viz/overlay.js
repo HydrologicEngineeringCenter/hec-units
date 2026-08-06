@@ -1,4 +1,4 @@
-  // this file handles the individual matrix view
+  // this file handles the individual matrix/graph view
 
   var overlay = document.getElementById('overlay');
   var stage = document.getElementById('ostage');
@@ -9,18 +9,12 @@
   var HINT = '<div class="empty">Hover a cell to preview its conversion. '
            + '<b>Click</b> to pin it, click the same cell again to release it.</div>';
 
-  /* Raises an exponent in already-escaped markup: m3 reads as m with a raised
-     3. Only text between tags is touched, so a <mark> the search inserted is
-     left intact. Same rule as Labels.java: digits count as a power only when
-     they directly follow a letter. */
   function sup(escaped) {
     return String(escaped).replace(/(^|>)([^<]+)/g, function (all, before, text) {
       return before + text.replace(/([A-Za-z])(\d+)/g, '$1<sup>$2</sup>');
     });
   }
 
-  /* The same rule for somewhere a tag cannot go: a value that will be escaped,
-     or text handed to a canvas. Mirrors Labels.plain in the Java side. */
   var RAISED = '\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079';
 
   function raised(text) {
@@ -33,7 +27,6 @@
     });
   }
 
-  // Every rendered conversion points the same way with the same glyph.
   var ARROW = '<span class="arrow">→</span>';
 
   var MAX_ROUTES = 60;
@@ -82,6 +75,7 @@
     trapReturn = null;
   }
 
+  // opening overlay
   function raise(layer) {
     layer.classList.add('open');
     layer.setAttribute('aria-hidden', 'false');
@@ -95,6 +89,7 @@
     document.body.style.overflow = 'hidden';
   }
 
+  // closing overlay
   function lower(layer, after) {
     layer.setAttribute('aria-hidden', 'true');
     releaseFocus(layer);
@@ -122,7 +117,7 @@
 
   var adjacency = null;
 
-  // Find every route for the matrix
+  // Route finding
   function graph() {
     if (adjacency) {
       return adjacency;
@@ -323,9 +318,6 @@
     if (mount) { buildMatrix(mount); }
     stage.innerHTML = card.querySelector('table').outerHTML;
 
-    // The card's copy is scaled down to fit its thumbnail, and that inline
-    // transform rides along in the clone. The enlarged view sizes itself with
-    // fit() instead, so the scale has to come back off here.
     stage.querySelector('table').style.transform = '';
     wireGridKeys(stage.querySelector('table'));
 
@@ -366,21 +358,6 @@
 
   document.getElementById('oclose').addEventListener('click', close);
 
-  /* A matrix preview is scaled down to fit its window, so a thirty unit
-     dimension and a three unit one produce the same size card and neither
-     needs a scrollbar. Layout is untouched by a transform, so the table stays
-     centered and only its painted size changes. */
-  /*
-   * Scale each matrix down until it fits its card.
-   *
-   * Everything here is a guard against measuring at the wrong moment. A table
-   * inside a hidden tab measures zero, which used to divide to Infinity and
-   * settle on scale(1) - the table then overflowed and looked cut off. A table
-   * measured before its font has loaded is narrower than it will be, so the
-   * scale comes out too generous and it overflows once the real font arrives.
-   * Both leave a thumbnail clipped, and both are intermittent, which is why it
-   * worked sometimes.
-   */
   function fitThumbs() {
     document.querySelectorAll('.thumb.scroll').forEach(function (box) {
       var table = box.querySelector('table');
@@ -402,8 +379,6 @@
     });
   }
 
-  /* Anything that changes how wide the text is, or makes a hidden card visible,
-     invalidates a measurement taken earlier. */
   function refitThumbs() {
     requestAnimationFrame(fitThumbs);
   }
@@ -412,8 +387,6 @@
   fitThumbs();
   window.addEventListener('resize', fitThumbs);
 
-  // The first measurement can land before the monospace font does, and every
-  // column would then be measured too narrow.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(refitThumbs);
   }

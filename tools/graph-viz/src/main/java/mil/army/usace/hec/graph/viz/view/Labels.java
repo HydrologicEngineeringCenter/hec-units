@@ -2,10 +2,6 @@ package mil.army.usace.hec.graph.viz.view;
 
 /**
  * Typesets exponents in a label: "m3" reads as m with a raised 3.
- *
- * Two forms, because the page draws labels two different ways. Markup is
- * better wherever HTML reaches; a canvas or an attribute value cannot carry
- * a tag, so those take the single-character form instead.
  */
 public final class Labels {
 
@@ -15,21 +11,16 @@ public final class Labels {
     private Labels() {
     }
 
-    /** For markup: m3 becomes m&lt;sup&gt;3&lt;/sup&gt;, escaped and ready to insert. */
     public static String html(String label) {
         return build(label, true);
     }
 
-    /** For a canvas label or an attribute value: m3 becomes m³. */
     public static String plain(String label) {
         return build(label, false);
     }
 
     /**
      * A run of digits is an exponent only when it directly follows a letter.
-     *
-     * That single rule separates "m3" and "cfs/mi2", where the digits are
-     * powers, from "1000 acre" and "1/ft", where they are part of the name.
      */
     private static String build(String label, boolean markup) {
         if (label == null) {

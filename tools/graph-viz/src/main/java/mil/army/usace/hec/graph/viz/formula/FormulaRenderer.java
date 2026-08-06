@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public final class FormulaRenderer {
 
-    /** Inputs used to check that the extracted (a, b) really describe the whole formula. */
+    // Inputs used to check that the extracted (a, b) really describe the whole formula.
     private static final double[] VERIFY_AT = {2.0, -3.0, 0.5, 137.0, 1.0e6};
     private static final String SUPERSCRIPT_DIGITS =
     "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079";

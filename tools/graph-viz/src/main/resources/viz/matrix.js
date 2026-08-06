@@ -20,8 +20,6 @@
     return byFrom ? byFrom[to] : null;
   }
 
-  /* The same order the matrices were generated in: units of one dimension,
-     sorted, and only where there are at least two to convert between. */
   function mxUnits(group) {
     var out = [];
     if (typeof UNITS === 'undefined') {
@@ -38,6 +36,7 @@
     return row ? row.s : 'missing';
   }
 
+  // Building the table
   function buildMatrix(host) {
     if (host.dataset.built) {
       return;
@@ -50,8 +49,6 @@
     host.dataset.built = '1';
 
     var out = '<table class="matrix">'
-      // Named for screen readers, which otherwise meet a wall of unlabelled
-      // cells. Sighted users get the same words from the card heading.
       + '<caption class="vh">' + escText(group)
       + ' coverage: each row converts into each column</caption>'
       + '<thead><tr><th class="corner" scope="col"></th>';
@@ -81,7 +78,6 @@
     host.innerHTML = out + '</tbody></table>';
   }
 
-  // Built when the card comes near the viewport, like the graph thumbnails.
   function watchMatrices() {
     var hosts = document.querySelectorAll('.card .mx');
     if (!hosts.length) {
@@ -96,8 +92,6 @@
         if (entry.isIntersecting) {
           buildMatrix(entry.target);
           watcher.unobserve(entry.target);
-          // After a frame: the table has just been written, and the card may
-          // still be mid entrance animation.
           if (typeof refitThumbs === 'function') { refitThumbs(); }
         }
       });
@@ -105,6 +99,7 @@
     hosts.forEach(function (host) { watcher.observe(host); });
   }
 
+  // what you see on the right panel
   function mxUnitSpan(id) {
     return '<span class="u">' + sup(escText(id)) + '</span>';
   }
@@ -153,7 +148,6 @@
          + (tests.length === 1 ? '' : 's') + '</div>' + rows + '</div>';
   }
 
-  /* The panel for one pair, assembled around the payload on its INDEX row. */
   function detailHtml(from, to) {
     var row = mxRow(from, to);
     if (!row || !row.x) {
@@ -176,6 +170,7 @@
       + chain + mxTests(row) + '</div>';
   }
 
+  // Arrow-key navigation
   function wireGridKeys(table) {
     var grid = Array.prototype.map.call(table.querySelectorAll('tbody tr'), function (tr) {
       return Array.prototype.slice.call(tr.querySelectorAll('td'));
@@ -213,7 +208,6 @@
       return null;
     }
 
-    // Pointing at a cell makes it the one the arrows continue from.
     table.addEventListener('mousedown', function (event) {
       var cell = event.target.closest('td');
       var at = cell && locate(cell);
@@ -241,7 +235,6 @@
       }
     });
 
-    // Focusing a cell should preview it, exactly as hovering does.
     table.addEventListener('focusin', function (event) {
       var cell = event.target.closest('td[title]');
       if (cell) {

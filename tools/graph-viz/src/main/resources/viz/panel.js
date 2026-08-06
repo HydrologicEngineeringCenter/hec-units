@@ -1,9 +1,4 @@
-// The detail panel: how wide it is, and whether it is showing.
-//
-// The width is clamped against the overlay's own box rather than fixed pixels,
-// so a long constant can never push the panel wider than the window it lives
-// in, and a remembered width can never outgrow a smaller screen.
-
+// Setup
   var pnWrap = document.getElementById('ostagewrap');
   var pnPanel = document.getElementById('opanel');
   var pnSplit = document.getElementById('osplit');
@@ -22,12 +17,10 @@
     return null;
   }
 
+  // set min and max size for right side-bar panel
   function pnClamp(value) {
     var total = pnWrap.getBoundingClientRect().width;
     if (total < 1) {
-      // The overlay is closed, so there is nothing to measure against. Clamping
-      // now would shrink a remembered width to the minimum and keep it there;
-      // the real clamp happens when the overlay opens.
       return Math.max(PN_MIN, Math.round(value));
     }
     var min = Math.min(PN_MIN, Math.max(120, total - 120));
@@ -44,9 +37,6 @@
     pnRestage();
   }
 
-  /* The stage changed shape, so whatever is drawn in it has to be told. The
-     matrix recomputes its cell size; cytoscape has to be asked explicitly
-     because it only watches the window, not its container. */
   var pnRestageFrame = null;
 
   function pnRestage() {
@@ -63,6 +53,7 @@
     });
   }
 
+  // panel mouse dragging
   function pnDrag(event) {
     if (pnWrap.classList.contains('folded')) {
       return;
@@ -90,8 +81,6 @@
     document.addEventListener('touchend', done);
   }
 
-  /* Called when the overlay opens: only now does the wrapper have a width to
-     clamp against, and only now is restaging meaningful. */
   function pnOnOpen() {
     if (pnWrap) {
       pnSetSize(pnSize, false);
@@ -134,8 +123,6 @@
       fold.innerHTML = '&lsaquo;';
     }
 
-    // A window resize can invalidate the clamp, so re-apply it rather than
-    // letting a stale pixel width outgrow the overlay.
     window.addEventListener('resize', function () {
       if (pnWrap.offsetParent !== null) { pnSetSize(pnSize, false); }
     });

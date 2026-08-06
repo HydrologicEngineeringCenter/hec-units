@@ -3,8 +3,6 @@
 // Setup
   var seedApi = null;
 
-  /* Whether the idle walk through the routes runs. Kept out here so it holds
-     across graphs, and remembered so it holds across visits. */
   var cycleOn = true;
   try {
     cycleOn = localStorage.getItem('viz-cycle') !== 'off';
@@ -42,134 +40,6 @@
     });
   }
 
-  function token(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  }
-
-  function fontStack(name, fallback) {
-    var value = token(name).replace(/['"]/g, '').trim();
-    return /^[\w\- ]+(?:\s*,\s*[\w\- ]+)*$/.test(value) ? value : fallback;
-  }
-
-// Setting up the Cytoscape style
-  function cyStyle(enlarged) {
-    var mono = fontStack('--mono', 'monospace');
-    function pillWidth(ele) { return 26 + 13 * String(ele.data('label')).length; }
-    return [
-      {selector: 'node', style: {
-        'shape': 'round-rectangle',
-        'corner-radius': 23,
-        'width': pillWidth,
-        'height': 46,
-        'background-color': '#e5e7eb',
-        'border-color': '#6b7280',
-        'border-width': enlarged ? 2 : 1.5,
-        'label': 'data(label)',
-        'color': '#374151',
-        'font-family': mono,
-        'font-size': enlarged ? 17 : 14,
-        'font-weight': 'bold',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'transition-property': 'opacity, border-width, border-color',
-        'transition-duration': '0.11s',
-        'transition-timing-function': 'ease-out'
-      }},
-      {selector: 'node.t-si', style: {
-        'background-color': '#dbeafe', 'border-color': '#2563eb', 'color': '#1e3a5f'}},
-      {selector: 'node.t-english', style: {
-        'background-color': '#fee2e2', 'border-color': '#dc2626', 'color': '#5f1e1e'}},
-
-      {selector: 'edge', style: {
-        'curve-style': 'straight',
-        'line-color': enlarged ? '#64748b' : '#94a3b8',
-        'width': enlarged ? 2.5 : 1.6,
-        'opacity': 1,
-        'transition-property': 'opacity, line-color, width',
-        'transition-duration': '0.11s',
-        'transition-timing-function': 'ease-out'}},
-      {selector: 'edge[bow != 0]', style: {
-        'curve-style': 'unbundled-bezier',
-        'control-point-distances': function (ele) {
-          return [ele.data('bow') * (enlarged ? 60 : 40)];
-        },
-        'control-point-weights': [0.5]}},
-      {selector: 'edge.function', style: {'line-style': 'dashed',
-        'line-dash-pattern': enlarged ? [7, 5] : [6, 4]}},
-
-      {selector: '.dim', style: {'opacity': 0.12}},
-
-      // Held back for the entrance. A class rather than a style bypass, so it
-      // rides the transition already declared above and leaves nothing behind
-      // that could outrank .dim later.
-      {selector: '.entering', style: {'opacity': 0}},
-      {selector: 'edge.hot', style: {'line-color': token('--edge-pick'), 'width': 4}},
-
-      // The idle walk through the routes. It only lights the path up; dimming
-      // everything else once a second would be exhausting to sit next to.
-      //
-      // The halo is what makes it read as illuminated rather than merely
-      // recoloured: an overlay spreads past the stroke, so the line looks like
-      // it is casting light instead of just changing color.
-      {selector: 'edge.cycle', style: {
-        'line-color': token('--glow'), 'width': 4.5, 'opacity': 1, 'z-index': 12,
-        'overlay-color': token('--glow'), 'overlay-opacity': 0.18,
-        'overlay-padding': 7,
-        'transition-property': 'line-color, width, overlay-opacity, overlay-padding',
-        'transition-duration': '0.4s',
-        'transition-timing-function': 'ease-out'}},
-
-      // Nodes between the two picks, so the light runs the whole way. The picks
-      // themselves keep their own colors - losing those would cost more than
-      // the glow gains.
-      {selector: 'node.cycle', style: {
-        'border-color': token('--glow'), 'border-width': 3.5,
-        'overlay-color': token('--glow'), 'overlay-opacity': 0.18,
-        'overlay-padding': 7, 'overlay-corner-radius': 999,
-        'transition-property':
-          'border-color, border-width, overlay-opacity, overlay-padding',
-        'transition-duration': '0.4s',
-        'transition-timing-function': 'ease-out'}},
-
-      {selector: 'edge.sel', style: {
-        'line-color': token('--edge-pick'), 'width': 4.5, 'opacity': 1}},
-      // Nothing but full opacity. The chevrons riding above are the highlight,
-      // so recolouring the edge as well only put a blue line under blue
-      // arrows - and leaving it alone keeps solid-vs-dashed readable, which
-      // is how a linear conversion is told from a function one.
-      {selector: 'edge.on-route', style: {'opacity': 1}},
-
-      {selector: 'node.pick-a', style: {
-        'border-color': token('--pick-1'), 'border-width': 4, 'opacity': 1}},
-      {selector: 'node.pick-b', style: {
-        'border-color': token('--pick-2'), 'border-width': 4, 'opacity': 1}},
-
-      {selector: 'node.bdg', style: {
-        'shape': 'ellipse', 'width': 26, 'height': 26,
-        'border-color': '#0f172a', 'border-width': 2,
-        'label': 'data(label)', 'color': '#0f172a',
-        'font-family': fontStack('--sans', 'sans-serif'),
-        'font-size': 15, 'font-weight': 700,
-        'text-valign': 'center', 'text-halign': 'center',
-        'events': 'no', 'z-index': 9}},
-      {selector: 'node.bdg.p1', style: {'background-color': token('--pick-1')}},
-      {selector: 'node.bdg.p2', style: {'background-color': token('--pick-2')}},
-      /* Overlays default to an 8px corner radius (Math.min(w/4,h/4,8)), which
-         next to a 46px pill reads as a box around an oval. An explicit radius
-         is clamped to min(radius, w/2, h/2), so asking for far too much gives
-         a pill at whatever size the overlay currently is - including part way
-         through the click ring, where the padding is still growing. */
-      {selector: 'node.hover', style: {
-        'border-width': 3.5,
-        'overlay-color': token('--accent-deep'),
-        'overlay-opacity': 0.16, 'overlay-padding': 7,
-        'overlay-corner-radius': 999}},
-      {selector: 'node.preview', style: {
-        'border-color': token('--pick-2'), 'border-width': 3.5}}
-    ];
-  }
-  var PRESET = {name: 'preset', fit: false, animate: false};
-
   // Thumbnails for main menu of graph visualizer
   function initThumb(host) {
     if (host.dataset.ready || !hasGraphs) {
@@ -197,8 +67,6 @@
     requestAnimationFrame(function () { host.classList.add('ready'); });
   }
 
-  /* Only the open graph needs re-styling. Thumbnails draw with fixed colors,
-     so they look the same in both themes and re-baking them is wasted work. */
   function restyleGraphs() {
     if (seedApi) { seedApi.restyle(); }
   }
@@ -424,8 +292,6 @@
       pulse(ele, colour, 24);
     }
 
-    /* A ring that expands off the edge and fades, so a click lands somewhere
-       visible even when the edge was already the highlighted one. */
     function pulseEdge(ele) {
       pulse(ele, token('--edge-pick'), 20);
     }
@@ -483,7 +349,7 @@
         pickB = null;
       }
       alpha = Math.min(alpha, 0.12);
-      // Releasing a pick keeps the colour it is giving up, so the ring always
+      // Releasing a pick keeps the color it is giving up, so the ring always
       // says which of the two slots the click was about.
       var now = i === pickA ? 1 : i === pickB ? 2 : 0;
       pulseNode(N[i].ele, token((now || was) === 2 ? '--pick-2' : '--pick-1'));
@@ -662,6 +528,7 @@
            + (second ? ' to ' + escText(second) : '') + '</div>';
     }
 
+    // the results panel (right sidebar)
     function drawPanel() {
       if (pickA === null) {
         panelShow(SEED_HINT, false);
@@ -733,8 +600,7 @@
 
       panelShow(head + rows, true);
       // Hovering previews a route; clicking holds it, so the arrows keep
-      // running while the mouse goes elsewhere. Rebuilt with the panel, so a
-      // fresh pair of picks starts unpinned.
+      // running while the mouse goes elsewhere
       var held = null;
       odetail.querySelectorAll('.explain').forEach(function (button) {
         button.addEventListener('click', function (event) {
@@ -764,39 +630,22 @@
           });
           held = held === index ? null : index;
           row.classList.toggle('held', held === index);
-          // The cursor is still on the row either way, so this stays a hover:
-          // the idle walk resumes from mouseleave, not from here, or its
-          // highlight would run on top of the arrows this just started.
           showRoute(paths[index]);
         });
       });
     }
 
-    /*
-     * Arrows traveling along the route, from the first pick toward the second.
-     *
-     * They are drawn on a canvas of our own rather than by cytoscape, which can
-     * only put an arrowhead at the start, middle or end of an edge and can only
-     * dash a line with straight segments. Neither of those can be a chevron
-     * that moves, and a dash has no direction of its own.
-     */
+    // Arrows animation
     function curveOf(hop) {
       var edge = E[hop.ei].ele;
       var forward = hop.from === E[hop.ei].s;
       var a = forward ? edge.sourceEndpoint() : edge.targetEndpoint();
       var b = forward ? edge.targetEndpoint() : edge.sourceEndpoint();
       var mid = edge.midpoint();
-      // cytoscape bends an edge as a quadratic bezier but never hands over the
-      // control point. Its midpoint does: at t=0.5 a quadratic sits at
-      // (a + 2c + b)/4, so c falls out. A straight edge returns its own middle
-      // and the curve flattens, so this covers bowed and straight alike -
-      // no guessing which way a bow leans.
       return {a: a, b: b,
               c: {x: 2 * mid.x - (a.x + b.x) / 2, y: 2 * mid.y - (a.y + b.y) / 2}};
     }
 
-    // Flatten a hop into a polyline plus the distance traveled to each point,
-    // so arrows can be spaced evenly by length rather than by parameter.
     function polyOf(hop) {
       var curve = curveOf(hop);
       var points = [];
@@ -852,8 +701,6 @@
       flowCtx.lineJoin = 'round';
       flowCtx.strokeStyle = flowInk;
 
-      // One phase carried across the hops, so the arrows read as a single
-      // stream rather than restarting at every unit.
       var carry = phase % gap;
       flowPath.forEach(function (hop) {
         var poly = polyOf(hop);
@@ -938,6 +785,7 @@
              + '</div>';
     }
 
+    // Idle route cycling animations
     var CYCLE_MS = 2000;              // how long each route stays lit
     var CYCLE_LEAD = 500;             // a beat before the first one comes on
 
@@ -966,8 +814,6 @@
         return;
       }
       cycleAt = 0;
-      // Picking two units should not become motion in the same instant - the
-      // pause leaves a moment to take in what was picked.
       lead = setTimeout(function () {
         lead = null;
         litPath(paths[0]);

@@ -11,7 +11,6 @@ import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
 
-/** Renders a graph as one coverage matrix per node group. */
 public final class MatrixView {
 
     private static final String GRID = """
@@ -43,7 +42,6 @@ public final class MatrixView {
         return Html.fill(GRID).raw("cards", cards.toString()).render();
     }
 
-    /** Nodes by group, each group sorted, so the page is byte-identical per run. */
     private static TreeMap<String, List<Node>> groupNodes(Graph graph) {
         var byGroup = new TreeMap<String, List<Node>>();
         for (Node node : graph.nodes()) {
@@ -66,7 +64,6 @@ public final class MatrixView {
             .render();
     }
 
-    /** Package-visible so Stats classifies cells exactly as the matrix draws them. */
     static String stateOf(Optional<Edge> edge) {
         return edge.map(MatrixView::state)
             .orElse("missing");             // no conversion exists between this pair
@@ -97,7 +94,6 @@ public final class MatrixView {
         return counts;
     }
 
-    /** Everything a card should match on: its group and every unit inside it. */
     private static String searchText(String group, List<Node> members) {
         var text = new StringBuilder(group);
         for (Node node : members) {
@@ -106,7 +102,6 @@ public final class MatrixView {
         return text.toString().toLowerCase(java.util.Locale.ROOT);
     }
 
-    /** Counts beside the heading, so dimensions can be triaged without opening them. */
     private static String tally(List<Node> members, Graph graph) {
         var counts = counts(members, graph);
         var badges = new StringBuilder();

@@ -1,9 +1,9 @@
 // Handler for other .js files
+
+// Controls for right sidebar in visualizer
   var tabs = document.querySelectorAll('.tab');
   var tabink = document.querySelector('.tabink');
 
-  /* Inset to match the tab's own padding, so the bar sits under the label
-     rather than the whole button. */
   function moveInk() {
     var active = document.querySelector('.tab.active');
     if (!active || !tabink) {
@@ -32,11 +32,10 @@
     window.addEventListener('resize', moveInk);
   }
 
+  // Summary panel
   var summary = document.getElementById('summary');
   var openSummary = document.getElementById('sumopen');
 
-  /* The donut sweeps and the bars grow, so the headline figures count up with
-     them rather than being the one still thing on an animating panel. */
   function countUp(el) {
     var text = el.dataset.value || el.textContent;
     el.dataset.value = text;
@@ -59,8 +58,6 @@
     });
   }
 
-  /* The donut opens up in place: it grows, its key unrolls beneath it, and the
-     rest of the summary is pushed down by the reflow rather than covered. */
   var donutbtn = document.querySelector('.donutbtn');
   if (donutbtn) {
     donutbtn.addEventListener('click', function () {
@@ -71,10 +68,6 @@
     });
   }
 
-  /* Same pattern as the donut: a minimal view by default, everything on
-     request. The wrapper's height is animated between "as far as the first
-     hidden row" and "all of it", which needs a real measurement, so it is
-     taken when the panel is open rather than at load time. */
   var folds = [];
 
   document.querySelectorAll('.foldwrap').forEach(function (wrap) {
@@ -115,8 +108,6 @@
     });
   });
 
-  /* Where to cut: the top of the first row that should not show. Measured
-     live, so it stays right after the table has been re-sorted. */
   function clipHeight(fold) {
     var rows = fold.table.tBodies[0].rows;
     if (rows.length <= fold.visible) {
@@ -213,8 +204,7 @@
     fit();
   });
 
-  // Theme toggle. The <head> script already picked the starting theme; this
-  // only handles switching away from it and remembering that choice.
+  // Theme toggle
   (function () {
     var btn = document.getElementById('themetoggle');
     if (!btn) { return; }
@@ -232,30 +222,6 @@
       restyleGraphs();
     }
 
-    /*
-     * The new theme is wiped across the page in a circle growing out of the
-     * button you just pressed, so the change reads as one movement rather than
-     * as the whole page blinking.
-     *
-     * View transitions do the hard part: the browser holds a picture of the old
-     * page while the new one is painted underneath, and all this has to do is
-     * animate the shape that reveals it. Where that is unavailable, or motion
-     * is unwanted, the theme simply changes - the same work, without the sweep.
-     */
-    /*
-     * The new theme arrives behind a straight diagonal edge that crosses the
-     * page, and it crosses the other way depending on which way you are going -
-     * light comes down from the top left, dark comes up from the bottom right.
-     * The direction is the tell: the same motion twice would say nothing about
-     * which of the two you just landed on.
-     *
-     * View transitions do the hard part - the browser holds a picture of the
-     * old page while the new one paints underneath - so all this animates is
-     * the shape that uncovers it. A triangle grown from one corner has a
-     * straight hypotenuse, which is the edge you see travelling. Where view
-     * transitions are unavailable, or motion is unwanted, the theme simply
-     * changes: the same work, without the sweep.
-     */
     btn.addEventListener('click', function () {
       var still = window.matchMedia
                && matchMedia('(prefers-reduced-motion: reduce)').matches;
