@@ -574,8 +574,9 @@
               + 'each group. One or more direct conversions on the odd routes out is lossy '
               + 'or wrong.</div>';
       } else {
-        head += '<div class="pth-ok">✓ all ' + paths.length + ' route'
-              + (paths.length === 1 ? 's' : 's') + ' agree</div>';
+        head += '<div class="pth-ok">' + (paths.length === 1
+                ? '✓ one route, nothing to disagree with'
+                : '✓ all ' + paths.length + ' routes agree') + '</div>';
       }
 
       var rows = paths.map(function (p, i) {
@@ -771,7 +772,7 @@
     }
 
     function budgetHtml(result, best) {
-        if (!best || !isFinite(result.m) || !isFinite(best.m) || best.m === 0) {
+        if (!result || !best || !isFinite(result.m) || !isFinite(best.m) || best.m === 0) {
             return '';
         }
         var off = Math.abs(result.m - best.m) / Math.abs(best.m);

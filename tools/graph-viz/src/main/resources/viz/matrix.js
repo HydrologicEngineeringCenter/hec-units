@@ -31,11 +31,6 @@
     return out.sort();
   }
 
-  function mxState(from, to) {
-    var row = mxRow(from, to);
-    return row ? row.s : 'missing';
-  }
-
   // Building the table
   function buildMatrix(host) {
     if (host.dataset.built) {
@@ -179,6 +174,8 @@
       return;
     }
 
+    // Every cell stays out of the tab order; clicking one is what starts the
+    // arrows, and focus() works regardless of tabIndex.
     var here = {r: 0, c: 0};
     grid.forEach(function (line, r) {
       line.forEach(function (cell, c) {
@@ -188,15 +185,12 @@
         }
       });
     });
-    grid[here.r][here.c].tabIndex = 0;
 
     function moveTo(r, c) {
       if (!grid[r] || !grid[r][c]) {
         return;
       }
-      grid[here.r][here.c].tabIndex = -1;
       here = {r: r, c: c};
-      grid[r][c].tabIndex = 0;
       grid[r][c].focus();
     }
 

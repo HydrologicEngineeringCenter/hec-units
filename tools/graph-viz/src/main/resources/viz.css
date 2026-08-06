@@ -11,7 +11,7 @@
 
   /* panels: the overlay, the summary and the search detail card */
   --panel:#ffffffe0; --panel-deep:#ffffff; --panel-2:#e7edf5;
-  --panel-ink:#0f172a; --panel-ink-2:#475569; --panel-ink-3:#64748b; --panel-ink-4:#7c8ba1;
+  --panel-ink:#0f172a; --panel-ink-2:#475569; --panel-ink-3:#64748b; --panel-ink-4:#5b6b80;
   --panel-line:#0f172a24;
   --grid:#0f172a0d; --stage-glow:#38bdf814;
   --glass:#0f172a08; --glass-line:#0f172a12; --glass-strong:#0f172a14;
@@ -29,11 +29,22 @@
   --accent:#7dd3fc; --accent-deep:#38bdf8;
   --pick-1:#34d399; --pick-2:#fbbf24; --edge-pick:#f59e0b;
   --warn:#fbbf24;
-  /* the idle route walk. Brighter than --warn so it reads as a lamp coming
-     on rather than a caution color; deeper on a light stage, where a pale
-     yellow would disappear into the background. */
   /* the idle route walk; the same neon yellow in both themes */
   --glow:#faff00;
+
+  /* Status as ink and paper rather than as one color. A tint light enough to
+     read dark text on is unreadable under pale text, so each status carries
+     its own surface, border and text, and both themes fill them in. */
+  --ok-ink:#166534; --ok-wash:#dcfce7; --ok-soft:#f0fdf4; --ok-line:#8ce0ab;
+  --bad-ink:#991b1b; --bad-wash:#fde8e8; --bad-soft:#fef4f4; --bad-line:#f1a9a9;
+  --warn-ink:#8a5300; --warn-wash:#fef3c7; --warn-soft:#fffbeb; --warn-line:#efc158;
+  --note-ink:#3730a3; --note-wash:#e0e7ff; --note-line:#b4c0fb;
+  --accent-ink:#0369a1;
+
+  /* A filled button is ink, not accent. Sky blue already means "you are here"
+     - the tab rule, the focus ring, the held row - and a slab of it competes
+     with that while reading washed out on paper and glaring at night. */
+  --action:#0f172a; --action-on:#f8fafc; --action-hover:#1e293b;
 
   /* shape + depth */
   --r-s:4px; --r-m:8px; --r-l:12px; --r-pill:99px;
@@ -80,21 +91,22 @@ button{font:inherit}
 #sumopen:hover{border-color:#cbd5e1;color:var(--ink)}
 #sumopen:active{transform:scale(.97)}
 
-#oclose,#sclose,#oreset,#ocycle,.pathbtn{background:var(--glass-strong);border:1px solid var(--panel-line);
+#oclose,#sclose,#oreset,#ocycle,.pathbtn,.kh-x{background:var(--glass-strong);border:1px solid var(--panel-line);
  color:var(--panel-ink-2);border-radius:var(--r-m);padding:6px 14px;cursor:pointer;
  font:12px var(--sans);
  transition:background var(--fast) var(--ease),color var(--fast) var(--ease),
    transform var(--fast) var(--ease)}
-#oclose:hover,#sclose:hover,#oreset:hover,#ocycle:hover,.pathbtn:hover{background:var(--glass-strong);color:var(--panel-ink)}
-#oclose:active,#sclose:active,#oreset:active,#ocycle:active,.pathbtn:active{transform:scale(.97)}
+#oclose:hover,#sclose:hover,#oreset:hover,#ocycle:hover,.pathbtn:hover,.kh-x:hover{background:var(--glass-strong);color:var(--panel-ink)}
+#oclose:active,#sclose:active,#oreset:active,#ocycle:active,.pathbtn:active,.kh-x:active{transform:scale(.97)}
 
-#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,#oreset:focus-visible,.pathbtn:focus-visible,
+#sumopen:focus-visible,#oclose:focus-visible,#sclose:focus-visible,#oreset:focus-visible,
+.pathbtn:focus-visible,.kh-x:focus-visible,
 .card:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 
 /* Amber: "the page cannot tell you something", never mistakable for a failure. */
 .notice{margin:0 0 22px;padding:12px 16px;border-radius:var(--r-m);font-size:13px;
- background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
-.notice code{font:12px var(--mono);background:#00000014;padding:1px 6px;border-radius:var(--r-s)}
+ background:var(--warn-wash);border:1px solid var(--warn-line);color:var(--warn-ink)}
+.notice code{font:12px var(--mono);background:var(--glass-strong);padding:1px 6px;border-radius:var(--r-s)}
 
 .pagehead{display:flex;align-items:center;gap:24px;justify-content:space-between}
 
@@ -152,11 +164,11 @@ button{font:inherit}
 
 .tally{display:inline-flex;gap:5px;flex:none}
 .badge{font:11px var(--mono);padding:2px 8px;border-radius:var(--r-pill);white-space:nowrap}
-.badge.passed{background:#d7f5e2;color:#14532d}
-.badge.failed{background:#fbe3e3;color:#8c1d1d}
+.badge.passed{background:var(--ok-wash);color:var(--ok-ink)}
+.badge.failed{background:var(--bad-wash);color:var(--bad-ink)}
 .badge.untested{background:#f1f5f9;color:var(--ink-3)}
 .badge.missing{background:var(--page);color:var(--ink-3)}
-.badge.present{background:#e0e7ff;color:#3730a3}
+.badge.present{background:var(--note-wash);color:var(--note-ink)}
 
 /* Scaled to fit rather than scrolled: a scrollbar inside a preview is
    noise, and the card enlarges on click anyway. */
@@ -299,8 +311,8 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .fx-head .arrow{margin:0 11px}
 .chip{display:inline-block;font:10.5px var(--mono);padding:2px 9px;border-radius:var(--r-pill)}
 .fx-head .chip{margin-left:auto}
-.chip.passed{background:#14532d;color:#86efac}
-.chip.failed{background:#7f1d1d;color:#fca5a5}
+.chip.passed{background:var(--ok-wash);color:var(--ok-ink)}
+.chip.failed{background:var(--bad-wash);color:var(--bad-ink)}
 .chip.untested{background:var(--panel-2);color:var(--panel-ink-2)}
 
 .fx-names{color:var(--panel-ink-3);font-size:13px;padding-bottom:11px;
@@ -310,7 +322,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
 .fx-eq .eq{margin:0 12px;color:var(--panel-ink-3)}
 .fx-eq .op{margin:0 8px;color:var(--panel-ink-2)}
-.fx-eq .warn{color:var(--warn);font-size:.75em;font-family:var(--sans)}
+.fx-eq .warn{color:var(--warn-ink);font-size:.75em;font-family:var(--sans)}
 
 .fx-where{margin-top:14px;font-size:13px;color:var(--panel-ink-3);
  display:flex;align-items:center;flex-wrap:wrap;gap:2px}
@@ -324,11 +336,11 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
    off it landed - absolute and relative, since only the pair says whether a
    miss is rounding or a wrong constant. */
 .fx-tests{margin-top:17px;padding-top:13px;border-top:1px solid var(--glass-line)}
-.fx-tests .lbl{font:10.5px var(--mono);color:var(--accent);
+.fx-tests .lbl{font:10.5px var(--mono);color:var(--accent-ink);
  letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
 .tc{padding:8px 11px;border-radius:var(--r-m);margin-bottom:7px;background:var(--glass);
  border:1px solid var(--glass-line);animation:rise var(--fast) var(--ease) both}
-.tc.bad{background:#7f1d1d33;border-color:#ef444459}
+.tc.bad{background:var(--bad-soft);border-color:var(--bad-line)}
 /* A flex container throws away whitespace-only children, so the space the
    template puts between a value and its unit vanished and 5 1/ft read as
    51/ft. The gap has to be a real property. */
@@ -338,12 +350,12 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .tc-top .u{margin-left:.34em}
 .tc-top .arrow{margin:0 9px}
 .tc-mark{margin-left:auto;padding-left:10px;font:11px var(--mono);white-space:nowrap}
-.tc.ok .tc-mark{color:#86efac}
-.tc.bad .tc-mark{color:#fca5a5}
+.tc.ok .tc-mark{color:var(--ok-ink)}
+.tc.bad .tc-mark{color:var(--bad-ink)}
 .tc-sub{display:flex;flex-wrap:wrap;gap:4px 15px;margin-top:6px;
  font:11.5px var(--mono);color:var(--panel-ink-4)}
 .tc-sub b{font-weight:400;color:var(--panel-ink-2)}
-.tc.bad .tc-sub b{color:#fca5a5}
+.tc.bad .tc-sub b{color:var(--bad-ink)}
 
 /* ---- routes ---- */
 .fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid var(--glass-line)}
@@ -360,7 +372,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  border-radius:var(--r-pill);padding:1px 7px;margin-right:7px}
 .routes .via{font:11.5px var(--mono);color:var(--panel-ink-2);word-break:break-word}
 .routes .fac{display:block;margin-top:4px;font-size:12px;color:var(--panel-ink-3)}
-.routes .disagree{color:var(--warn)}
+.routes .disagree{color:var(--warn-ink)}
 .routes .more{color:var(--panel-ink-4);font-size:11.5px;margin-top:8px}
 
 /* ============================================================ summary */
@@ -412,7 +424,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 
 .dk-block{margin-bottom:18px}
 .dk-block:last-child{margin-bottom:0}
-.dk-title{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+.dk-title{font:10.5px var(--mono);color:var(--accent-ink);letter-spacing:.06em;
  text-transform:uppercase;margin-bottom:3px}
 .dk-note{color:var(--panel-ink-4);font-size:11.5px;margin-bottom:9px}
 .dk-row{display:flex;align-items:center;gap:12px;padding:5px 2px;font-size:13px}
@@ -425,7 +437,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .sum-table tbody tr[data-state]:not([data-state=""]){cursor:pointer}
 .sum-table tbody tr[data-state]:not([data-state=""]):hover td{background:var(--glass)}
 .sum-table tbody tr[data-state]:not([data-state=""]):hover .barcell::after{
- content:"search \2192";font:10px var(--mono);color:var(--accent);
+ content:"search \2192";font:10px var(--mono);color:var(--accent-ink);
  margin-left:8px;white-space:nowrap}
 /* Each slice draws itself from nothing, passed first, the rest following.
    The dash length it grows to arrives inline as --dash. */
@@ -442,7 +454,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  letter-spacing:.12em;text-transform:uppercase}
 
 .sum-figures{display:flex;gap:34px;flex-wrap:wrap}
-.fig-label{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+.fig-label{font:10.5px var(--mono);color:var(--accent-ink);letter-spacing:.06em;
  text-transform:uppercase}
 .fig-value{font:600 30px var(--sans);color:var(--panel-ink);line-height:1.25}
 .fig-note{color:var(--panel-ink-4);font-size:11.5px;max-width:26ch;line-height:1.45}
@@ -457,8 +469,8 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .sum-table thead th:first-child{text-align:left}
 .sum-table .n{text-align:right;font:13px var(--mono);width:64px}
 .sum-table .p{text-align:right;font:13px var(--mono);color:var(--panel-ink-3);width:78px}
-.sum-table .n.ok{color:#86efac}
-.sum-table .n.bad{color:#fca5a5}
+.sum-table .n.ok{color:var(--ok-ink)}
+.sum-table .n.bad{color:var(--bad-ink)}
 .sum-table .name{color:var(--panel-ink)}
 .sum-table .hopn{font:13px var(--mono);color:var(--panel-ink-2);width:80px}
 .sum-table .barcell{width:38%}
@@ -480,11 +492,11 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  border-radius:var(--r-l);padding:16px 18px;
  transition:border-color var(--med) var(--ease),background var(--med) var(--ease)}
 .sum-card:hover{border-color:var(--panel-line)}
-.sum-card.bad{border-color:#ef444459;background:#7f1d1d26}
-.sum-card.warn{border-color:#f59e0b45;background:#78350f1f}
+.sum-card.bad{border-color:var(--bad-line);background:var(--bad-soft)}
+.sum-card.warn{border-color:var(--warn-line);background:var(--warn-soft)}
 .c-value{font:600 26px var(--sans);color:var(--panel-ink);line-height:1.2}
-.sum-card.bad .c-value{color:#fca5a5}
-.sum-card.warn .c-value{color:#fcd34d}
+.sum-card.bad .c-value{color:var(--bad-ink)}
+.sum-card.warn .c-value{color:var(--warn-ink)}
 .c-label{font-size:12.5px;color:var(--panel-ink-2);margin-bottom:7px}
 .c-note{font:11.5px var(--mono);color:var(--panel-ink-4);line-height:1.55;word-break:break-word}
 
@@ -528,14 +540,17 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
   --grid:#ffffff0a; --stage-glow:#38bdf81f;
   --glass:#ffffff0a; --glass-line:#ffffff14; --glass-strong:#ffffff1f;
   --untested:#475569; --missing:#1e293b; --stripe:#334155;
+
+  --ok-ink:#86efac; --ok-wash:#14532d; --ok-soft:#14532d40; --ok-line:#22c55e59;
+  --bad-ink:#fca5a5; --bad-wash:#7f1d1d; --bad-soft:#7f1d1d40; --bad-line:#ef444459;
+  --warn-ink:#fcd34d; --warn-wash:#78350f; --warn-soft:#78350f40; --warn-line:#f59e0b66;
+  --note-ink:#c7d2fe; --note-wash:#312e81; --note-line:#6366f166;
+  --accent-ink:#7dd3fc;
+  --action:#e2e8f0; --action-on:#0f172a; --action-hover:#f8fafc;
 }
 :root[data-theme=dark] .card, :root[data-theme=dark] .legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
 :root[data-theme=dark] .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--panel-ink-4)}
-:root[data-theme=dark] .notice{background:#78350f66;border-color:#f59e0b66;color:#fcd34d}
-:root[data-theme=dark] .notice code{background:var(--glass-line)}
 :root[data-theme=dark] .sw{border-color:var(--panel-ink-4)}
-:root[data-theme=dark] .badge.passed{background:#14532d;color:#86efac}
-:root[data-theme=dark] .badge.failed{background:#7f1d1d;color:#fca5a5}
 :root[data-theme=dark] .badge.untested{background:var(--dark-3);color:var(--lt-ink-2)}
 :root[data-theme=dark] .badge.missing{background:var(--dark-2);color:var(--lt-ink-4)}
 :root[data-theme=dark] td.missing{box-shadow:inset 0 0 0 1px var(--dark-3)}
@@ -567,13 +582,13 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .card.cyclic{border-color:#f59e0b73}
 .card.dup{border-color:#818cf8a6}
 .badge.tree{background:#f1f5f9;color:var(--ink-3)}
-.badge.cyclic{background:#fef3c7;color:#92400e}
-.badge.dup{background:#e0e7ff;color:#3730a3}
+.badge.cyclic{background:var(--warn-wash);color:var(--warn-ink)}
+.badge.dup{background:var(--note-wash);color:var(--note-ink)}
 
 /* legend swatches for the seed tab */
-.sw.t-si{background:#dbeafe;border-color:#2563eb}
-.sw.t-english{background:#fee2e2;border-color:#dc2626}
-.sw.t-null{background:#e5e7eb;border-color:#6b7280}
+.sw.t-si{background:#93c5fd;border-color:#1d4ed8}
+.sw.t-english{background:#fca5a5;border-color:#b91c1c}
+.sw.t-null{background:#cbd5e1;border-color:#64748b}
 .ln{display:inline-block;width:26px;border-top:2px solid var(--ink-3);vertical-align:middle}
 .ln.dash{border-top-style:dashed}
 
@@ -617,13 +632,10 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 /* ============================================================ route explorer */
 #odetail h4{margin:0 0 4px;font-size:17px;font-family:var(--math);color:var(--panel-ink)}
 .pth-sub{color:var(--panel-ink-4);font:11.5px var(--mono);margin-bottom:12px}
-.pth-warn{background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--r-m);
- padding:9px 12px;margin:10px 0;color:#78350f;font-size:12.5px;line-height:1.5}
-.pth-warn b{color:#7c2d12}
-:root[data-theme=dark] .pth-warn{background:#78350f66;border-color:#f59e0b66;
- color:#fcd34d}
-:root[data-theme=dark] .pth-warn b{color:#fde68a}
-.pth-ok{color:#86efac;font-size:12.5px;margin:10px 0}
+.pth-warn{background:var(--warn-soft);border:1px solid var(--warn-line);
+ border-radius:var(--r-m);padding:9px 12px;margin:10px 0;color:var(--warn-ink);
+ font-size:12.5px;line-height:1.5}
+.pth-ok{color:var(--ok-ink);font-size:12.5px;margin:10px 0}
 
 .prow{padding:8px 10px;border-radius:var(--r-m);margin-bottom:6px;background:var(--glass);
  border:1px solid transparent;cursor:pointer;
@@ -646,7 +658,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 
 /* ============================================================ fx additions */
 .fx-eq.cont{font-size:18px;color:var(--panel-ink-2)}
-.fx-note{margin-top:8px;font-size:12px;color:var(--warn)}
+.fx-note{margin-top:8px;font-size:12px;color:var(--warn-ink)}
 .fx-raw{margin-top:13px;padding-top:10px;border-top:1px solid var(--glass-line);
  font:12px var(--mono);color:var(--panel-ink-4);word-break:break-all}
 .fx-where i{font-style:italic;font-family:var(--math)}
@@ -656,8 +668,6 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 
 :root[data-theme=dark] .tabs{border-bottom-color:var(--dark-3)}
 :root[data-theme=dark] .badge.tree{background:var(--dark-3);color:var(--lt-ink-2)}
-:root[data-theme=dark] .badge.cyclic{background:#78350f66;color:#fcd34d}
-:root[data-theme=dark] .badge.dup{background:#312e81;color:#c7d2fe}
 :root[data-theme=dark] .ln{border-top-color:var(--lt-ink-3)}
 
 /* reset button and the per-mode keys in the enlarged view */
@@ -799,8 +809,24 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  align-items:start}
 @media(max-width:900px){.wikibody{grid-template-columns:1fr}}
 
+.resultcol{min-width:0}
 .results{max-height:66vh;overflow-y:auto;scrollbar-width:thin;
  scrollbar-color:var(--line) transparent;scrollbar-gutter:stable}
+
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;
+ margin-top:12px;font:11.5px var(--mono);color:var(--ink-3)}
+.pager[hidden]{display:none}
+.pgat{min-width:15ch;text-align:center}
+.pgo{width:30px;height:30px;flex:none;display:inline-flex;align-items:center;
+ justify-content:center;border:1px solid var(--line);background:var(--card);
+ color:var(--ink-2);border-radius:var(--r-m);cursor:pointer;font-size:17px;
+ line-height:1;padding:0;
+ transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease),
+  transform var(--fast) var(--ease)}
+.pgo:hover:not(:disabled){border-color:var(--ink-3);color:var(--ink)}
+.pgo:active:not(:disabled){transform:scale(.94)}
+.pgo:disabled{opacity:.32;cursor:default}
+.pgo:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 .results .res{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-m);
  cursor:pointer;border:1px solid transparent;
  animation:rise var(--fast) var(--ease) both;animation-delay:calc(min(var(--i,0),16)*14ms);
@@ -826,7 +852,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .infopage .empty{color:var(--panel-ink-3);line-height:1.6}
 .infopage>.fx,.infopage>.info{animation:rise var(--fast) var(--ease) both}
 .info-sec{margin-top:16px;padding-top:13px;border-top:1px solid var(--glass-line)}
-.info-sec .lbl{font:10.5px var(--mono);color:var(--accent);letter-spacing:.06em;
+.info-sec .lbl{font:10.5px var(--mono);color:var(--accent-ink);letter-spacing:.06em;
  text-transform:uppercase;margin-bottom:8px}
 
 /* The term is smaller than its value, so only a shared baseline lines them up -
@@ -864,7 +890,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 #ostage td.faded{opacity:.14}
 #ostage td.found{outline:2px solid var(--accent-deep);outline-offset:1px;
  animation:foundpulse .5s var(--ease)}
-#ostage th.found{color:var(--accent);font-weight:600}
+#ostage th.found{color:var(--accent-ink);font-weight:600}
 @keyframes foundpulse{0%{outline-color:transparent}60%{outline-color:var(--panel-ink)}}
 
 :root[data-theme=dark] .find input, :root[data-theme=dark] .filterbtn, :root[data-theme=dark] .filtermenu, :root[data-theme=dark] .filtermenu select, :root[data-theme=dark] .filtermenu input[type=number]{background:var(--dark-2);border-color:var(--dark-3);color:var(--lt-ink-2)}
@@ -881,9 +907,9 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .sum-table tbody tr.clickable .name,
 .sum-table tbody tr.clickable .hopn{transition:color var(--fast) var(--ease)}
 .sum-table tbody tr.clickable:hover .name,
-.sum-table tbody tr.clickable:hover .hopn{color:var(--accent)}
+.sum-table tbody tr.clickable:hover .hopn{color:var(--accent-ink)}
 .sum-table tbody tr.clickable:hover .barcell::after{content:"search \2192";
- font:10px var(--mono);color:var(--accent);margin-left:8px;white-space:nowrap}
+ font:10px var(--mono);color:var(--accent-ink);margin-left:8px;white-space:nowrap}
 
 /* ====================================================== reduced motion
    Someone who has asked their system for less motion still gets every state
@@ -936,18 +962,17 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .goconv .arrow{margin:0 8px}
 .gograph{display:flex;align-items:center;justify-content:center;width:100%;
  gap:2px;font:600 12px var(--mono);letter-spacing:.03em;cursor:pointer;
- padding:11px 14px;border-radius:var(--r-m);background:var(--accent-deep);
- border:1px solid var(--accent-deep);color:#062033;
- box-shadow:0 1px 0 #0f172a1f,0 6px 18px -8px #38bdf8a6;
- transition:filter var(--fast) var(--ease),transform var(--fast) var(--ease),
+ padding:11px 14px;border-radius:var(--r-m);background:var(--action);
+ border:1px solid var(--action);color:var(--action-on);
+ box-shadow:var(--shadow-s);
+ transition:background var(--fast) var(--ease),transform var(--fast) var(--ease),
  box-shadow var(--fast) var(--ease)}
-.gograph:hover{filter:brightness(1.08);transform:translateY(-1px);
- box-shadow:0 2px 0 #0f172a1f,0 10px 24px -10px #38bdf8cc}
-.gograph:active{transform:translateY(0) scale(.985);
- box-shadow:0 1px 0 #0f172a1f,0 4px 12px -6px #38bdf88c}
-.gograph:focus-visible{outline:2px solid var(--panel-ink);outline-offset:3px}
+.gograph:hover{background:var(--action-hover);border-color:var(--action-hover);
+ transform:translateY(-1px);box-shadow:var(--shadow-m)}
+.gograph:active{transform:translateY(0) scale(.985);box-shadow:var(--shadow-s)}
+.gograph:focus-visible{outline:2px solid var(--accent-deep);outline-offset:3px}
 /* the shared arrow glyph is a mask, so it takes the button's own ink */
-.gograph .arrow{margin:0 8px;background-color:#062033}
+.gograph .arrow{margin:0 8px;background-color:var(--action-on)}
 @media(prefers-reduced-motion:reduce){.gograph,.gograph:hover,.gograph:active{
  transition:none;transform:none}}
 @media(prefers-reduced-motion:reduce){.legend .key,.seedlegend button,
@@ -1022,9 +1047,8 @@ tr.suggest{cursor:pointer}
 /* the error budget under each route */
 .budget{margin-top:5px;font-size:11.5px;color:var(--panel-ink-3)}
 .budget.agrees{opacity:.55}
-.budget.warn{color:var(--warn)}
-.budget.bad{color:#fca5a5}
-:root[data-theme=light] .budget.bad{color:var(--bad)}
+.budget.warn{color:var(--warn-ink)}
+.budget.bad{color:var(--bad-ink)}
 
 /* keyboard help */
 #keyhelp{position:fixed;inset:0;z-index:85;background:var(--veil);display:flex;
@@ -1042,8 +1066,7 @@ tr.suggest{cursor:pointer}
 .kh-card dd{margin:0;color:var(--panel-ink-2);font-size:13.5px}
 kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
  background:var(--glass-strong);border:1px solid var(--panel-line)}
-.kh-x{font:inherit;font-size:.85rem;cursor:pointer;padding:8px 18px;
- border-radius:var(--r-m);background:var(--accent-deep);border:none;color:#062033}
+.kh-x{font-size:14px;padding:7px 15px;line-height:1}
 
 /* ============================================================ narrow screens */
 @media(max-width:860px){
@@ -1167,9 +1190,9 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 .step-run{color:var(--panel-ink-3)}
 
 /* the precision budget */
-.sum-table td.ok{color:var(--ok)}
-.sum-table td.warn{color:var(--warn)}
-.sum-table td.bad{color:#fca5a5}
+.sum-table td.ok{color:var(--ok-ink)}
+.sum-table td.warn{color:var(--warn-ink)}
+.sum-table td.bad{color:var(--bad-ink)}
 :root[data-theme=light] .sum-table td.bad{color:var(--bad)}
 
 /* ====================================================== the detail panel */
@@ -1226,10 +1249,11 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 .cvwork-q{font-size:15px;color:var(--ink);flex:1;min-width:0}
 .cvgraph{display:inline-flex;align-items:center;gap:2px;flex:none;cursor:pointer;
  font:600 11px var(--mono);padding:7px 13px;border-radius:var(--r-pill);
- background:var(--accent-deep);border:1px solid var(--accent-deep);color:#062033;
- transition:filter var(--fast) var(--ease)}
-.cvgraph:hover{filter:brightness(1.08)}
-.cvgraph .arrow{margin:0 6px;background-color:#062033}
+ background:var(--action);border:1px solid var(--action);color:var(--action-on);
+ transition:background var(--fast) var(--ease)}
+.cvgraph:hover{background:var(--action-hover);border-color:var(--action-hover)}
+.cvgraph:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.cvgraph .arrow{margin:0 6px;background-color:var(--action-on)}
 .cvwork-note{font-size:12px;color:var(--ink-3);line-height:1.55;margin-bottom:14px}
 .cvwork-note code{font:11px var(--mono);background:var(--page-deep);padding:1px 5px;
  border-radius:var(--r-s)}
@@ -1254,7 +1278,6 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
  color:var(--ink-3);margin-bottom:7px}
 .cvstep-eq.answer{margin-top:5px;font-size:16px}
 
-:root[data-theme=dark] .cv-work{background:var(--dark-2)}
 :root[data-theme=dark] .cvstep{background:var(--dark);border-color:var(--dark-3)}
 :root[data-theme=dark] .cvstep-n{background:var(--lt-ink-3);color:var(--dark)}
 :root[data-theme=dark] .cvwork-note code{background:var(--dark-3)}
@@ -1320,10 +1343,40 @@ button:active:not(:disabled){transform:scale(.97)}
 /* The default cross-fade would show both themes at once through each other.
    The new page is uncovered by the travelling diagonal instead, so the old one
    just sits still underneath it. */
+/* ============================================================ back to where
+   Above the overlay and the summary, since a jump can land you inside either,
+   and clear of both their bars and the resizable panel. */
+.goback{position:fixed;left:26px;bottom:26px;z-index:70;
+ display:inline-flex;align-items:center;gap:9px;max-width:min(46ch,calc(100vw - 52px));
+ padding:9px 18px 9px 14px;border-radius:var(--r-pill);cursor:pointer;
+ border:1px solid var(--panel-line);background:var(--panel-deep);
+ color:var(--panel-ink);box-shadow:var(--shadow-m);font:13px var(--sans);
+ animation:rise var(--med) var(--ease) both;
+ transition:transform var(--fast) var(--ease),border-color var(--fast) var(--ease)}
+.goback[hidden]{display:none}
+.goback:hover{transform:translateY(-2px);border-color:var(--accent-deep)}
+.goback:active{transform:scale(.97)}
+.goback:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.goback .gb-arrow{font-size:16px;line-height:1;color:var(--accent-ink);flex:none}
+.goback .gb-lead{color:var(--panel-ink-3);font-size:11.5px;white-space:nowrap;flex:none}
+.goback .gb-what{font-family:var(--math);font-size:14.5px;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){
+ .goback{animation:none}
+ .goback:hover,.goback:active{transform:none}
+}
+@media print{.goback{display:none}}
+
 ::view-transition-old(root),
 ::view-transition-new(root){animation:none;mix-blend-mode:normal}
 ::view-transition-old(root){z-index:1}
-::view-transition-new(root){z-index:2}
+::view-transition-new(root){z-index:2;will-change:clip-path}
+
+/* Held for the length of the sweep. Without this, one theme toggle starts a
+   color transition on every card, row, tab and button on the page, all
+   competing with the wipe for the same frames. */
+:root.theming *,:root.theming *::before,:root.theming *::after{
+ transition:none!important}
 
 /* clear every filter without opening the menu */
 .fwipe{display:inline-flex;align-items:center;justify-content:center;
@@ -1335,5 +1388,5 @@ button:active:not(:disabled){transform:scale(.97)}
 .fwipe:hover:not(:disabled){color:var(--bad);border-color:var(--line)}
 .fwipe:disabled{opacity:.3;cursor:default}
 :root[data-theme=dark] .fwipe{color:var(--lt-ink-3)}
-:root[data-theme=dark] .fwipe:hover:not(:disabled){color:#fca5a5;
+:root[data-theme=dark] .fwipe:hover:not(:disabled){color:var(--bad-ink);
  border-color:var(--dark-3)}

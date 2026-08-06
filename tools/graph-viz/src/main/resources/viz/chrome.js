@@ -215,18 +215,22 @@
       label.textContent = root.dataset.theme === 'dark' ? 'Light' : 'Dark';
     }
 
-    function apply() {
+    function flip() {
       root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem('viz-theme', root.dataset.theme); } catch (e) { }
       paint();
-      restyleGraphs();
+    }
+
+    function save() {
+      try { localStorage.setItem('viz-theme', root.dataset.theme); } catch (e) { }
     }
 
     btn.addEventListener('click', function () {
       var still = window.matchMedia
                && matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!document.startViewTransition || still) {
-        apply();
+        flip();
+        save();
+        restyleGraphs();
         return;
       }
 
@@ -238,12 +242,22 @@
         ? ['100% 100%', 'calc(100% - ' + reach + ') 100%', '100% calc(100% - ' + reach + ')']
         : ['0px 0px', reach + ' 0px', '0px ' + reach];
 
-      document.startViewTransition(apply).ready.then(function () {
+      root.classList.add('theming');
+
+      var sweep = document.startViewTransition(flip);
+      sweep.ready.then(function () {
         root.animate({clipPath: ['polygon(' + [corner, corner, corner].join(',') + ')',
                                  'polygon(' + edge.join(',') + ')']},
-                     {duration: 620, easing: 'cubic-bezier(.22,.7,.28,1)',
+                     {duration: 560, easing: 'cubic-bezier(.22,.7,.28,1)',
                       pseudoElement: '::view-transition-new(root)'});
+        save();
+        restyleGraphs();
       });
+      sweep.finished.then(done, done);
+
+      function done() {
+        root.classList.remove('theming');
+      }
     });
     paint();
   })();

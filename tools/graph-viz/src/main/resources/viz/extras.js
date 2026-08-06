@@ -170,14 +170,17 @@
 
     mount.querySelectorAll('.suggest').forEach(function (row) {
       row.addEventListener('click', function () {
+        navLeave();
         showSummary(false);
-        openFind({mode: 'conv', from: row.dataset.from, to: row.dataset.to});
+        openFind({mode: 'conv', from: row.dataset.from, to: row.dataset.to,
+                  keepPlace: true});
       });
     });
     mount.querySelectorAll('.never').forEach(function (button) {
       button.addEventListener('click', function () {
+        navLeave();
         showSummary(false);
-        openFind({mode: 'unit', unit: button.dataset.unit});
+        openFind({mode: 'unit', unit: button.dataset.unit, keepPlace: true});
       });
     });
   }
@@ -311,7 +314,7 @@
       [['Esc'], 'close whatever is open']]],
     ['On a coverage matrix', [
       [['click'], 'a card to enlarge it'],
-      [['click', 'or', 'Tab'], 'land on a cell - the arrows continue from there'],
+      [['click'], 'a cell - the arrows continue from there'],
       [['↑', '↓', '←', '→'], 'move cell by cell; the detail follows'],
       [['Enter'], 'pin a cell so its detail stays while you look elsewhere'],
       [['Home', 'End'], 'jump to the start or end of a row'],

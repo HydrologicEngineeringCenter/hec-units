@@ -292,9 +292,15 @@
 
   // Actually open the selected card
   function open(card, preselect) {
+    if (seedApi) {
+      seedApi.destroy();
+      seedApi = null;
+    }
     lastCard = card;
     otitle.textContent = card.querySelector('h2').textContent;
     pinned = null;
+
+    if (ofindApi) { ofindApi.reset(); }
 
     var host = card.querySelector('.cy');
     if (host) {

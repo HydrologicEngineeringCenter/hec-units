@@ -42,6 +42,9 @@
               + 'Try a shorter query, or clear the filters.</div>';
 
   // search box
+  var allFinds = [];
+  var ofindApi = null;
+
   function wireFind(label, onInput) {
     var input = label.querySelector('input');
     var clear = label.querySelector('.clearfind');
@@ -63,10 +66,23 @@
         sync();
       }
     });
-    return {input: input, sync: sync};
+
+    function reset() {
+      if (!input.value) {
+        return;
+      }
+      input.value = '';
+      sync();
+    }
+
+    var api = {input: input, sync: sync, reset: reset};
+    allFinds.push(api);
+    return api;
   }
 
   // filter menu
+  var allMenus = [];
+
   function wireMenu(wrap, onChange) {
     var button = wrap.querySelector('.filterbtn');
     var menu = wrap.querySelector('.filtermenu');
@@ -97,13 +113,14 @@
     menu.addEventListener('change', onChange);
 
     function clearAll() {
+      var had = false;
       menu.querySelectorAll('input[type=checkbox]').forEach(function (box) {
-        box.checked = false;
+        if (box.checked) { box.checked = false; had = true; }
       });
       menu.querySelectorAll('select').forEach(function (select) {
-        select.selectedIndex = 0;
+        if (select.selectedIndex !== 0) { select.selectedIndex = 0; had = true; }
       });
-      onChange();
+      if (had) { onChange(); }
     }
 
     menu.querySelector('.fclear').addEventListener('click', clearAll);
@@ -114,15 +131,18 @@
       button.focus();
     });
 
-    return {
+    var api = {
       menu: menu,
       close: close,
+      clear: clearAll,
       count: function (active) {
         badge.textContent = active > 0 ? active : '';
         wrap.classList.toggle('on', active > 0);
         wipe.disabled = active === 0;
       }
     };
+    allMenus.push(api);
+    return api;
   }
 
   function checkedIn(root) {
@@ -218,8 +238,11 @@
   var wlist = document.getElementById('wlist');
   var winfo = document.getElementById('winfo');
   var wcount = document.getElementById('wcount');
+  var wpage = document.getElementById('wpage');
+  var wpageat = document.getElementById('wpageat');
   var wmenu = null;
   var MAX_RESULTS = 400;
+  var page = 0;
 
   var CONV_HINT = '<div class="empty"><b>Pick a conversion</b>'
                 + 'Everything the build knows about it appears here: what it computes, the '
@@ -386,9 +409,29 @@
 
   function tally(shown, total, noun) {
     if (wcount) {
-      wcount.textContent = shown + ' of ' + total + ' ' + noun
-        + (shown > MAX_RESULTS ? ' - showing ' + MAX_RESULTS : '');
+      wcount.textContent = shown + ' of ' + total + ' ' + noun;
     }
+  }
+
+  function pageSlice(list) {
+    var pages = Math.max(1, Math.ceil(list.length / MAX_RESULTS));
+    page = Math.max(0, Math.min(page, pages - 1));
+    return list.slice(page * MAX_RESULTS, (page + 1) * MAX_RESULTS);
+  }
+
+  function showPager(total) {
+    if (!wpage) {
+      return;
+    }
+    var pages = Math.max(1, Math.ceil(total / MAX_RESULTS));
+    wpage.hidden = pages < 2;
+    if (pages < 2) {
+      return;
+    }
+    wpageat.textContent = (page * MAX_RESULTS + 1) + '–'
+      + Math.min(total, (page + 1) * MAX_RESULTS) + ' of ' + total;
+    wpage.querySelector('[data-step="-1"]').disabled = page === 0;
+    wpage.querySelector('[data-step="1"]').disabled = page >= pages - 1;
   }
 
   function selectResult(el, show) {
@@ -414,7 +457,7 @@
       return rank(rows[i].f, qFrom) + rank(rows[i].t, qTo);
     }));
 
-    wlist.innerHTML = hits.slice(0, MAX_RESULTS).map(function (i, n) {
+    wlist.innerHTML = pageSlice(hits).map(function (i, n) {
       var row = rows[i];
       return '<div class="res" data-i="' + i + '" style="--i:' + n + '">'
            + '<span class="dot ' + row.s + '"></span>'
@@ -424,6 +467,7 @@
     }).join('') || NOTHING;
 
     tally(hits.length, rows.length, 'conversions');
+    showPager(hits.length);
     wlist.querySelectorAll('.res').forEach(function (el) {
       el.addEventListener('click', function () {
         selectResult(el, function () { showConversion(rows[+el.dataset.i]); });
@@ -440,7 +484,7 @@
       return rank(id, qUnit);
     }));
 
-    wlist.innerHTML = ids.slice(0, MAX_RESULTS).map(function (id, n) {
+    wlist.innerHTML = pageSlice(ids).map(function (id, n) {
       var unit = UNIT[id];
       return '<div class="res" data-u="' + escText(id) + '" style="--i:' + n + '">'
            + '<span class="dot ' + unitTone(unit) + '"></span>'
@@ -450,6 +494,7 @@
     }).join('') || NOTHING;
 
     tally(ids.length, Object.keys(UNIT).length, 'units');
+    showPager(ids.length);
     wlist.querySelectorAll('.res').forEach(function (el) {
       el.addEventListener('click', function () {
         selectResult(el, function () { showUnit(el.dataset.u); });
@@ -457,7 +502,7 @@
     });
   }
 
-  function draw() {
+  function redraw() {
     if (!wlist || !hasIndex) {
       return;
     }
@@ -467,6 +512,12 @@
     } else {
       drawConversions();
     }
+  }
+
+  // Any change to the question starts over at the first page
+  function draw() {
+    page = 0;
+    redraw();
   }
 
   // right panel for when you click on a result
@@ -499,8 +550,11 @@
   function openGraph(dimension, from, to) {
     var card = graphCardFor(dimension);
     if (!card) { return; }
+    navLeave();
+    navMoving = true;
     var tab = document.querySelector('.tab[data-pane="tab-seed"]');
     if (tab) { tab.click(); }
+    navMoving = false;
     open(card, {from: from, to: to});
   }
 
@@ -632,7 +686,10 @@
     if (!tab || !wlist || !hasIndex) {
       return;
     }
+    if (!opts.keepPlace) { navLeave(); }
+    navMoving = true;
     tab.click();
+    navMoving = false;
     setMode(opts.mode || 'conv');
     wmenu.menu.querySelectorAll('input[type=checkbox]').forEach(function (box) {
       box.checked = false;
@@ -654,6 +711,209 @@
     draw();
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
+
+  // Return buttons to go back to where you were before you jumped somewhere else
+
+  var navPlace = null;
+  var navMoving = false;
+  var navButton = null;
+
+  function navFindState() {
+    var chosen = wlist.querySelector('.res.on');
+    return {
+      mode: mode, from: qFrom, to: qTo, unit: qUnit,
+      tests: checkedIn(wmenu.menu),
+      dim: document.getElementById('wdim').value,
+      hopMode: document.getElementById('whopmode').value,
+      hopn: document.getElementById('whopn').value,
+      at: page,
+      pickUnit: chosen ? chosen.dataset.u : null,
+      pickRow: chosen ? chosen.dataset.i : null,
+      label: chosen ? chosen.querySelector('.pairs').textContent.trim() : ''
+    };
+  }
+
+  function navConvertState() {
+    var side = document.getElementById('cvwork');
+    var unit = document.getElementById('cvunit');
+    return {
+      unit: unit ? unit.value : '',
+      value: document.getElementById('cvvalue').value,
+      showing: side ? side.dataset.showing || null : null
+    };
+  }
+
+  function navHere() {
+    var tab = document.querySelector('.tab.active');
+    if (!tab) {
+      return null;
+    }
+    var place = {pane: tab.dataset.pane, tabName: tab.textContent.trim(),
+                 card: null, summary: false};
+    if (place.pane === 'tab-find' && wlist && wmenu && hasIndex) {
+      place.find = navFindState();
+    } else if (place.pane === 'tab-convert' && document.getElementById('cvvalue')) {
+      place.convert = navConvertState();
+    }
+    if (typeof overlay !== 'undefined' && overlay
+        && overlay.classList.contains('open') && lastCard) {
+      place.card = lastCard;
+    }
+    if (summary && summary.classList.contains('open')) {
+      place.summary = true;
+    }
+    return place;
+  }
+
+  function navLabel(place) {
+    if (place.find) {
+      if (place.find.label) {
+        return place.find.label;
+      }
+      if (place.find.mode === 'unit') {
+        return place.find.unit || 'units';
+      }
+      var a = place.find.from;
+      var b = place.find.to;
+      return a || b ? raised(a || '?') + ' → ' + raised(b || '?') : 'conversions';
+    }
+    if (place.convert) {
+      return place.convert.showing
+        ? raised(place.convert.unit) + ' → ' + raised(place.convert.showing)
+        : raised(place.convert.unit) || 'the converter';
+    }
+    if (place.summary) {
+      return 'the test summary';
+    }
+    if (place.card) {
+      return place.card.querySelector('h2').textContent.trim();
+    }
+    return place.tabName;
+  }
+
+  function navLead(place) {
+    if (place.summary) { return 'Back to'; }
+    if (place.card) { return 'Back to the graph'; }
+    if (place.convert) { return 'Back to the converter'; }
+    if (place.find) { return 'Back to the search'; }
+    return 'Back to';
+  }
+
+  function navLeave() {
+    var place = navHere();
+    if (!place) {
+      return;
+    }
+    navPlace = place;
+    navPaint();
+  }
+
+  function navClear() {
+    navPlace = null;
+    if (navButton) { navButton.hidden = true; }
+  }
+
+  function navPaint() {
+    if (!navButton) {
+      navButton = document.createElement('button');
+      navButton.type = 'button';
+      navButton.id = 'goback';
+      navButton.className = 'goback';
+      navButton.addEventListener('click', navBack);
+      document.body.appendChild(navButton);
+    }
+    navButton.innerHTML = '<span class="gb-arrow" aria-hidden="true">&larr;</span>'
+      + '<span class="gb-lead">' + escText(navLead(navPlace)) + '</span>'
+      + '<span class="gb-what">' + escText(navLabel(navPlace)) + '</span>';
+    navButton.hidden = false;
+  }
+
+  function navRestoreFind(state) {
+    setMode(state.mode);
+    qFrom = state.from;
+    qTo = state.to;
+    qUnit = state.unit;
+    setFind('wfrom', qFrom);
+    setFind('wto', qTo);
+    setFind('wunit', qUnit);
+    wmenu.menu.querySelectorAll('input[type=checkbox]').forEach(function (box) {
+      box.checked = state.tests.indexOf(box.dataset.test) >= 0;
+    });
+    document.getElementById('wdim').value = state.dim;
+    document.getElementById('whopmode').value = state.hopMode;
+    document.getElementById('whopn').value = state.hopn;
+    page = state.at;
+    redraw();
+
+    var chosen = state.pickUnit
+      ? wlist.querySelector('.res[data-u="' + cssValue(state.pickUnit) + '"]')
+      : state.pickRow
+        ? wlist.querySelector('.res[data-i="' + cssValue(state.pickRow) + '"]')
+        : null;
+    if (chosen) {
+      chosen.click();
+      chosen.scrollIntoView({block: 'center'});
+    }
+  }
+
+  function navBack() {
+    var place = navPlace;
+    if (!place) {
+      return;
+    }
+    navClear();
+
+    if (typeof overlay !== 'undefined' && overlay
+        && overlay.classList.contains('open')) {
+      close();
+    }
+    if (summary && summary.classList.contains('open')) {
+      showSummary(false);
+    }
+
+    navMoving = true;
+    var tab = document.querySelector('.tab[data-pane="' + cssValue(place.pane) + '"]');
+    if (tab) { tab.click(); }
+    navMoving = false;
+
+    if (place.find) {
+      navRestoreFind(place.find);
+    } else if (place.convert && typeof openConverter === 'function') {
+      openConverter(place.convert.unit, null, true);
+      document.getElementById('cvvalue').value = place.convert.value;
+      exRunConverter();
+      if (place.convert.showing) { exShowWork(place.convert.showing); }
+    }
+
+    if (place.card) {
+      open(place.card);
+    } else if (place.summary) {
+      showSummary(true);
+    } else {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+  }
+
+  function resetSearches() {
+    allFinds.forEach(function (find) { find.reset(); });
+    allMenus.forEach(function (menu) { menu.clear(); });
+    if (winfo && hasIndex) {
+      winfo.innerHTML = mode === 'unit' ? UNIT_HINT : CONV_HINT;
+    }
+  }
+
+  var lastPane = null;
+
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      if (!navMoving) { navClear(); }
+      if (lastPane === tab.dataset.pane) {
+        return;
+      }
+      lastPane = tab.dataset.pane;
+      resetSearches();
+    });
+  });
 
   function fillCategories() {
     var dims = [];
@@ -706,6 +966,18 @@
       });
     });
 
+    if (wpage) {
+      wpage.addEventListener('click', function (event) {
+        var button = event.target.closest('.pgo');
+        if (!button || button.disabled) {
+          return;
+        }
+        page += +button.dataset.step;
+        redraw();
+        wlist.scrollTop = 0;
+      });
+    }
+
     draw();
   }
 
@@ -717,13 +989,15 @@
       var inOverlay = !!key.closest('#overlay');
       var dim = inOverlay && otitle ? otitle.textContent.trim() : '';
 
+      // Written down before the close, or there is nothing left to describe.
+      navLeave();
       if (overlay && overlay.classList.contains('open')) { close(); }
       if (key.dataset.system) {
-        openFind({mode: 'unit', system: key.dataset.system, dim: dim});
+        openFind({mode: 'unit', system: key.dataset.system, dim: dim, keepPlace: true});
       } else if (key.dataset.kind) {
-        openFind({kind: key.dataset.kind, dim: dim});
+        openFind({kind: key.dataset.kind, dim: dim, keepPlace: true});
       } else {
-        openFind({status: key.dataset.status, dim: dim});
+        openFind({status: key.dataset.status, dim: dim, keepPlace: true});
       }
     });
   });
@@ -739,20 +1013,21 @@
       row.classList.add('clickable');
     }
     row.addEventListener('click', function () {
+      navLeave();
       showSummary(false);
       if (name) {
-        openFind({dim: name.textContent});
+        openFind({dim: name.textContent, keepPlace: true});
       } else if (hop) {
-        openFind({hops: parseInt(hop.textContent, 10)});
+        openFind({hops: parseInt(hop.textContent, 10), keepPlace: true});
       } else {
-        openFind({status: state});
+        openFind({status: state, keepPlace: true});
       }
     });
   });
 
   var ofind = document.getElementById('ofind');
   if (ofind) {
-    wireFind(ofind, function (value) {
+    ofindApi = wireFind(ofind, function (value) {
       var list = terms(value);
       stage.querySelectorAll('td[data-from]').forEach(function (cell) {
         var hit = list.length

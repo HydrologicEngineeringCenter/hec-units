@@ -63,7 +63,16 @@ public final class SearchView {
         <div class="findbar" data-mode="unit" hidden>{{unit}}</div>
         <div class="findtools">{{filter}}<span class="count" id="wcount"></span></div>
         <div class="wikibody">
+        <div class="resultcol">
         <div id="wlist" class="results"></div>
+        <nav class="pager" id="wpage" hidden aria-label="Result pages">
+        <button type="button" class="pgo" data-step="-1" aria-label="Previous results">
+        &lsaquo;</button>
+        <span class="pgat" id="wpageat" role="status"></span>
+        <button type="button" class="pgo" data-step="1" aria-label="Next results">
+        &rsaquo;</button>
+        </nav>
+        </div>
         <aside id="winfo" class="infopage"></aside>
         </div>
         </div>

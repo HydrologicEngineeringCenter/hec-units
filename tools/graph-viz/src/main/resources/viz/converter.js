@@ -19,18 +19,6 @@
     return out.sort(function (a, b) { return a.hops - b.hops || a.to.localeCompare(b.to); });
   }
 
-  // makes numbers readable
-  function exNumber(value) {
-    if (!isFinite(value)) {
-      return String(value);
-    }
-    if (value === Math.round(value) && Math.abs(value) < 1e15) {
-      return String(value);
-    }
-    return Number(value.toPrecision(12)).toString();
-  }
-
-
   // Look up one step in a conversion
   function exHop(from, to) {
     if (typeof SEED === 'undefined') {
@@ -59,13 +47,13 @@
   }
 
   function exLine(value, hop) {
-    var out = escText(exNumber(value));
+    var out = escText(num(value));
     if (hop.m !== 1) {
-      out += ' <span class="op">×</span> ' + escText(exNumber(hop.m));
+      out += ' <span class="op">×</span> ' + escText(num(hop.m));
     }
     if (hop.b !== 0) {
       out += ' <span class="op">' + (hop.b > 0 ? '+' : '−') + '</span> '
-           + escText(exNumber(Math.abs(hop.b)));
+           + escText(num(Math.abs(hop.b)));
     }
     return out;
   }
@@ -146,7 +134,7 @@
 
     var html = '<div class="cvwork">'
       + '<div class="cvwork-top">'
-      + '<div class="cvwork-q">Convert ' + escText(exNumber(value)) + ' ' + exU(from)
+      + '<div class="cvwork-q">Convert ' + escText(num(value)) + ' ' + exU(from)
       + ' to ' + exU(to) + '</div>'
       + '<button type="button" class="cvgraph" data-from="' + escText(from)
       + '" data-to="' + escText(to) + '">Graph<span class="arrow"></span>'
@@ -164,21 +152,21 @@
         + exU(step.from) + '<span class="arrow"></span>' + exU(step.to) + '</div>'
         + '<div class="cvstep-src">stored as ' + exU(hop.storedFrom)
         + '<span class="arrow"></span>' + exU(hop.storedTo) + ' <span class="op">×</span> '
-        + escText(exNumber(hop.storedM))
+        + escText(num(hop.storedM))
         + (hop.storedB !== 0
            ? ' <span class="op">' + (hop.storedB > 0 ? '+' : '−') + '</span> '
-             + escText(exNumber(Math.abs(hop.storedB))) : '')
+             + escText(num(Math.abs(hop.storedB))) : '')
         + (hop.reversed
            ? ', so this direction uses the inverse: <span class="op">×</span> '
-             + escText(exNumber(hop.m))
+             + escText(num(hop.m))
              + (hop.b !== 0 ? ' <span class="op">' + (hop.b > 0 ? '+' : '−') + '</span> '
-                + escText(exNumber(Math.abs(hop.b))) : '')
+                + escText(num(Math.abs(hop.b))) : '')
            : '')
         + '</div>'
         + exWhere(hop)
-        + '<div class="cvstep-eq">' + escText(exNumber(step.before)) + ' ' + exU(step.from)
+        + '<div class="cvstep-eq">' + escText(num(step.before)) + ' ' + exU(step.from)
         + '<span class="eq">=</span>' + exLine(step.before, hop)
-        + '<span class="eq">=</span><b>' + escText(exNumber(step.after)) + '</b> '
+        + '<span class="eq">=</span><b>' + escText(num(step.after)) + '</b> '
         + exU(step.to) + '</div>'
         + '</li>';
     });
@@ -186,12 +174,12 @@
     html += '</ol>'
       + '<div class="cvwork-sum"><div class="cvwork-lbl">the whole route, in one step</div>'
       + '<div class="cvstep-eq">' + exU(to) + '<span class="eq">=</span>' + exU(from)
-      + '<span class="op">×</span>' + escText(exNumber(route.m))
+      + '<span class="op">×</span>' + escText(num(route.m))
       + (route.b !== 0 ? '<span class="op">' + (route.b > 0 ? '+' : '−') + '</span>'
-         + escText(exNumber(Math.abs(route.b))) : '')
+         + escText(num(Math.abs(route.b))) : '')
       + '</div>'
-      + '<div class="cvstep-eq answer">' + escText(exNumber(value)) + ' ' + exU(from)
-      + '<span class="eq">=</span><b>' + escText(exNumber(running)) + '</b> ' + exU(to)
+      + '<div class="cvstep-eq answer">' + escText(num(value)) + ' ' + exU(from)
+      + '<span class="eq">=</span><b>' + escText(num(running)) + '</b> ' + exU(to)
       + '</div></div>'
       + '<div class="cv-units"><div class="cvwork-lbl">the two units</div>'
       + exUnitCard(from) + exUnitCard(to) + '</div>'
@@ -280,12 +268,12 @@
           return '<div class="cv-item"><button type="button" class="cv-row"'
             + ' style="--i:' + i + '" data-to="' + escText(r.to)
             + '" aria-expanded="false" title="Show how this was worked out">'
-            + '<span class="cv-val">' + escText(exNumber(r.value)) + '</span>'
+            + '<span class="cv-val">' + escText(num(r.value)) + '</span>'
             + '<span class="u">' + sup(escText(r.to)) + '</span>'
             + '<span class="cv-hops">' + r.hops + (r.hops === 1 ? ' hop' : ' hops')
             + '</span><span class="cv-more" aria-hidden="true">show the work</span>'
             + '</button>'
-            + '<button type="button" class="cv-copy" data-copy="' + escText(exNumber(r.value))
+            + '<button type="button" class="cv-copy" data-copy="' + escText(num(r.value))
             + '" title="Copy this value">⧉</button></div>';
         }).join('');
 
@@ -360,14 +348,17 @@
     exRunConverter();
   }
 
-  function openConverter(from, to) {
+  function openConverter(from, to, keepPlace) {
     var tab = document.querySelector('.tab[data-pane="tab-convert"]');
     var unit = document.getElementById('cvunit');
     var value = document.getElementById('cvvalue');
     if (!tab || !unit || !exUnits[from]) {
       return;
     }
+    if (!keepPlace) { navLeave(); }
+    navMoving = true;
     tab.click();
+    navMoving = false;
     unit.value = from;
     if (!parseFloat(value.value)) { value.value = '1'; }
     exComboClose();

@@ -19,13 +19,13 @@
         'corner-radius': 23,
         'width': pillWidth,
         'height': 46,
-        'background-color': '#e5e7eb',
-        'border-color': '#6b7280',
+        'background-color': '#cbd5e1',
+        'border-color': '#64748b',
         'border-width': enlarged ? 2 : 1.5,
         'label': 'data(label)',
         'color': '#374151',
         'font-family': mono,
-        'font-size': enlarged ? 17 : 14,
+        'font-size': enlarged ? 20 : 15,
         'font-weight': 'bold',
         'text-valign': 'center',
         'text-halign': 'center',
@@ -34,9 +34,9 @@
         'transition-timing-function': 'ease-out'
       }},
       {selector: 'node.t-si', style: {
-        'background-color': '#dbeafe', 'border-color': '#2563eb', 'color': '#1e3a5f'}},
+        'background-color': '#93c5fd', 'border-color': '#1d4ed8', 'color': '#16304f'}},
       {selector: 'node.t-english', style: {
-        'background-color': '#fee2e2', 'border-color': '#dc2626', 'color': '#5f1e1e'}},
+        'background-color': '#fca5a5', 'border-color': '#b91c1c', 'color': '#511919'}},
 
       {selector: 'edge', style: {
         'curve-style': 'straight',
