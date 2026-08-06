@@ -194,6 +194,10 @@ public final class Stats {
         return pairs() == 0 ? 0 : count * 100.0 / pairs();
     }
 
+    public double percentOfReachable(int count) {
+        return reachable() == 0 ? 0 : count * 100.0 / reachable();
+    }
+
     public static String percent(double value) {
         return String.format("%.2f%%", value);
     }

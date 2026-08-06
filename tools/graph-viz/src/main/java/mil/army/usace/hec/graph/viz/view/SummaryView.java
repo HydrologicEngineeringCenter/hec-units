@@ -172,8 +172,7 @@ public final class SummaryView {
         record Slice(String cls, int count) { }
         var slices = List.of(new Slice("passed", stats.passed()),
                              new Slice("failed", stats.failed()),
-                             new Slice("untested", stats.untested()),
-                             new Slice("missing", stats.missing()));
+                             new Slice("untested", stats.untested()));
 
         var arcs = new StringBuilder();
         double offset = 25;                     // rotates the start to twelve o'clock
@@ -181,7 +180,7 @@ public final class SummaryView {
 
 
         for (Slice slice : slices) {
-            double share = stats.percentOfPairs(slice.count());
+            double share = stats.percentOfReachable(slice.count());
             if (share <= 0) {
                 continue;
             }
