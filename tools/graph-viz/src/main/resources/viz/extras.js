@@ -384,7 +384,7 @@
   }
 
   document.addEventListener('keydown', function (event) {
-    if (event.metaKey || event.ctrlKey || event.altKey) {
+    if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) {
       return;
     }
     if (event.key === 'Escape') {

@@ -199,13 +199,19 @@ public final class PageRenderer {
           <div class="cv">
             <div class="cv-in">
               <label class="ed-lbl" for="cvvalue">value</label>
-              <input id="cvvalue" type="text" inputmode="decimal" value="1"
-                     autocomplete="off" aria-label="Value to convert">
+              <div class="cv-field">
+                <input id="cvvalue" type="text" inputmode="decimal" value="1"
+                       autocomplete="off" aria-label="Value to convert">
+                <button type="button" class="cvclear" data-clears="cvvalue"
+                        tabindex="-1" aria-label="Clear the value">&times;</button>
+              </div>
               <label class="ed-lbl" for="cvunit">unit</label>
               <div class="cv-combo">
                 <input id="cvunit" type="text" placeholder="ft" autocomplete="off"
                        role="combobox" aria-expanded="false" aria-controls="cvlist"
                        aria-label="Unit to convert from">
+                <button type="button" class="cvclear" data-clears="cvunit"
+                        tabindex="-1" aria-label="Clear the unit">&times;</button>
                 <button id="cvpick" type="button" tabindex="-1"
                         aria-label="Show every unit">
                   <svg viewBox="0 0 24 24" aria-hidden="true">

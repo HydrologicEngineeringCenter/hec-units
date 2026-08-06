@@ -586,8 +586,8 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .badge.dup{background:var(--note-wash);color:var(--note-ink)}
 
 /* legend swatches for the seed tab */
-.sw.t-si{background:#93c5fd;border-color:#1d4ed8}
-.sw.t-english{background:#fca5a5;border-color:#b91c1c}
+.sw.t-si{background:#a9d0fd;border-color:#2563eb}
+.sw.t-english{background:#fdb9b9;border-color:#dc2626}
 .sw.t-null{background:#cbd5e1;border-color:#64748b}
 .ln{display:inline-block;width:26px;border-top:2px solid var(--ink-3);vertical-align:middle}
 .ln.dash{border-top-style:dashed}
@@ -998,7 +998,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .cv-in input{font:15px var(--sans);padding:10px 13px;border-radius:var(--r-m);
  background:var(--card);color:var(--ink);border:1px solid var(--line);outline:none}
 .cv-in input:focus{border-color:var(--accent-deep)}
-#cvvalue{width:150px}
+#cvvalue{width:150px;padding-right:32px}
 #cvunit{width:130px;font-family:var(--mono)}
 .cv-body{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);
  gap:24px;align-items:start}
@@ -1085,7 +1085,7 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
   #overlay .obody,#overlay #ostage{min-height:0}
   #overlay.seedmode #ostage{min-height:46vh}
   .cv-in{flex-direction:column;align-items:stretch}
-  #cvvalue,#cvunit{width:100%}
+  #cvvalue,#cvunit,.cv-field{width:100%}
   .cv-val{min-width:0}
   .sum-top{flex-direction:column;align-items:flex-start}
 }
@@ -1137,7 +1137,17 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 
 /* ================================================== converter unit picker */
 .cv-combo{position:relative;display:inline-flex;align-items:center}
-.cv-combo #cvunit{padding-right:34px}
+.cv-field{position:relative;display:inline-flex;align-items:center}
+.cvclear{position:absolute;width:22px;height:22px;border:none;padding:0;
+ border-radius:50%;background:none;color:var(--ink-3);cursor:pointer;font-size:17px;
+ line-height:1;opacity:0;pointer-events:none;
+ transition:opacity var(--fast) var(--ease)}
+.cv-field .cvclear{right:7px}
+.cv-combo .cvclear{right:32px}
+.cv-field.filled .cvclear,.cv-combo.filled .cvclear{opacity:1;pointer-events:auto}
+.cvclear:hover{background:var(--line);color:var(--ink)}
+:root[data-theme=dark] .cvclear:hover{background:var(--dark-3);color:var(--lt-ink)}
+.cv-combo #cvunit{padding-right:60px}
 #cvpick{position:absolute;right:4px;top:50%;transform:translateY(-50%);
  display:flex;align-items:center;justify-content:center;width:26px;height:26px;
  background:none;border:none;cursor:pointer;color:var(--ink-3);border-radius:var(--r-s)}

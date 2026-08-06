@@ -34,9 +34,9 @@
         'transition-timing-function': 'ease-out'
       }},
       {selector: 'node.t-si', style: {
-        'background-color': '#93c5fd', 'border-color': '#1d4ed8', 'color': '#16304f'}},
+        'background-color': '#a9d0fd', 'border-color': '#2563eb', 'color': '#16304f'}},
       {selector: 'node.t-english', style: {
-        'background-color': '#fca5a5', 'border-color': '#b91c1c', 'color': '#511919'}},
+        'background-color': '#fdb9b9', 'border-color': '#dc2626', 'color': '#511919'}},
 
       {selector: 'edge', style: {
         'curve-style': 'straight',

@@ -236,6 +236,29 @@
     side.scrollTop = 0;
   }
 
+  function exFilled() {
+    var input = document.getElementById('cvvalue');
+    var unit = document.getElementById('cvunit');
+    if (input) {
+      input.closest('.cv-field').classList.toggle('filled', input.value.length > 0);
+    }
+    if (unit) {
+      unit.closest('.cv-combo').classList.toggle('filled', unit.value.length > 0);
+    }
+  }
+
+  function exResetConverter() {
+    var input = document.getElementById('cvvalue');
+    var unit = document.getElementById('cvunit');
+    if (!input || !unit || (unit.value === '' && input.value === '1')) {
+      return;
+    }
+    input.value = '1';
+    unit.value = '';
+    exComboClose();
+    exRunConverter();
+  }
+
   function exRunConverter() {
     var input = document.getElementById('cvvalue');
     var unit = document.getElementById('cvunit');
@@ -243,6 +266,7 @@
     if (!input || !list) {
       return;
     }
+    exFilled();
     var from = unit.value.trim();
     var value = parseFloat(input.value);
 
@@ -376,6 +400,19 @@
     if (!input || !list) {
       return;
     }
+
+    document.querySelectorAll('.cvclear').forEach(function (button) {
+      button.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+      });
+      button.addEventListener('click', function () {
+        var field = document.getElementById(button.dataset.clears);
+        field.value = '';
+        exComboClose();
+        exRunConverter();
+        field.focus();
+      });
+    });
 
     pick.addEventListener('mousedown', function (event) {
       event.preventDefault();                 // keep the caret in the field

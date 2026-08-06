@@ -897,6 +897,9 @@
   function resetSearches() {
     allFinds.forEach(function (find) { find.reset(); });
     allMenus.forEach(function (menu) { menu.clear(); });
+    if (typeof exResetConverter === 'function') {
+      exResetConverter();
+    }
     if (winfo && hasIndex) {
       winfo.innerHTML = mode === 'unit' ? UNIT_HINT : CONV_HINT;
     }
