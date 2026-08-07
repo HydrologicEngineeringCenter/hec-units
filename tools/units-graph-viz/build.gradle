@@ -42,5 +42,5 @@ tasks.register('vizServe', JavaExec) {
     dependsOn 'visualize'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'mil.army.usace.hec.units.viz.VizServer'
-    args = [outputDir.get().asFile.absolutePath, '8080']
+    args = [outputDir.get().asFile.absolutePath]
 }

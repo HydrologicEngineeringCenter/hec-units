@@ -20,7 +20,7 @@ public final class VizServer {
     public static void main(String[] args) throws IOException {
         Path root = Path.of(args.length > 0 ? args[0] : "build/reports/viz")
                         .toAbsolutePath().normalize();
-        int port = args.length > 1 ? Integer.parseInt(args[1]) : 8080;
+        int port = args.length > 1 ? Integer.parseInt(args[1]) : 0;
 
         if (!Files.isDirectory(root)) {
             System.err.println("Nothing generated at " + root
@@ -34,7 +34,7 @@ public final class VizServer {
 
         System.out.println("Serving " + root);
         System.out.println();
-        System.out.println("    http://localhost:" + port + "/");
+        System.out.println("    http://localhost:" + server.getAddress().getPort() + "/");
         System.out.println();
         System.out.println("Ctrl+C to stop.");
     }
