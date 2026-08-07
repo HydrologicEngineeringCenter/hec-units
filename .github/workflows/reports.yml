@@ -8,9 +8,31 @@ jobs:
   report:
     permissions:
       pull-requests: write
+      # `workflow_run`-triggered runs do not auto-attach a status to the PR, so we
+      # create our own check on the head SHA below; this needs `checks: write`.
+      contents: read
+      checks: write
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
+      - name: Create in-progress check on PR head
+        if: ${{ !env.ACT }}
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          check_id=$(gh api -X POST "repos/${REPO}/check-runs" \
+            -f name="SonarCloud Workflow" \
+            -f head_sha="${HEAD_SHA}" \
+            -f status="in_progress" \
+            -f details_url="${RUN_URL}" \
+            -f "output[title]=Conversion Report" \
+            -f "output[summary]=Generating Unit Conversion Report." \
+            --jq .id)
+          echo "id=${check_id}" >> "${GITHUB_OUTPUT}"
       - name: checkout
         uses: actions/checkout@v5.0.0
         with:
@@ -18,6 +40,7 @@ jobs:
       - name: Retrieve data
         uses: actions/download-artifact@v4
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
           name: "badges_${{ github.event.workflow_run.id }}_unit_conversions"
