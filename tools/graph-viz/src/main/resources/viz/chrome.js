@@ -1,16 +1,135 @@
 // Handler for other .js files
+
+// Controls for right sidebar in visualizer
   var tabs = document.querySelectorAll('.tab');
+  var tabink = document.querySelector('.tabink');
+
+  function moveInk() {
+    var active = document.querySelector('.tab.active');
+    if (!active || !tabink) {
+      return;
+    }
+    tabink.style.width = Math.max(0, active.offsetWidth - 28) + 'px';
+    tabink.style.transform = 'translateX(' + (active.offsetLeft + 14) + 'px)';
+  }
+
   tabs.forEach(function (tab) {
     tab.addEventListener('click', function () {
       tabs.forEach(function (t) { t.classList.toggle('active', t === tab); });
       document.querySelectorAll('.tabpane').forEach(function (pane) {
         pane.classList.toggle('active', pane.id === tab.dataset.pane);
       });
+      moveInk();
     });
   });
 
+  // Placed without a transition on the first paint, so it does not fly in from
+  // the left corner when the page opens.
+  if (tabink) {
+    tabink.style.transition = 'none';
+    moveInk();
+    requestAnimationFrame(function () { tabink.style.transition = ''; });
+    window.addEventListener('resize', moveInk);
+  }
+
+  // Summary panel
   var summary = document.getElementById('summary');
   var openSummary = document.getElementById('sumopen');
+
+  function countUp(el) {
+    var text = el.dataset.value || el.textContent;
+    el.dataset.value = text;
+    var parts = text.match(/^([^0-9.-]*)([0-9]*\.?[0-9]+)(.*)$/);
+    if (!parts) {
+      return;
+    }
+    var target = parseFloat(parts[2]);
+    var places = (parts[2].split('.')[1] || '').length;
+    var began = null;
+
+    requestAnimationFrame(function frame(now) {
+      began = began === null ? now : began;
+      var t = Math.min(1, (now - began) / 700);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = parts[1] + (target * eased).toFixed(places) + parts[3];
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      }
+    });
+  }
+
+  var donutbtn = document.querySelector('.donutbtn');
+  if (donutbtn) {
+    donutbtn.addEventListener('click', function () {
+      var top = donutbtn.closest('.sum-top');
+      var open = top.classList.toggle('open');
+      donutbtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      donutbtn.title = open ? 'Click to shrink' : 'Click for a closer look';
+    });
+  }
+
+  var folds = [];
+
+  document.querySelectorAll('.foldwrap').forEach(function (wrap) {
+    var fold = {wrap: wrap,
+                table: wrap.querySelector('table'),
+                button: wrap.nextElementSibling,
+                visible: parseInt(wrap.dataset.visible, 10) || 8,
+                open: false};
+    if (!fold.table || !fold.button) {
+      return;
+    }
+    folds.push(fold);
+
+    fold.button.addEventListener('click', function () {
+      var shut = clipHeight(fold);
+      if (shut === null) {
+        return;
+      }
+      var full = fold.table.scrollHeight;
+      fold.open = !fold.open;
+
+      // Both directions start from an explicit height, or there is nothing
+      // for the transition to move away from.
+      wrap.style.maxHeight = (fold.open ? shut : full) + 'px';
+      void wrap.offsetHeight;
+      wrap.style.maxHeight = (fold.open ? full : shut) + 'px';
+
+      fold.button.textContent = fold.open ? fold.button.dataset.less
+                                          : fold.button.dataset.more;
+      fold.button.setAttribute('aria-expanded', fold.open ? 'true' : 'false');
+    });
+
+    // Once open, let it size itself again so sorting or a resize cannot clip it.
+    wrap.addEventListener('transitionend', function (event) {
+      if (event.propertyName === 'max-height' && fold.open) {
+        wrap.style.maxHeight = 'none';
+      }
+    });
+  });
+
+  function clipHeight(fold) {
+    var rows = fold.table.tBodies[0].rows;
+    if (rows.length <= fold.visible) {
+      return null;
+    }
+    return rows[fold.visible].getBoundingClientRect().top
+         - fold.wrap.getBoundingClientRect().top;
+  }
+
+  function resetFolds() {
+    folds.forEach(function (fold) {
+      var shut = clipHeight(fold);
+      if (shut === null) {
+        fold.button.hidden = true;
+        return;
+      }
+      fold.open = false;
+      fold.wrap.style.maxHeight = shut + 'px';
+      fold.button.textContent = fold.button.dataset.more;
+      fold.button.setAttribute('aria-expanded', 'false');
+    });
+  }
 
   function showSummary(show) {
     if (!summary) {
@@ -18,8 +137,15 @@
     }
     if (show) {
       raise(summary);
+      summary.querySelectorAll('.fig-value').forEach(countUp);
+      requestAnimationFrame(resetFolds);
     } else {
       lower(summary);
+      var top = summary.querySelector('.sum-top.open');
+      if (top) {
+        top.classList.remove('open');
+        donutbtn.setAttribute('aria-expanded', 'false');
+      }
     }
   }
 
@@ -77,3 +203,70 @@
     }
     fit();
   });
+
+  // Theme toggle
+  (function () {
+    var btn = document.getElementById('themetoggle');
+    if (!btn) { return; }
+    var root = document.documentElement;
+    var label = btn.querySelector('.tlabel');
+
+    function paint() {
+      label.textContent = root.dataset.theme === 'dark' ? 'Light' : 'Dark';
+    }
+
+    function flip() {
+      root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      paint();
+    }
+
+    function save() {
+      try { localStorage.setItem('viz-theme', root.dataset.theme); } catch (e) { }
+    }
+
+    var sweeping = false;
+
+    function settle() {
+      root.classList.remove('theming');
+      setTimeout(function () { sweeping = false; }, 100);
+    }
+
+    btn.addEventListener('click', function () {
+      if (sweeping) {
+        return;
+      }
+      var still = window.matchMedia
+               && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!document.startViewTransition || still) {
+        sweeping = true;
+        flip();
+        save();
+        restyleGraphs();
+        settle();
+        return;
+      }
+
+      var goingDark = root.dataset.theme !== 'dark';
+      // Long enough that the diagonal has left the far corner behind.
+      var reach = (innerWidth + innerHeight) + 'px';
+      var corner = goingDark ? '100% 100%' : '0px 0px';
+      var edge = goingDark
+        ? ['100% 100%', 'calc(100% - ' + reach + ') 100%', '100% calc(100% - ' + reach + ')']
+        : ['0px 0px', reach + ' 0px', '0px ' + reach];
+
+      sweeping = true;
+      root.classList.add('theming');
+
+      var sweep = document.startViewTransition(flip);
+      sweep.ready.then(function () {
+        root.animate({clipPath: ['polygon(' + [corner, corner, corner].join(',') + ')',
+                                 'polygon(' + edge.join(',') + ')']},
+                     {duration: 560, easing: 'cubic-bezier(.22,.7,.28,1)',
+                      pseudoElement: '::view-transition-new(root)'});
+        save();
+        restyleGraphs();
+      });
+      sweep.finished.then(settle, settle);
+    });
+    paint();
+  })();

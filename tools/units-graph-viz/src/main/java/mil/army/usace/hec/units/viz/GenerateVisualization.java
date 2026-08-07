@@ -38,11 +38,12 @@ public final class GenerateVisualization {
         var graph = GeneratedGraphSource.load(loader, report, testCsv);
         var seedGraph = SeedGraphSource.load(loader);
         String html = PageRenderer.render(
-            "Unit conversions",
+            "HEC-Units Visualizer",
             new Stats(graph),
             (covered ? "" : missingReportNotice()) + MatrixView.render(graph),
             NodeLinkView.render(seedGraph),
-            SeedPaths.script(loader) + CytoscapeData.script(seedGraph));
+            SeedPaths.script(loader) + SeedPaths.formulas() + CytoscapeData.script(seedGraph)
+                + SearchIndex.script(graph, seedGraph, loader.getUnits()));
 
         Files.createDirectories(outputDir);
         Path index = outputDir.resolve("index.html");

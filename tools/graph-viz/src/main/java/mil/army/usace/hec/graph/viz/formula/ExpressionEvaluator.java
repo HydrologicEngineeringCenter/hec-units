@@ -2,9 +2,6 @@ package mil.army.usace.hec.graph.viz.formula;
 
 /**
  * Evaluates an infix expression at a given value of `i`.
- *
- * Hand-written because Java has no eval() and graph-viz cannot import
- * hec-units' own evaluator.
  */
 public final class ExpressionEvaluator {
 

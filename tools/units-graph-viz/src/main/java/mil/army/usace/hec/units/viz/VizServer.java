@@ -1,11 +1,13 @@
 package mil.army.usace.hec.units.viz;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -58,10 +60,36 @@ public final class VizServer {
         exchange.getResponseHeaders().add("Content-Type", type);
         // don't cache
         exchange.getResponseHeaders().add("Cache-Control", "no-store");
+
+        // The page is one big self-contained file of markup and text, which
+        // compresses to a fraction of its size. Worth it even over localhost.
+        if (compressible(type) && accepts(exchange, "gzip")) {
+            body = gzip(body);
+            exchange.getResponseHeaders().add("Content-Encoding", "gzip");
+        }
+
         exchange.sendResponseHeaders(status, body.length);
         try (OutputStream out = exchange.getResponseBody()) {
             out.write(body);
         }
+    }
+
+    private static boolean compressible(String type) {
+        return type.startsWith("text/") || type.startsWith("application/json")
+            || type.startsWith("image/svg");
+    }
+
+    private static boolean accepts(HttpExchange exchange, String encoding) {
+        String header = exchange.getRequestHeaders().getFirst("Accept-Encoding");
+        return header != null && header.contains(encoding);
+    }
+
+    private static byte[] gzip(byte[] body) throws IOException {
+        var buffer = new ByteArrayOutputStream();
+        try (var out = new GZIPOutputStream(buffer)) {
+            out.write(body);
+        }
+        return buffer.toByteArray();
     }
 
     private static String contentType(Path file) {

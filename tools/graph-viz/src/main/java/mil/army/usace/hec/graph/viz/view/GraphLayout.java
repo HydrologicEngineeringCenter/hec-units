@@ -19,7 +19,7 @@ import mil.army.usace.hec.graph.viz.model.Pair;
 // Where the units sit
 public final class GraphLayout {
 
-    public record Placed(Map<String, double[]> positions, Map<String, double[]> normalised,
+    public record Placed(Map<String, double[]> positions, Map<String, double[]> normalized,
                          double width, double height, boolean tree) {
     }
 
@@ -29,7 +29,7 @@ public final class GraphLayout {
     public static Placed of(List<Node> nodes, List<Edge> edges) {
         Map<String, double[]> tree = treeLayout(nodes, edges);
         var positions = new LinkedHashMap<String, double[]>();
-        var normalised = new LinkedHashMap<String, double[]>();
+        var normalized = new LinkedHashMap<String, double[]>();
         double width;
         double height;
 
@@ -44,7 +44,7 @@ public final class GraphLayout {
                 double[] p = tree.get(node.id());
                 positions.put(node.id(), new double[]{padX + p[0] * (width - 2 * padX),
                                                       padY + p[1] * (height - 2 * padY)});
-                normalised.put(node.id(), p);
+                normalized.put(node.id(), p);
             }
         } else {
             double radius = 34 + 26 * nodes.size();
@@ -57,7 +57,7 @@ public final class GraphLayout {
                                                       height / 2 + radius * Math.sin(angle)});
             }
         }
-        return new Placed(positions, normalised, width, height, tree != null);
+        return new Placed(positions, normalized, width, height, tree != null);
     }
 
     private static Map<String, double[]> treeLayout(List<Node> nodes, List<Edge> edges) {
@@ -131,9 +131,9 @@ public final class GraphLayout {
         while (!frontier.isEmpty()) {
             var next = new ArrayList<String>();
             for (String node : frontier) {
-                for (String neighbour : adjacency.get(node)) {
-                    if (seen.add(neighbour)) {
-                        next.add(neighbour);
+                for (String neighbor : adjacency.get(node)) {
+                    if (seen.add(neighbor)) {
+                        next.add(neighbor);
                     }
                 }
             }
