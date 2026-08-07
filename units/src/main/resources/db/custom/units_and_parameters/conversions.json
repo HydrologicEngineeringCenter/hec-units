@@ -57,7 +57,9 @@
 	// ["cal",         "MJ",          "J_per_cal[J]/[cal] | [MJ]/*_per_M*[J]"],
 	["cfs",         "cms",         "function: i * (m_per_ft)^3"],
 	// ["cfs",         "KAF/mon",     "[ft3/s]/[cfs] | s_per_mon[s]/[mon] | [ac-ft]/ft2_per_acre[ft3] | [kaf]/*_per_k*[ac-ft] | [KAF]/[kaf]"],
-	// ["cfs",         "gpm",         "[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [gal]/m3_per_gal[m3] | s_per_min[s]/[min] | [gpm]/[gal/min]"],
+
+	["cfs",         "gpm",         "function: i * ft3_per_gal * s_per_min"],
+	//"[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [gal]/m3_per_gal[m3] | s_per_min[s]/[min] | [gpm]/[gal/min]"],
 	// ["cfs",         "mcm/mon",     "[ft3/s]/[cfs] | s_per_mon[s]/[mon] | m_per_ft^3[m3]/[ft3] | [mcm]/*_per_M*[m3]"],
 	// ["cfs",         "mgd",         "[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [gal]/m3_per_gal[m3] | [mgal]/*_per_M*[gal] | s_per_day[s]/[day] | [mgd]/[mgal/day]"],
 	// ["cfs/mi2",     "cms/km2",     "[ft3/s]/[cfs] | m_per_ft^3[m3]/[ft3] | [mi2]/km_per_mile^2[km2] | [cms]/[m3/s]"],
