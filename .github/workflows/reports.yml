@@ -23,7 +23,7 @@ jobs:
       - name: Get Baseline Values
         run: |
           git fetch origin badges
-          git origin/badges -- badges/unit-conversions-*.txt
+          git checkout origin/badges -- badges/unit-conversions-*.txt
       - name: Generate Report on current
         uses: actions/github-script@v7
         with:
