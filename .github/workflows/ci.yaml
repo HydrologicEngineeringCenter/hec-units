@@ -99,14 +99,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: badges_${{ github.run_id }}_*
-          path: ./build  # directory to download artifacts into
+          path: ./badges  # directory to download artifacts into
           merge-multiple: true  # downloaded artifacts will be in the same directory specified by path
       - name: Apply Badge
         run: |
           find . -type f
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add build/*.svg
+          git add badges/*.svg
+          git add badges/unit-conversions-actual.txt \
+                  badges/unit-conversions-expected.txt \
+                  badges/unit-conversions-percent.txt
           git status
           git commit --allow-empty -m "Update Badge for build of ${{ github.sha }}"
           git push origin badges -f
