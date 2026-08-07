@@ -18,12 +18,12 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
-          pattern: "**/.txt"
+          pattern: "*_unit_conversions"
 
       - name: Get Baseline Values
         run: |
           git fetch origin badges
-          git checkout origin/badges -- badges/unit-conversions-*.txt
+          git checkout origin/badges -- badges/unit-conversions-*-expected.txt
       - name: Generate Report on current
         uses: actions/github-script@v7
         with:
