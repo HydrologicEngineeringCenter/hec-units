@@ -100,9 +100,12 @@
 
       {selector: 'node.hover', style: {
         'border-width': 3.5,
-        'overlay-color': token('--accent-deep'),
-        'overlay-opacity': 0.16, 'overlay-padding': 7,
+        'overlay-color': token('--hover-plain'),
+        'overlay-opacity': parseFloat(token('--hover-veil')) || 0.16,
+        'overlay-padding': 7,
         'overlay-corner-radius': 999}},
+      {selector: 'node.t-si.hover', style: {'overlay-color': token('--hover-si')}},
+      {selector: 'node.t-english.hover', style: {'overlay-color': token('--hover-english')}},
       {selector: 'node.preview', style: {
         'border-color': token('--pick-2'), 'border-width': 3.5}}
     ];

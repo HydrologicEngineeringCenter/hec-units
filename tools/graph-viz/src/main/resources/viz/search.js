@@ -21,13 +21,32 @@
     return true;
   }
 
+  function quoteRe(text) {
+    return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   function markTerms(text, list) {
-    var out = escText(text);
+    var source = String(text);
+    if (!list.length) {
+      return escText(source);
+    }
+    var alternatives = [];
     list.forEach(function (term) {
-      var safe = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      out = out.replace(new RegExp('(' + safe + ')', 'ig'), '<mark>$1</mark>');
+      var flat = quoteRe(term);
+      var up = quoteRe(raised(term));
+      if (up !== flat) { alternatives.push(up); }
+      alternatives.push(flat);
     });
-    return out;
+    var safe = alternatives.join('|');
+
+    var out = '';
+    var at = 0;
+    source.replace(new RegExp(safe, 'ig'), function (hit, index) {
+      out += escText(source.slice(at, index)) + '<mark>' + escText(hit) + '</mark>';
+      at = index + hit.length;
+      return hit;
+    });
+    return out + escText(source.slice(at));
   }
 
   function cssValue(value) {
@@ -714,7 +733,8 @@
 
   // Return buttons to go back to where you were before you jumped somewhere else
 
-  var navPlace = null;
+  var navStack = [];
+  var NAV_DEPTH = 20;
   var navMoving = false;
   var navButton = null;
 
@@ -804,16 +824,23 @@
     if (!place) {
       return;
     }
-    navPlace = place;
+    navStack.push(place);
+    if (navStack.length > NAV_DEPTH) {
+      navStack.shift();
+    }
     navPaint();
   }
 
   function navClear() {
-    navPlace = null;
-    if (navButton) { navButton.hidden = true; }
+    navStack.length = 0;
+    navPaint();
   }
 
   function navPaint() {
+    if (!navStack.length) {
+      if (navButton) { navButton.hidden = true; }
+      return;
+    }
     if (!navButton) {
       navButton = document.createElement('button');
       navButton.type = 'button';
@@ -822,9 +849,12 @@
       navButton.addEventListener('click', navBack);
       document.body.appendChild(navButton);
     }
+    var place = navStack[navStack.length - 1];
     navButton.innerHTML = '<span class="gb-arrow" aria-hidden="true">&larr;</span>'
-      + '<span class="gb-lead">' + escText(navLead(navPlace)) + '</span>'
-      + '<span class="gb-what">' + escText(navLabel(navPlace)) + '</span>';
+      + '<span class="gb-lead">' + escText(navLead(place)) + '</span>'
+      + '<span class="gb-what">' + escText(navLabel(place)) + '</span>'
+      + (navStack.length > 1
+         ? '<span class="gb-depth">' + navStack.length + '</span>' : '');
     navButton.hidden = false;
   }
 
@@ -857,11 +887,11 @@
   }
 
   function navBack() {
-    var place = navPlace;
+    var place = navStack.pop();
     if (!place) {
       return;
     }
-    navClear();
+    navPaint();
 
     if (typeof overlay !== 'undefined' && overlay
         && overlay.classList.contains('open')) {

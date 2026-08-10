@@ -9,13 +9,6 @@
 
   var pnSize = PN_DEFAULT;
 
-  function pnStore(key, value) {
-    try {
-      if (value === undefined) { return localStorage.getItem(key); }
-      localStorage.setItem(key, value);
-    } catch (e) { }
-    return null;
-  }
 
   // set min and max size for right side-bar panel
   function pnClamp(value) {
@@ -32,7 +25,7 @@
     pnSize = pnClamp(value);
     pnPanel.style.setProperty('--pn', pnSize + 'px');
     if (remember !== false) {
-      pnStore('viz-panel', pnSize);
+      vizStore('viz-panel', pnSize);
     }
     pnRestage();
   }
@@ -64,10 +57,13 @@
 
     function move(moved) {
       var point = moved.touches ? moved.touches[0] : moved;
-      pnSetSize(right - point.clientX);
+      // don't save every time you move, only when you save
+      pnSetSize(right - point.clientX, false);
     }
 
     function done() {
+      // only save when you finish dragging
+      vizStore('viz-panel', pnSize);
       pnWrap.classList.remove('sizing');
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', done);
@@ -87,10 +83,12 @@
     }
   }
 
-  if (pnWrap && pnPanel && pnSplit) {
-    var saved = parseInt(pnStore('viz-panel'), 10);
+  var fold = document.getElementById('opanelfold');
+
+  if (pnWrap && pnPanel && pnSplit && fold) {
+    var saved = parseInt(vizStore('viz-panel'), 10);
     if (saved > 0) { pnSize = saved; }
-    if (pnStore('viz-panel-hidden') === '1') { pnWrap.classList.add('folded'); }
+    if (vizStore('viz-panel-hidden') === '1') { pnWrap.classList.add('folded'); }
 
     pnSplit.addEventListener('mousedown', pnDrag);
     pnSplit.addEventListener('touchstart', pnDrag, {passive: false});
@@ -108,10 +106,9 @@
       }
     });
 
-    var fold = document.getElementById('opanelfold');
     fold.addEventListener('click', function () {
       var folded = pnWrap.classList.toggle('folded');
-      pnStore('viz-panel-hidden', folded ? '1' : '0');
+      vizStore('viz-panel-hidden', folded ? '1' : '0');
       fold.setAttribute('aria-expanded', String(!folded));
       fold.title = folded ? 'Show the panel' : 'Hide the panel';
       fold.innerHTML = folded ? '&lsaquo;' : '&rsaquo;';

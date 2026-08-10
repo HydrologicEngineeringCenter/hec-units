@@ -221,7 +221,7 @@
     }
 
     function save() {
-      try { localStorage.setItem('viz-theme', root.dataset.theme); } catch (e) { }
+      vizStore('viz-theme', root.dataset.theme);
     }
 
     var sweeping = false;

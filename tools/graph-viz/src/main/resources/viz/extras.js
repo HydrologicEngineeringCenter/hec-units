@@ -3,13 +3,6 @@
   var exUnits = typeof UNITS !== 'undefined' ? UNITS : {};
   var exHasData = typeof INDEX !== 'undefined';
 
-  function exStore(key, value) {
-    try {
-      if (value === undefined) { return localStorage.getItem(key); }
-      localStorage.setItem(key, value);
-    } catch (e) { }
-    return null;
-  }
 
   // suggest which untested conversions would be the most helpful to add
   function exSuggestions(limit) {
@@ -286,14 +279,14 @@
   function exRememberTab() {
     document.querySelectorAll('.tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
-        exStore('viz-tab', tab.dataset.pane);
+        vizStore('viz-tab', tab.dataset.pane);
         exWriteUrl();
       });
     });
   }
 
   function exRestoreTab() {
-    var saved = exStore('viz-tab');
+    var saved = vizStore('viz-tab');
     if (!saved) {
       return;
     }

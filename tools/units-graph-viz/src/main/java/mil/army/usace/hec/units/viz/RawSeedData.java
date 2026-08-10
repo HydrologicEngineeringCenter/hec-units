@@ -68,9 +68,46 @@ final class RawSeedData {
             if (in == null) {
                 throw new IOException(path + " is not on the classpath - is :units a dependency?");
             }
-            String text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            return text.replaceAll("(?s)/\\*.*?\\*/", "")
-                       .replaceAll("(?m)//.*$", "");
+            return stripComments(new String(in.readAllBytes(), StandardCharsets.UTF_8));
         }
+    }
+
+    // Extra handling for comments in json data
+    private static String stripComments(String text) {
+        var out = new StringBuilder(text.length());
+        boolean inString = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (inString) {
+                out.append(c);
+                if (c == '\\' && i + 1 < text.length()) {
+                    out.append(text.charAt(++i));
+                } else if (c == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+            if (c == '"') {
+                inString = true;
+                out.append(c);
+                continue;
+            }
+            char next = i + 1 < text.length() ? text.charAt(i + 1) : '\0';
+            if (c == '/' && next == '/') {
+                while (i < text.length() && text.charAt(i) != '\n') {
+                    i++;
+                }
+                out.append('\n');
+                continue;
+            }
+            if (c == '/' && next == '*') {
+                int end = text.indexOf("*/", i + 2);
+                i = end < 0 ? text.length() : end + 1;
+                continue;
+            }
+            out.append(c);
+        }
+        return out.toString();
     }
 }

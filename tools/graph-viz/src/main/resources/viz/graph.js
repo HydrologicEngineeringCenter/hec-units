@@ -3,10 +3,7 @@
 // Setup
   var seedApi = null;
 
-  var cycleOn = true;
-  try {
-    cycleOn = localStorage.getItem('viz-cycle') !== 'off';
-  } catch (e) { }
+  var cycleOn = vizStore('viz-cycle') !== 'off';
 
   var cycleButton = document.getElementById('ocycle');
   if (cycleButton) {
@@ -14,9 +11,7 @@
     cycleButton.setAttribute('aria-pressed', String(cycleOn));
     cycleButton.addEventListener('click', function () {
       cycleOn = !cycleOn;
-      try {
-        localStorage.setItem('viz-cycle', cycleOn ? 'on' : 'off');
-      } catch (e) { }
+      vizStore('viz-cycle', cycleOn ? 'on' : 'off');
       cycleButton.classList.toggle('off', !cycleOn);
       cycleButton.setAttribute('aria-pressed', String(cycleOn));
       if (seedApi && seedApi.idle) { seedApi.idle(cycleOn); }
@@ -442,22 +437,12 @@
 
     // multiply conversion factors to get to a single answer
     function compose(path) {
-      var m = 1;
-      var b = 0;
-      for (var i = 0; i < path.length; i++) {
-        var edge = E[path[i].ei];
-        if (edge.m === null || isNaN(edge.m)) { return null; }
-        var em;
-        var eb;
-        if (path[i].from === edge.s) { em = edge.m; eb = edge.b; }
-        else {
-          if (edge.m === 0) { return null; }
-          em = 1 / edge.m; eb = -edge.b / edge.m;
-        }
-        m = em * m;
-        b = em * b + eb;
+      var steps = stepsOf(path);
+      if (!steps || !steps.length) {
+        return null;
       }
-      return {m: m, b: b};
+      var last = steps[steps.length - 1];
+      return {m: last.runM, b: last.runB};
     }
 
     // Present the right side panel results
