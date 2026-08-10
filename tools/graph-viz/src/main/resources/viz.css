@@ -46,6 +46,11 @@
      with that while reading washed out on paper and glaring at night. */
   --action:#0f172a; --action-on:#f8fafc; --action-hover:#1e293b;
 
+  /* The hover halo takes the hovered unit's own color, and has to lift off
+     the stage behind it: saturated on paper, pale against the dark. */
+  --hover-plain:#64748b; --hover-si:#2563eb; --hover-english:#dc2626;
+  --hover-veil:.16;
+
   /* shape + depth */
   --r-s:4px; --r-m:8px; --r-l:12px; --r-pill:99px;
   --shadow-s:0 1px 2px #0f172a0a,0 1px 6px #0f172a0f;
@@ -547,6 +552,8 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
   --note-ink:#c7d2fe; --note-wash:#312e81; --note-line:#6366f166;
   --accent-ink:#7dd3fc;
   --action:#e2e8f0; --action-on:#0f172a; --action-hover:#f8fafc;
+  --hover-plain:#e2e8f0; --hover-si:#bfdbfe; --hover-english:#fecaca;
+  --hover-veil:.26;
 }
 :root[data-theme=dark] .card, :root[data-theme=dark] .legend{background:var(--dark-2);border-color:var(--dark-3);box-shadow:none}
 :root[data-theme=dark] .card:hover{box-shadow:0 6px 20px #0006;border-color:var(--panel-ink-4)}
@@ -1371,6 +1378,8 @@ button:active:not(:disabled){transform:scale(.97)}
 .goback .gb-lead{color:var(--panel-ink-3);font-size:11.5px;white-space:nowrap;flex:none}
 .goback .gb-what{font-family:var(--math);font-size:14.5px;
  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.goback .gb-depth{flex:none;min-width:18px;padding:1px 6px;border-radius:var(--r-pill);
+ background:var(--glass-strong);color:var(--panel-ink-3);font:10.5px var(--mono)}
 @media(prefers-reduced-motion:reduce){
  .goback{animation:none}
  .goback:hover,.goback:active{transform:none}

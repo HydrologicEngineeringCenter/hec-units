@@ -127,6 +127,32 @@ class PageGenerationTest {
         assertTrue(found.isEmpty(), "control characters in the page: " + found);
     }
 
+    /**
+     * Test to make sure weird comments do not mess up the conversions
+     */
+    @Test
+    void every_direct_conversion_carries_the_formula_it_was_written_as() {
+        var seed = Pattern.compile("\\[\"((?:[^\"\\\\]|\\\\.)*)\",\"((?:[^\"\\\\]|\\\\.)*)\",")
+                          .matcher(between("var SEED=[", "];"));
+        String formulas = between("var FORMULA=", ";\n");
+
+        var missing = new ArrayList<String>();
+        int pairs = 0;
+        while (seed.find()) {
+            pairs++;
+            if (!formulas.contains("\"" + seed.group(2) + "\":{\"r\"")) {
+                missing.add(seed.group(1) + " -> " + seed.group(2));
+            }
+        }
+        assertTrue(pairs > 50, "only " + pairs + " direct conversions - the parse looks truncated");
+        assertTrue(missing.isEmpty(), "direct conversions with no formula: " + missing);
+    }
+
+    private static String between(String start, String end) {
+        int from = page.indexOf(start) + start.length();
+        return page.substring(from, page.indexOf(end, from));
+    }
+
     /** The matrices are drawn in the browser now, so the markup must not carry them. */
     @Test
     void the_heavy_markup_stayed_out_of_the_page() {

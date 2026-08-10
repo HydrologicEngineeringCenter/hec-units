@@ -29,6 +29,15 @@
 
   var ARROW = '<span class="arrow">→</span>';
 
+  // more generic helper
+  function vizStore(key, value) {
+    try {
+      if (value === undefined) { return localStorage.getItem(key); }
+      localStorage.setItem(key, value);
+    } catch (e) { }
+    return null;
+  }
+
   var MAX_ROUTES = 60;
   var MAX_HOPS = 7;
 
@@ -38,10 +47,11 @@
     return;
   }
   
-  var trapReturn = null;
+  // make the back button like a stack to remember more than one previous step
+  var trapReturn = {};
 
   function trapFocus(layer) {
-    trapReturn = document.activeElement;
+    trapReturn[layer.id] = document.activeElement;
     layer.addEventListener('keydown', onTrapKey);
     var first = layer.querySelector('button,[href],input,select,[tabindex]:not([tabindex="-1"])');
     if (first) { first.focus(); }
@@ -71,12 +81,16 @@
 
   function releaseFocus(layer) {
     layer.removeEventListener('keydown', onTrapKey);
-    if (trapReturn && trapReturn.focus) { trapReturn.focus(); }
-    trapReturn = null;
+    var back = trapReturn[layer.id];
+    delete trapReturn[layer.id];
+    if (back && back.focus) { back.focus(); }
   }
+
+  var layerEpoch = {};
 
   // opening overlay
   function raise(layer) {
+    layerEpoch[layer.id] = (layerEpoch[layer.id] || 0) + 1;
     layer.classList.add('open');
     layer.setAttribute('aria-hidden', 'false');
     if (layer === overlay && typeof pnOnOpen === 'function') { pnOnOpen(); }
@@ -95,8 +109,9 @@
     releaseFocus(layer);
     layer.classList.remove('in');
     var done = false;
+    var mine = layerEpoch[layer.id] || 0;
     function finish() {
-      if (done) {
+      if (done || (layerEpoch[layer.id] || 0) !== mine) {
         return;
       }
       done = true;

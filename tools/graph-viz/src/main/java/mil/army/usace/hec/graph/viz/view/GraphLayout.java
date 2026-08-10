@@ -97,6 +97,10 @@ public final class GraphLayout {
             }
         }
 
+        if (seen.size() != nodes.size()) {
+            return null;
+        }
+
         var xs = new HashMap<String, Double>();
         placeSubtree(root, children, xs, new int[]{0});
 

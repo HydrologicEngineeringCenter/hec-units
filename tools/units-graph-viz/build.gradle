@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation project(':graph-viz')
     implementation project(':units')
+    implementation libs.jackson.core
 }
 
 def outputDir = layout.buildDirectory.dir("reports/viz")

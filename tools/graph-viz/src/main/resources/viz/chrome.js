@@ -221,7 +221,7 @@
     }
 
     function save() {
-      try { localStorage.setItem('viz-theme', root.dataset.theme); } catch (e) { }
+      vizStore('viz-theme', root.dataset.theme);
     }
 
     var sweeping = false;
@@ -247,12 +247,10 @@
       }
 
       var goingDark = root.dataset.theme !== 'dark';
-      // Long enough that the diagonal has left the far corner behind.
-      var reach = (innerWidth + innerHeight) + 'px';
-      var corner = goingDark ? '100% 100%' : '0px 0px';
+      var corner = goingDark ? '100% 100%' : '0% 0%';
       var edge = goingDark
-        ? ['100% 100%', 'calc(100% - ' + reach + ') 100%', '100% calc(100% - ' + reach + ')']
-        : ['0px 0px', reach + ' 0px', '0px ' + reach];
+        ? ['100% 100%', '-110% 100%', '100% -110%']
+        : ['0% 0%', '210% 0%', '0% 210%'];
 
       sweeping = true;
       root.classList.add('theming');
