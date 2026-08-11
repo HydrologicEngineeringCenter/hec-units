@@ -189,8 +189,9 @@ table.matrix td{width:22px;height:22px;border-radius:3px;padding:0;
 /* Rotated headers cost one line-height of width, so the cells - not a label
    like "1000 m3" - set the column width, and every matrix fits its card. */
 table.matrix thead th{writing-mode:vertical-rl;transform:rotate(180deg);
- text-align:left;padding:5px 0;vertical-align:bottom}
-table.matrix thead th.corner{writing-mode:horizontal-tb;transform:none;padding:0}
+ text-align:left;padding:5px 0;vertical-align:bottom;align-content:center}
+table.matrix thead th.corner{writing-mode:horizontal-tb;transform:none;padding:0;
+ align-content:end}
 
 table.matrix td .lab{display:none}
 
