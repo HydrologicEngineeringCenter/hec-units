@@ -1001,20 +1001,64 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 
 /* ================================================ converter, suggestions, keys */
 .cv{display:flex;flex-direction:column;gap:16px;padding-top:24px}
-.cv-in{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.cv-in .ed-lbl{color:var(--ink-3)}
+
+.cv-measure{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cv-measure .ed-lbl{color:var(--ink-3)}
+#cvdim{font:13.5px var(--sans);padding:8px 12px;border-radius:var(--r-m);
+ background:var(--card);color:var(--ink);border:1px solid var(--line);
+ cursor:pointer;min-width:220px}
+#cvdim:focus-visible{outline:2px solid var(--accent-deep);outline-offset:1px}
+.cv-count{font:11px var(--mono);color:var(--ink-3)}
+
+/* Two ends and a swap between them, so the shape says what the tool does. */
+.cv-in{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.cv-end{display:flex;align-items:flex-end;gap:8px;flex:1 1 320px;min-width:0}
+.cv-cell{display:flex;flex-direction:column;gap:6px;flex:1 1 130px;min-width:0}
+.cv-cell-wide{flex:1 1 165px}
+.cv-cell .ed-lbl{color:var(--ink-3);font:10.5px var(--mono);letter-spacing:.07em;
+ text-transform:uppercase}
 .cv-in input{font:15px var(--sans);padding:10px 13px;border-radius:var(--r-m);
  background:var(--card);color:var(--ink);border:1px solid var(--line);outline:none}
 .cv-in input:focus{border-color:var(--accent-deep)}
-#cvvalue{width:150px;padding-right:32px}
-#cvunit{width:130px;font-family:var(--mono)}
+#cvvalue{width:100%;padding-right:32px}
+.cv-field{width:100%;min-width:0}
+#cvfrom,#cvto{width:100%;font-family:var(--mono)}
+.cv-combo{width:100%;min-width:0}
+
+.cv-result{width:100%;min-width:0;display:flex;align-items:center;gap:8px;
+ padding:10px 13px;border-radius:var(--r-m);background:var(--page-deep);
+ border:1px solid var(--line);font:15px var(--mono);color:var(--ink);
+ min-height:43px;overflow:hidden}
+.cv-result.muted{color:var(--ink-3);font:12.5px var(--sans)}
+.cv-take{background:none;border:none;padding:0;margin:0;cursor:pointer;
+ font:inherit;color:inherit;text-align:left;overflow:hidden;
+ text-overflow:ellipsis;white-space:nowrap}
+.cv-take:hover{color:var(--accent-ink)}
+.cv-result .u{color:var(--ink-2);flex:none}
+
+#cvswap{flex:none;width:38px;height:43px;display:inline-flex;align-items:center;
+ justify-content:center;cursor:pointer;font-size:17px;line-height:1;
+ border-radius:var(--r-m);border:1px solid var(--line);background:var(--card);
+ color:var(--ink-2);
+ transition:color var(--fast) var(--ease),border-color var(--fast) var(--ease),
+  transform var(--fast) var(--ease)}
+#cvswap:hover{color:var(--ink);border-color:var(--ink-3)}
+#cvswap:active{transform:scale(.94)}
+#cvswap:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+@media(max-width:700px){
+  #cvswap{align-self:center;transform:rotate(90deg)}
+  #cvswap:active{transform:rotate(90deg) scale(.94)}
+}
 .cv-body{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);
  gap:24px;align-items:start}
-.cv-out{display:flex;flex-direction:column;gap:5px;min-width:0}
-.cv-side{min-width:0;position:sticky;top:16px;max-height:calc(100vh - 40px);
- overflow-y:auto;scrollbar-width:thin;scrollbar-gutter:stable}
+/* The unit list is the short column now and the working is the long one, so
+   the list is what stays put. Capping the working instead gave it a scrollbar
+   of its own alongside the page's. */
+.cv-out{display:flex;flex-direction:column;gap:5px;min-width:0;
+ position:sticky;top:16px}
+.cv-side{min-width:0}
 @media(max-width:1000px){.cv-body{grid-template-columns:1fr}
- .cv-side{position:static;max-height:none}}
+ .cv-out{position:static}}
 .cv-note{font:11px var(--mono);color:var(--ink-3);letter-spacing:.04em;
  text-transform:uppercase;margin-bottom:3px}
 .cv-item{position:relative}
@@ -1039,7 +1083,7 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
  cursor:pointer;color:var(--ink-3);font-size:13px;padding:3px 7px;
  border-radius:var(--r-s)}
 .cv-copy:hover{color:var(--accent-deep);background:var(--page-deep)}
-:root[data-theme=dark] .cv-in input{background:var(--dark-2);border-color:var(--dark-3);
+:root[data-theme=dark] .cv-in input,:root[data-theme=dark] #cvdim,:root[data-theme=dark] #cvswap{background:var(--dark-2);border-color:var(--dark-3);
  color:var(--lt-ink)}
 :root[data-theme=dark] .cv-row{background:var(--dark-2);border-color:var(--dark-3)}
 :root[data-theme=dark] .cv-copy:hover{background:var(--dark-3)}
@@ -1093,7 +1137,7 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
   #overlay .obody,#overlay #ostage{min-height:0}
   #overlay.seedmode #ostage{min-height:46vh}
   .cv-in{flex-direction:column;align-items:stretch}
-  #cvvalue,#cvunit,.cv-field{width:100%}
+  #cvvalue,#cvfrom,#cvto,.cv-field,.cv-combo,.cv-result{width:100%}
   .cv-val{min-width:0}
   .sum-top{flex-direction:column;align-items:flex-start}
 }
@@ -1155,14 +1199,14 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 .cv-field.filled .cvclear,.cv-combo.filled .cvclear{opacity:1;pointer-events:auto}
 .cvclear:hover{background:var(--line);color:var(--ink)}
 :root[data-theme=dark] .cvclear:hover{background:var(--dark-3);color:var(--lt-ink)}
-.cv-combo #cvunit{padding-right:60px}
-#cvpick{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+.cv-combo #cvfrom,#cvto{padding-right:60px}
+.cvpick{position:absolute;right:4px;top:50%;transform:translateY(-50%);
  display:flex;align-items:center;justify-content:center;width:26px;height:26px;
  background:none;border:none;cursor:pointer;color:var(--ink-3);border-radius:var(--r-s)}
-#cvpick:hover{color:var(--accent-deep);background:var(--page-deep)}
-#cvpick svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;
+.cvpick:hover{color:var(--accent-deep);background:var(--page-deep)}
+.cvpick svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;
  stroke-linecap:round;stroke-linejoin:round}
-#cvlist{position:absolute;top:calc(100% + 6px);left:0;z-index:40;
+.cvlist{position:absolute;top:calc(100% + 6px);left:0;z-index:40;
  width:max(260px,100%);max-height:340px;overflow-y:auto;padding:5px;
  border-radius:var(--r-m);background:var(--card);border:1px solid var(--line);
  box-shadow:var(--shadow-m)}
@@ -1176,12 +1220,12 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 .cv-opt:focus-visible{box-shadow:inset 0 0 0 2px var(--accent-deep)}
 .cv-optname{font-size:12px;color:var(--ink-3)}
 .cv-none{padding:12px;font-size:13px;color:var(--ink-3)}
-:root[data-theme=dark] #cvlist{background:var(--dark-2);border-color:var(--dark-3)}
+:root[data-theme=dark] .cvlist{background:var(--dark-2);border-color:var(--dark-3)}
 :root[data-theme=dark] .cv-group{background:var(--dark-2)}
 :root[data-theme=dark] .cv-opt{color:var(--lt-ink)}
 :root[data-theme=dark] .cv-opt:hover,:root[data-theme=dark] .cv-opt:focus{
  background:var(--dark-3)}
-:root[data-theme=dark] #cvpick:hover{background:var(--dark-3)}
+:root[data-theme=dark] .cvpick:hover{background:var(--dark-3)}
 @media(max-width:860px){.cv-combo{width:100%}}
 
 /* ============================================ explain a route, hop by hop */
@@ -1255,7 +1299,8 @@ kbd{font:11.5px var(--mono);padding:3px 8px;border-radius:var(--r-s);
 .cv-side .cvwork{border:1px solid var(--line);border-radius:var(--r-l);
  background:var(--card);padding:20px 22px 22px;
  /* fade only: a translate here would overflow the scroll parent while it ran */
- animation:fadein var(--fast) var(--ease) both}
+ }
+.cv-side .cvwork.fresh{animation:fadein var(--fast) var(--ease) both}
 .cv-hint{padding:22px;border-radius:var(--r-l);border:1px dashed var(--line);
  color:var(--ink-3);font-size:13.5px;line-height:1.6}
 .cv-hint b{display:block;color:var(--ink);margin-bottom:4px;font-size:14.5px}

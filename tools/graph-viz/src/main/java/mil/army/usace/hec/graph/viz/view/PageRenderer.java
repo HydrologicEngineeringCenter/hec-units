@@ -174,7 +174,7 @@ public final class PageRenderer {
                        .raw("body", seedBody).render()
                  : "")
             .raw("findpane", tabbed ? SearchView.tab() : "")
-            .raw("convertpane", tabbed ? CONVERTPANE : "")
+            .raw("convertpane", tabbed ? convertPane() : "")
             .raw("overlay", Html.fill(OVERLAY)
                  .raw("legend", legend("legend olegend mkey", null))
                  .raw("seedkey", tabbed ? seedKey() : "")
@@ -194,33 +194,66 @@ public final class PageRenderer {
         </div>
         """;
 
+    private static final String COMBO = """
+        <div class="cv-combo">
+          <input id="{{id}}" type="text" placeholder="{{hint}}" autocomplete="off"
+                 role="combobox" aria-expanded="false" aria-controls="{{id}}list"
+                 aria-label="{{label}}">
+          <button type="button" class="cvclear" data-clears="{{id}}"
+                  tabindex="-1" aria-label="Clear">&times;</button>
+          <button type="button" class="cvpick" data-opens="{{id}}" tabindex="-1"
+                  aria-label="Show every unit">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 9.5 12 15.5 18 9.5"/>
+            </svg>
+          </button>
+          <div class="cvlist" id="{{id}}list" role="listbox" hidden></div>
+        </div>
+        """;
+
     private static final String CONVERTPANE = """
         <div class="tabpane" id="tab-convert">
           <div class="cv">
+            <div class="cv-measure">
+              <label class="ed-lbl" for="cvdim">measures</label>
+              <select id="cvdim" aria-label="Kind of measurement">
+                <option value="">any measure</option>
+              </select>
+              <span class="cv-count" id="cvcount"></span>
+            </div>
+
             <div class="cv-in">
-              <label class="ed-lbl" for="cvvalue">value</label>
-              <div class="cv-field">
-                <input id="cvvalue" type="text" inputmode="decimal" value="1"
-                       autocomplete="off" aria-label="Value to convert">
-                <button type="button" class="cvclear" data-clears="cvvalue"
-                        tabindex="-1" aria-label="Clear the value">&times;</button>
+              <div class="cv-end">
+                <div class="cv-cell cv-cell-wide">
+                  <label class="ed-lbl" for="cvvalue">value</label>
+                  <div class="cv-field">
+                    <input id="cvvalue" type="text" inputmode="decimal" value="1"
+                           autocomplete="off" aria-label="Value to convert">
+                    <button type="button" class="cvclear" data-clears="cvvalue"
+                            tabindex="-1" aria-label="Clear the value">&times;</button>
+                  </div>
+                </div>
+                <div class="cv-cell">
+                  <label class="ed-lbl" for="cvfrom">from</label>
+                  {{from}}
+                </div>
               </div>
-              <label class="ed-lbl" for="cvunit">unit</label>
-              <div class="cv-combo">
-                <input id="cvunit" type="text" placeholder="ft" autocomplete="off"
-                       role="combobox" aria-expanded="false" aria-controls="cvlist"
-                       aria-label="Unit to convert from">
-                <button type="button" class="cvclear" data-clears="cvunit"
-                        tabindex="-1" aria-label="Clear the unit">&times;</button>
-                <button id="cvpick" type="button" tabindex="-1"
-                        aria-label="Show every unit">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M6 9.5 12 15.5 18 9.5"/>
-                  </svg>
-                </button>
-                <div id="cvlist" role="listbox" hidden></div>
+
+              <button type="button" id="cvswap" title="Swap the two units"
+                      aria-label="Swap the two units">&#8646;</button>
+
+              <div class="cv-end">
+                <div class="cv-cell cv-cell-wide">
+                  <span class="ed-lbl">result</span>
+                  <output id="cvresult" class="cv-result"></output>
+                </div>
+                <div class="cv-cell">
+                  <label class="ed-lbl" for="cvto">to</label>
+                  {{to}}
+                </div>
               </div>
             </div>
+
             <div class="cv-body">
               <div id="cvout" class="cv-out" aria-live="polite"></div>
               <aside id="cvwork" class="cv-side"></aside>
@@ -228,6 +261,15 @@ public final class PageRenderer {
           </div>
         </div>
         """;
+
+    private static String convertPane() {
+        return Html.fill(CONVERTPANE)
+            .raw("from", Html.fill(COMBO).put("id", "cvfrom").put("hint", "ft")
+                             .put("label", "Convert from").render())
+            .raw("to", Html.fill(COMBO).put("id", "cvto").put("hint", "m")
+                           .put("label", "Convert to").render())
+            .render();
+    }
 
     private static final String SEEDPANE = """
         <div class="tabpane" id="tab-seed">
