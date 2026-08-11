@@ -754,12 +754,13 @@
   }
 
   function navConvertState() {
-    var side = document.getElementById('cvwork');
-    var unit = document.getElementById('cvunit');
+    var from = document.getElementById('cvfrom');
+    var to = document.getElementById('cvto');
     return {
-      unit: unit ? unit.value : '',
+      unit: from ? from.value : '',
+      to: to ? to.value : '',
       value: document.getElementById('cvvalue').value,
-      showing: side ? side.dataset.showing || null : null
+      dim: document.getElementById('cvdim') ? document.getElementById('cvdim').value : ''
     };
   }
 
@@ -798,8 +799,8 @@
       return a || b ? raised(a || '?') + ' → ' + raised(b || '?') : 'conversions';
     }
     if (place.convert) {
-      return place.convert.showing
-        ? raised(place.convert.unit) + ' → ' + raised(place.convert.showing)
+      return place.convert.to
+        ? raised(place.convert.unit) + ' → ' + raised(place.convert.to)
         : raised(place.convert.unit) || 'the converter';
     }
     if (place.summary) {
@@ -909,10 +910,10 @@
     if (place.find) {
       navRestoreFind(place.find);
     } else if (place.convert && typeof openConverter === 'function') {
-      openConverter(place.convert.unit, null, true);
+      openConverter(place.convert.unit, place.convert.to, true);
       document.getElementById('cvvalue').value = place.convert.value;
+      if (place.convert.dim) { document.getElementById('cvdim').value = place.convert.dim; }
       exRunConverter();
-      if (place.convert.showing) { exShowWork(place.convert.showing); }
     }
 
     if (place.card) {

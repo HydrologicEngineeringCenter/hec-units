@@ -14,8 +14,8 @@ It is a debugging and design aid. Nothing in `units/` depends on it.
 ./gradlew :units-graph-viz:vizServe
 ```
 
-Then open <http://localhost:8080/>. That runs the test suite, regenerates the
-page and serves it. `Ctrl+C` stops the server.
+That runs the test suite, regenerates the page and serves it on a random port,
+printing the address to open. `Ctrl+C` stops the server.
 
 To generate the page without serving it:
 
@@ -32,9 +32,10 @@ tools/units-graph-viz/build/reports/viz/index.html
 ### If you are working over SSH
 
 The page is built on the remote machine but your browser is local, so
-`file://` will not find it. Forward the port and use `vizServe`:
+`file://` will not find it. Pin the port so the tunnel can name it:
 
 ```bash
+./gradlew :units-graph-viz:vizServe -PvizPort=8080
 ssh -L 8080:localhost:8080 you@remote
 ```
 

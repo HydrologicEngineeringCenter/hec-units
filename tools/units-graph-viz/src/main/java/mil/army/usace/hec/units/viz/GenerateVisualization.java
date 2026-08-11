@@ -17,8 +17,6 @@ import mil.army.usace.hec.graph.viz.view.Stats;
  */
 public final class GenerateVisualization {
 
-    private static final int PORT = 8080;
-
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
             System.err.println("usage: GenerateVisualization <output-dir> <test-report.xml> [tests.csv]");
@@ -58,9 +56,8 @@ public final class GenerateVisualization {
         System.out.println("  " + graph.nodes().size() + " units, " + graph.edges().size()
             + " conversions" + (covered ? "" : "  (no coverage data)")
             + ", " + seedGraph.edges().size() + " direct conversions");
-        System.out.println("  view it:  ./gradlew :units-graph-viz:vizServe");
-        System.out.println("            http://localhost:" + PORT + "/");
         System.out.println("  file:     " + index.toAbsolutePath());
+        System.out.println("  serve it: ./gradlew :units-graph-viz:vizServe");
         System.out.println();
     }
 

@@ -38,6 +38,23 @@
     }).sort();
   }
 
+  function exGapNote(ids) {
+    var alone = ids.filter(function (id) {
+      var c = exUnits[id].c;
+      return c[0] + c[1] + c[2] === 0;
+    }).length;
+    var linked = ids.length - alone;
+    if (!alone) {
+      return 'They all have conversions, but no test runs any of them.';
+    }
+    if (!linked) {
+      return 'Nothing converts to or from any of them.';
+    }
+    return alone + ' of them convert to nothing at all; the other ' + linked
+         + (linked === 1 ? ' has conversions' : ' have conversions')
+         + ' that simply have no test.';
+  }
+
   // Measure how big gap is between inconsistencies between routes
   var exBudget = null;
 
@@ -150,10 +167,11 @@
     html += exPrecisionHtml();
 
     if (never.length) {
-      html += '<h4>Units no passing test touches</h4>'
+      html += '<h4>Units no test covers</h4>'
         + '<div class="sum-note">' + never.length + ' of ' + Object.keys(exUnits).length
-        + ' units take part in no conversion that a test exercises. Click one to '
-        + 'see what it connects to.</div><div class="nevers">'
+        + ' units take part in no conversion that a test confirms. '
+        + exGapNote(never) + ' Click one to see what it connects to.</div>'
+        + '<div class="nevers">'
         + never.map(function (id) {
             return '<button type="button" class="never" data-unit="' + escText(id) + '">'
                  + sup(escText(id)) + '</button>';
@@ -426,7 +444,6 @@
       cvValue.addEventListener('input', exRunConverter);
       exWireCombo();
       exWireResults();
-      document.getElementById('cvwork').innerHTML = exWorkHint();
       exRunConverter();
     }
 
