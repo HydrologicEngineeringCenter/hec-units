@@ -25,6 +25,9 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
+def testReport = rootProject.file('units/build/reports/unit_conversion_report.xml')
+def testCases = rootProject.file('units/src/test/resources/units/conversions_to_test.csv')
+
 tasks.register('visualize', JavaExec) {
     group = 'documentation'
     description = 'Generate the conversion-graph visualization'
@@ -32,8 +35,12 @@ tasks.register('visualize', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'mil.army.usace.hec.units.viz.GenerateVisualization'
     args = [outputDir.get().asFile.absolutePath,
-            rootProject.file('units/build/reports/unit_conversion_report.xml').absolutePath,
-            rootProject.file('units/src/test/resources/units/conversions_to_test.csv').absolutePath]
+            testReport.absolutePath,
+            testCases.absolutePath]
+    // These arrive as path strings, so without naming them here the page would
+    // be left standing after a test run that changed everything it says.
+    inputs.files(testReport).withPropertyName('testReport').optional()
+    inputs.files(testCases).withPropertyName('testCases').optional()
     outputs.dir(outputDir)
 }
 
