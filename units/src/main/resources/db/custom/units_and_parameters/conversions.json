@@ -111,7 +111,7 @@
 	["g/m3",         "gm/cm3",     "function: i / (centi_per_unit)^3"],
 	// Currently need to short cut the conversion chain. Bug in the library that causes
 	// the data not to render correctly and screws up the equation.
-	["ug/l",		 "lbm/l",	   "function: i * (2.20462/1000000000)"],
+	["ug/l",		 "lbm/l",	   "function: i * (2.20462262184878/1000000000)"],
 	["lbm/ft3",		 "ug/l",	   "function: i * kg_per_lbm / (m_per_ft^3) * micro_per_unit"],
 	// TODO: manually check the next two
 	["lbm/m3",       "ppm",        "linear: 453.59237 0"],
