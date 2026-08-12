@@ -48,12 +48,14 @@
       + ' coverage: each row converts into each column</caption>'
       + '<thead><tr><th class="corner" scope="col"></th>';
     units.forEach(function (id) {
-      out += '<th scope="col">' + sup(escText(id)) + '</th>';
+      out += '<th scope="col" data-unit="' + escText(id) + '">'
+           + sup(escText(id)) + '</th>';
     });
     out += '</tr></thead><tbody>';
 
     units.forEach(function (from) {
-      out += '<tr><th scope="row">' + sup(escText(from)) + '</th>';
+      out += '<tr><th scope="row" data-unit="' + escText(from) + '">'
+           + sup(escText(from)) + '</th>';
       units.forEach(function (to) {
         if (from === to) {
           out += '<td class="self"></td>';
@@ -114,10 +116,10 @@
       return '<span class="warn">' + escText(e[1]) + '</span>';
     }
     var out = '';
-    if (e[0]) { out += '<span class="op">×</span>' + escText(e[0]); }
+    if (e[0]) { out += '<span class="op">×</span>' + sci(escText(e[0])); }
     if (e[1]) {
       out += '<span class="op">' + escText(e[1].charAt(0)) + '</span>'
-           + escText(e[1].slice(1));
+           + sci(escText(e[1].slice(1)));
     }
     return out;
   }
@@ -132,12 +134,12 @@
         return '<div class="tc bad"><div class="tc-top">could not evaluate</div></div>';
       }
       return '<div class="tc ' + (t[6] ? 'ok' : 'bad') + '">'
-        + '<div class="tc-top">' + escText(t[0]) + ' ' + mxUnitSpan(row.f)
-        + '<span class="arrow">→</span>' + escText(t[1]) + ' ' + mxUnitSpan(row.t)
+        + '<div class="tc-top">' + sci(escText(t[0])) + ' ' + mxUnitSpan(row.f)
+        + '<span class="arrow">→</span>' + sci(escText(t[1])) + ' ' + mxUnitSpan(row.t)
         + '<span class="tc-mark">' + (t[6] ? '✓ passed' : '✗ failed') + '</span></div>'
-        + '<div class="tc-sub"><span>expected <b>' + escText(t[2]) + '</b></span>'
-        + '<span>error <b>' + escText(t[3]) + '</b>' + escText(t[4]) + '</span>'
-        + '<span>tolerance ±' + escText(t[5]) + '</span></div></div>';
+        + '<div class="tc-sub"><span>expected <b>' + sci(escText(t[2])) + '</b></span>'
+        + '<span>error <b>' + sci(escText(t[3])) + '</b>' + sci(escText(t[4])) + '</span>'
+        + '<span>tolerance ±' + sci(escText(t[5])) + '</span></div></div>';
     }).join('');
     return '<div class="fx-tests"><div class="lbl">' + tests.length + ' test case'
          + (tests.length === 1 ? '' : 's') + '</div>' + rows + '</div>';

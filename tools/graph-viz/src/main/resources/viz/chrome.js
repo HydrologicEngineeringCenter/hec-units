@@ -173,6 +173,9 @@
     if (event.key !== 'Escape') {
       return;
     }
+    if (typeof exCloseWork === 'function' && exCloseWork()) {
+      return;
+    }
     if (summary && summary.classList.contains('open')) {
       showSummary(false);
       return;

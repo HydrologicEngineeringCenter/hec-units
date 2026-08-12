@@ -53,6 +53,15 @@
     return String(value).replace(/["\\]/g, '\\$&');
   }
 
+  // "kilogram" should find kg, so the name and its aliases count as the unit too.
+  function unitWords(id) {
+    var unit = UNIT[id];
+    if (!unit) {
+      return norm(id);
+    }
+    return norm([id, unit.n, unit.d].concat(unit.a || []).join(' '));
+  }
+
   function systemName(system) {
     return !system || system === 'NULL' ? 'system-agnostic' : system;
   }
@@ -271,6 +280,7 @@
                 + 'Its dimension, system, aliases, direct conversions and test coverage all '
                 + 'appear here.</div>';
 
+  var shownRows = [];
   var mode = 'conv';
   var qFrom = '';
   var qTo = '';
@@ -453,6 +463,16 @@
     wpage.querySelector('[data-step="1"]').disabled = page >= pages - 1;
   }
 
+  function showRow(row) {
+    var top = row.offsetTop;
+    var bottom = top + row.offsetHeight;
+    if (top < wlist.scrollTop) {
+      wlist.scrollTop = Math.max(0, top - 6);
+    } else if (bottom > wlist.scrollTop + wlist.clientHeight) {
+      wlist.scrollTop = bottom - wlist.clientHeight + 6;
+    }
+  }
+
   function selectResult(el, show) {
     wlist.querySelectorAll('.res').forEach(function (other) {
       other.classList.remove('on');
@@ -464,6 +484,7 @@
   // actually showing the results
   function drawConversions() {
     var rows = picked.missing ? INDEX.concat(missingRows()) : INDEX;
+    shownRows = rows;
     var fromList = terms(qFrom);
     var toList = terms(qTo);
     var hits = [];
@@ -586,13 +607,17 @@
            + (unit.y ? ' (' + systemName(unit.y) + ')' : '');
     }
 
-    var jumps = '<div class="info-sec jumps">'
-      + (graphCardFor(row.d)
+    // Nothing to convert along, so the converter would only report the gap.
+    var reachable = row.s !== 'missing';
+    var buttons = (graphCardFor(row.d)
          ? '<button type="button" class="gograph">Graph' + ARROW
            + escText(row.d) + '</button>'
          : '')
-      + '<button type="button" class="goconv">Converter' + ARROW
-      + sup(escText(row.f)) + '</button></div>';
+      + (reachable
+         ? '<button type="button" class="goconv">Converter' + ARROW
+           + sup(escText(row.f)) + '</button>'
+         : '');
+    var jumps = buttons ? '<div class="info-sec jumps">' + buttons + '</div>' : '';
 
     winfo.innerHTML = (renderedDetail(row.f, row.t)
         || '<div class="empty">No rendered formula for this pair.</div>')
@@ -614,9 +639,12 @@
         openGraph(row.d, row.f, row.t);
       });
     }
-    winfo.querySelector('.goconv').addEventListener('click', function () {
-      openConverter(row.f, row.t);
-    });
+    var toConverter = winfo.querySelector('.goconv');
+    if (toConverter) {
+      toConverter.addEventListener('click', function () {
+        openConverter(row.f, row.t);
+      });
+    }
   }
 
   function showUnit(id) {
@@ -728,7 +756,24 @@
     document.getElementById('whopmode').value = opts.hops ? 'eq' : 'any';
     document.getElementById('whopn').value = opts.hops || 1;
     draw();
+    if (opts.from && opts.to && UNIT[opts.from] && UNIT[opts.to]) {
+      openPair(opts.from, opts.to);
+    }
     window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function openPair(from, to) {
+    var found = null;
+    wlist.querySelectorAll('.res[data-i]').forEach(function (node) {
+      var row = shownRows[+node.dataset.i];
+      if (!found && row && row.f === from && row.t === to) {
+        found = node;
+      }
+    });
+    if (found) {
+      found.click();
+      showRow(found);
+    }
   }
 
   // Return buttons to go back to where you were before you jumped somewhere else
@@ -779,6 +824,11 @@
     if (typeof overlay !== 'undefined' && overlay
         && overlay.classList.contains('open') && lastCard) {
       place.card = lastCard;
+      if (seedApi && seedApi.picked) {
+        place.pick = seedApi.picked();
+      } else if (pinned && pinned.dataset.from) {
+        place.pin = {from: pinned.dataset.from, to: pinned.dataset.to};
+      }
     }
     if (summary && summary.classList.contains('open')) {
       place.summary = true;
@@ -883,7 +933,7 @@
         : null;
     if (chosen) {
       chosen.click();
-      chosen.scrollIntoView({block: 'center'});
+      showRow(chosen);
     }
   }
 
@@ -917,7 +967,15 @@
     }
 
     if (place.card) {
-      open(place.card);
+      open(place.card, place.pick || null);
+      if (place.pin) {
+        var cell = stage.querySelector('td[data-from="' + cssValue(place.pin.from)
+                                       + '"][data-to="' + cssValue(place.pin.to) + '"]');
+        if (cell) {
+          cell.click();
+          cell.scrollIntoView({block: 'center', inline: 'center'});
+        }
+      }
     } else if (place.summary) {
       showSummary(true);
     } else {
@@ -1059,19 +1117,38 @@
     });
   });
 
+  if (odetail) {
+    odetail.addEventListener('click', function (event) {
+      var button = event.target.closest('.jumpbtn');
+      if (!button) {
+        return;
+      }
+      var from = button.dataset.from;
+      var to = button.dataset.to;
+      navLeave();
+      if (overlay && overlay.classList.contains('open')) { close(); }
+      if (button.dataset.jump === 'convert') {
+        openConverter(from, to, true);
+      } else {
+        openFind({mode: 'conv', from: from, to: to, keepPlace: true});
+      }
+    });
+  }
+
   var ofind = document.getElementById('ofind');
   if (ofind) {
     ofindApi = wireFind(ofind, function (value) {
       var list = terms(value);
       stage.querySelectorAll('td[data-from]').forEach(function (cell) {
         var hit = list.length
-               && hasAll(norm(cell.dataset.from + ' ' + cell.dataset.to), list);
+               && hasAll(unitWords(cell.dataset.from) + ' ' + unitWords(cell.dataset.to),
+                         list);
         cell.classList.toggle('found', !!hit);
         cell.classList.toggle('faded', list.length > 0 && !hit);
       });
-      stage.querySelectorAll('th').forEach(function (th) {
-        var label = norm(th.textContent);
-        th.classList.toggle('found', list.length > 0 && !!label && hasAll(label, list));
+      stage.querySelectorAll('th[data-unit]').forEach(function (th) {
+        var hay = unitWords(th.dataset.unit);
+        th.classList.toggle('found', list.length > 0 && hasAll(hay, list));
       });
     });
   }

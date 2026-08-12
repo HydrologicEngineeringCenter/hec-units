@@ -285,8 +285,7 @@ public final class SummaryView {
         double share = stats.percentOfPairs(count);
         return Html.fill(BAR_ROW)
             .put("cls", cls).put("cls2", cls)
-            // "missing" means no conversion exists, so there is nothing to list
-            .put("state", cls.equals("missing") ? "" : cls)
+            .put("state", cls)
             .put("label", label)
             .put("count", count)
             .put("share", Stats.percent(share))

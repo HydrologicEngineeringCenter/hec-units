@@ -309,7 +309,9 @@
         node.ele.toggleClass('dim', k !== E[j].s && k !== E[j].t);
       });
       syncBadges();
-      panelShow(clearButton() + (E[j].detail || '<div class="empty">no formula</div>'), true);
+      panelShow(clearButton()
+                + (E[j].detail || '<div class="empty">no formula</div>')
+                + jumpButtons(N[E[j].s].id, N[E[j].t].id), true);
     }
 
     // go back to neutral
@@ -546,7 +548,8 @@
         + (paths.truncated ? ' (capped at ' + MAX_PATHS + ')' : '')
         + (paths.length ? ' · shortest ' + paths[0].length + ' hop'
            + (paths[0].length === 1 ? '' : 's') + ', longest '
-           + paths[paths.length - 1].length : '') + '</div>';
+           + paths[paths.length - 1].length : '') + '</div>'
+        + jumpButtons(A, B);
 
       if (!paths.length) {
         panelShow(head + '<div class="empty">No route exists between these two units.</div>', true);
@@ -963,6 +966,10 @@
       restyle: function () {
         flowInk = token('--accent-deep');
         cy.style(cyStyle(true)).update();
+      },
+      picked: function () {
+        return pickA !== null && pickB !== null
+          ? {from: N[pickA].id, to: N[pickB].id} : null;
       },
       pick: function (fromId, toId) {
         if (!(fromId in indexOf) || !(toId in indexOf)) { return; }
