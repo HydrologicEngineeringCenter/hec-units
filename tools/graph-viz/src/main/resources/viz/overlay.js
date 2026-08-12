@@ -27,7 +27,38 @@
     });
   }
 
+  function sci(escaped) {
+    return String(escaped).replace(/[⁰¹²³⁴-⁹⁻]+/g,
+      function (run) {
+        var out = '';
+        for (var i = 0; i < run.length; i++) {
+          var c = run.charAt(i);
+          out += c === '⁻' ? '−' : RAISED.indexOf(c);
+        }
+        return '<sup>' + out + '</sup>';
+      });
+  }
+
   var ARROW = '<span class="arrow">→</span>';
+
+  
+  function jumpButton(kind, label, from, to) {
+    return '<button type="button" class="jumpbtn" data-jump="' + kind
+      + '" data-from="' + escText(from) + '" data-to="' + escText(to) + '">'
+      + '<span class="jump-do">' + label + '</span>'
+      + '<span class="jump-pair">' + sup(escText(from)) + ARROW + sup(escText(to))
+      + '</span></button>';
+  }
+
+  function jumpButtons(from, to) {
+    if (!from || !to) {
+      return '';
+    }
+    return '<div class="jumps ojumps">'
+      + jumpButton('find', 'Search', from, to)
+      + jumpButton('convert', 'Convert', from, to)
+      + '</div>';
+  }
 
   // more generic helper
   function vizStore(key, value) {
@@ -199,8 +230,13 @@
     return Number(value.toPrecision(12)).toString();
   }
 
+  var shownRoutes = [];
+  var shownPair = null;
+
   function renderRoutes(container, from, to, chosenHops) {
     var found = routes(from, to);
+    shownRoutes = found;
+    shownPair = {from: from, to: to};
     if (!found.length) {
       container.innerHTML = '<div class="more">No route found in the direct '
                           + 'conversions.</div>';
@@ -216,7 +252,9 @@
       var off = reference !== 0 ? Math.abs(route.m - reference) / Math.abs(reference) : 0;
       var disagrees = off > 1e-9;
 
-      html += '<div class="rt' + (chosen ? ' chosen' : '') + '" style="--i:' + index + '">'
+      html += '<button type="button" class="rt' + (chosen ? ' chosen' : '')
+            + '" style="--i:' + index + '" data-route="' + index
+            + '" title="Show how this route is worked out">'
             + '<span class="hops">' + hops + (hops === 1 ? ' hop' : ' hops') + '</span>'
             + '<span class="via">'
             + route.path.map(function (id) { return sup(escText(id)); }).join(ARROW)
@@ -224,7 +262,7 @@
             + '<span class="fac' + (disagrees ? ' disagree' : '') + '">× ' + num(route.m)
             + (route.b !== 0 ? (route.b > 0 ? ' + ' : ' − ') + num(Math.abs(route.b)) : '')
             + (disagrees ? '   — disagrees with the shortest route' : '')
-            + '</span></div>';
+            + '</span></button>';
     });
 
     if (found.length >= MAX_ROUTES) {
@@ -239,7 +277,8 @@
             || '<div class="empty">' + cell.getAttribute('title') + '</div>';
 
     if (cell.dataset.from && cell.dataset.to && typeof SEED !== 'undefined') {
-      html += '<div class="fx-paths">'
+      html += jumpButtons(cell.dataset.from, cell.dataset.to)
+            + '<div class="fx-paths">'
             + '<button type="button" class="pathbtn">Show every route</button>'
             + '<div class="routes"></div></div>';
     }
@@ -256,6 +295,11 @@
   }
 
   odetail.addEventListener('click', function (event) {
+    var row = event.target.closest('.rt');
+    if (row && shownPair && shownRoutes[+row.dataset.route]) {
+      exOpenWork(shownPair.from, shownPair.to, shownRoutes[+row.dataset.route]);
+      return;
+    }
     if (!event.target.classList.contains('pathbtn') || !pinned) {
       return;
     }

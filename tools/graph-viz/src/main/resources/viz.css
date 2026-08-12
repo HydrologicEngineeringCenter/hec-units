@@ -358,8 +358,11 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .tc-mark{margin-left:auto;padding-left:10px;font:11px var(--mono);white-space:nowrap}
 .tc.ok .tc-mark{color:var(--ok-ink)}
 .tc.bad .tc-mark{color:var(--bad-ink)}
-.tc-sub{display:flex;flex-wrap:wrap;gap:4px 15px;margin-top:6px;
- font:11.5px var(--mono);color:var(--panel-ink-4)}
+/* Big enough to read, with the line box kept out of the way so the rows
+   opposite do not shift when an exponent turns up. */
+.tc sup,.fx-eq sup{font-size:.8em;vertical-align:super;line-height:0}
+.tc-sub{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;
+ font:12px var(--mono);color:var(--panel-ink-4)}
 .tc-sub b{font-weight:400;color:var(--panel-ink-2)}
 .tc.bad .tc-sub b{color:var(--bad-ink)}
 
@@ -367,12 +370,14 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .fx-paths{margin-top:15px;padding-top:12px;border-top:1px solid var(--glass-line)}
 .pathbtn{width:100%;font:11.5px var(--mono)}
 .routes{margin-top:10px}
-.routes .rt{padding:7px 9px;border-radius:var(--r-m);margin-bottom:5px;
+.routes .rt{display:block;width:100%;text-align:left;font:inherit;color:inherit;
+ cursor:pointer;padding:7px 9px;border-radius:var(--r-m);margin-bottom:5px;
  background:var(--glass);border:1px solid transparent;
  animation:rise var(--med) var(--ease) both;
  animation-delay:calc(min(var(--i,0),12)*25ms);
  transition:background var(--fast) var(--ease),border-color var(--fast) var(--ease)}
-.routes .rt:hover{background:var(--glass-line)}
+.routes .rt:hover{background:var(--glass-line);border-color:var(--panel-line)}
+.routes .rt:focus-visible{outline:2px solid var(--accent-deep);outline-offset:1px}
 .routes .rt.chosen{background:#38bdf814;border-color:#38bdf84d}
 .routes .hops{font:10px var(--mono);background:var(--glass-strong);color:var(--panel-ink-2);
  border-radius:var(--r-pill);padding:1px 7px;margin-right:7px}
@@ -818,7 +823,8 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 @media(max-width:900px){.wikibody{grid-template-columns:1fr}}
 
 .resultcol{min-width:0}
-.results{max-height:66vh;overflow-y:auto;scrollbar-width:thin;
+/* positioned so a row's offsetTop is measured against this box */
+.results{position:relative;max-height:66vh;overflow-y:auto;scrollbar-width:thin;
  scrollbar-color:var(--line) transparent;scrollbar-gutter:stable}
 
 .pager{display:flex;align-items:center;justify-content:center;gap:12px;
@@ -960,6 +966,24 @@ td.self{background:repeating-linear-gradient(45deg,var(--card),var(--card) 3px,
 .olegend button:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
 .legend .key.total{cursor:default}
 .jumps{display:flex;gap:9px;flex-wrap:wrap}
+
+/* Sits inside the overlay panel, so it takes the panel's inks, not the page's */
+.ojumps{margin-top:14px;padding-top:13px;border-top:1px solid var(--glass-line)}
+.jumpbtn{flex:1 1 130px;display:flex;align-items:center;justify-content:center;
+ gap:10px;cursor:pointer;font:600 11.5px var(--mono);letter-spacing:.03em;
+ padding:9px 12px;border-radius:var(--r-m);background:var(--glass-strong);
+ border:1px solid var(--panel-line);color:var(--panel-ink-2);
+ transition:border-color var(--fast) var(--ease),color var(--fast) var(--ease),
+  transform var(--fast) var(--ease)}
+.jumpbtn:hover{border-color:var(--accent-deep);color:var(--panel-ink)}
+.jumpbtn:active{transform:scale(.97)}
+.jumpbtn:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.jump-do{flex:none}
+.jump-pair{display:inline-flex;align-items:center;min-width:0;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jumpbtn .u{font-size:1em}
+.jumpbtn .arrow{margin:0 6px;background-color:currentColor}
+@media(prefers-reduced-motion:reduce){.jumpbtn:active{transform:none}}
 .jumps .gograph,.jumps .goconv{flex:1 1 160px;margin-top:0}
 .goconv{display:flex;align-items:center;justify-content:center;width:100%;
  gap:2px;font:600 12px var(--mono);letter-spacing:.03em;cursor:pointer;
@@ -1455,3 +1479,31 @@ button:active:not(:disabled){transform:scale(.97)}
 :root[data-theme=dark] .fwipe{color:var(--lt-ink-3)}
 :root[data-theme=dark] .fwipe:hover:not(:disabled){color:var(--bad-ink);
  border-color:var(--dark-3)}
+
+/* ======================================================= one route, worked out
+   Opens over the enlarged view, so it sits above the overlay and its panel. */
+#routework{position:fixed;inset:0;z-index:86;background:var(--veil);display:flex;
+ align-items:flex-start;justify-content:center;padding:38px 20px;overflow-y:auto;
+ opacity:0;transition:opacity var(--med) var(--ease)}
+#routework.in{opacity:1}
+.rw-card{width:min(760px,100%);border-radius:var(--r-l);background:var(--panel-deep);
+ border:1px solid var(--panel-line);color:var(--panel-ink);
+ box-shadow:var(--shadow-l);transform:translateY(10px);
+ transition:transform var(--med) var(--ease)}
+#routework.in .rw-card{transform:none}
+.rw-head{display:flex;align-items:center;gap:14px;padding:16px 20px;
+ border-bottom:1px solid var(--glass-line)}
+.rw-head h3{margin:0;font:17px var(--math);display:flex;align-items:center;flex:1}
+.rw-hops{margin-left:12px;font:10.5px var(--mono);color:var(--panel-ink-3);
+ background:var(--glass-strong);border-radius:var(--r-pill);padding:2px 9px}
+.rw-x{flex:none;font:inherit;font-size:.85rem;cursor:pointer;padding:7px 15px;
+ border-radius:var(--r-m);background:var(--glass-strong);
+ border:1px solid var(--panel-line);color:var(--panel-ink-2)}
+.rw-x:hover{color:var(--panel-ink)}
+.rw-x:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.rw-body{padding:18px 20px 22px}
+/* the working already carries its own card inside the converter */
+.rw-body .cvwork{border:none;background:none;padding:0;animation:none}
+@media(prefers-reduced-motion:reduce){
+ #routework,.rw-card{transition:none}
+}

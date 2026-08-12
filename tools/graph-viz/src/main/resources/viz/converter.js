@@ -157,12 +157,13 @@
          : '');
   }
 
-  function exDerivation(from, to, value) {
+  // `chosen` names one particular route; without it the shortest one is used.
+  function exDerivation(from, to, value, chosen) {
     var found = typeof routes === 'function' ? routes(from, to) : [];
-    if (!found.length) {
+    if (!found.length && !chosen) {
       return '<div class="empty">No route connects these units.</div>';
     }
-    var route = found[0];
+    var route = chosen || found[0];
     var path = route.path;
 
     var steps = [];
@@ -185,9 +186,11 @@
       + '<button type="button" class="cvgraph" data-from="' + escText(from)
       + '" data-to="' + escText(to) + '">Graph<span class="arrow"></span>'
       + escText(exUnits[from].d) + '</button></div>'
-      + '<div class="cvwork-note">Shortest of ' + found.length + ' route'
-      + (found.length === 1 ? '' : 's') + ', ' + steps.length + ' hop'
-      + (steps.length === 1 ? '' : 's') + '. Each hop multiplies in one constant '
+      + '<div class="cvwork-note">'
+      + (chosen ? 'This route, ' : 'Shortest of ' + found.length + ' route'
+         + (found.length === 1 ? '' : 's') + ', ')
+      + steps.length + ' hop' + (steps.length === 1 ? '' : 's')
+      + '. Each hop multiplies in one constant '
       + 'stored in <code>conversions.json</code>.</div>'
       + '<ol class="cvsteps">';
 
@@ -231,6 +234,48 @@
       + exUnitCard(from) + exUnitCard(to) + '</div>'
       + '</div>';
     return html;
+  }
+
+  var workReturn = null;
+
+  function exCloseWork() {
+    var box = document.getElementById('routework');
+    if (!box) {
+      return false;
+    }
+    box.classList.remove('in');
+    setTimeout(function () { box.remove(); }, 200);
+    if (workReturn && workReturn.focus) { workReturn.focus(); }
+    workReturn = null;
+    return true;
+  }
+
+  function exOpenWork(from, to, route) {
+    exCloseWork();
+    workReturn = document.activeElement;
+
+    var box = document.createElement('div');
+    box.id = 'routework';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-label', 'How this route is worked out');
+    box.innerHTML = '<div class="rw-card"><div class="rw-head">'
+      + '<h3>' + sup(escText(from)) + ARROW + sup(escText(to))
+      + '<span class="rw-hops">' + (route.path.length - 1)
+      + (route.path.length === 2 ? ' hop' : ' hops') + '</span></h3>'
+      + '<button type="button" class="rw-x" aria-label="Close">✕</button></div>'
+      + '<div class="rw-body">' + exDerivation(from, to, 1, route) + '</div></div>';
+
+    document.body.appendChild(box);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { box.classList.add('in'); });
+    });
+    box.querySelector('.rw-x').focus();
+    box.addEventListener('click', function (event) {
+      if (event.target === box || event.target.closest('.rw-x')) {
+        exCloseWork();
+      }
+    });
   }
 
   function exFilled() {
@@ -631,22 +676,25 @@
     pane.dataset.wired = '1';
 
     pane.addEventListener('click', function (event) {
-      var graph = event.target.closest('.cvgraph');
-      if (graph) {
-        var unit = exUnits[graph.dataset.from];
-        if (unit && typeof openGraph === 'function'
-            && typeof graphCardFor === 'function' && graphCardFor(unit.d)) {
-          openGraph(unit.d, graph.dataset.from, graph.dataset.to);
-        } else {
-          exToast('No conversion graph exists for '
-                  + (unit ? unit.d : 'this dimension') + '.');
-        }
-        return;
-      }
-
       var row = event.target.closest('.cv-row');
       if (row) {
         exSetPair(null, row.dataset.to);
       }
     });
   }
+
+  document.addEventListener('click', function (event) {
+    var graph = event.target.closest('.cvgraph');
+    if (!graph) {
+      return;
+    }
+    var unit = exUnits[graph.dataset.from];
+    exCloseWork();
+    if (unit && typeof openGraph === 'function'
+        && typeof graphCardFor === 'function' && graphCardFor(unit.d)) {
+      openGraph(unit.d, graph.dataset.from, graph.dataset.to);
+    } else {
+      exToast('No conversion graph exists for '
+              + (unit ? unit.d : 'this dimension') + '.');
+    }
+  });
