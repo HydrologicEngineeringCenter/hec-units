@@ -216,6 +216,9 @@ public class ConversionGraph {
         // Select the shortest route, ties broken by ROUTE_ORDER.
 
         return queues.stream()
+                     // prep for future work to also filter by weight of
+                     // size, in-same-unit-family, other?
+                     // maybe that should be part of the sorting somehow?
                      .min(ROUTE_ORDER)
                      .orElse(new ArrayDeque<>());
     }
