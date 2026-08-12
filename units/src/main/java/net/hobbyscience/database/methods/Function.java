@@ -5,6 +5,8 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Objects;
+
 import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.exceptions.BadMathExpression;
 import net.hobbyscience.database.exceptions.BadMethodData;
@@ -40,6 +42,11 @@ public class Function implements ConversionMethod{
     public boolean equals(Object other){
         if( !(other instanceof Function )) return false;
         return this.data.equals(((Function)other).data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(data);
     }
 
     @Override

@@ -5,6 +5,9 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Locale;
+import java.util.Objects;
+
 import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.exceptions.BadMathExpression;
 import net.hobbyscience.database.exceptions.BadMethodData;
@@ -34,7 +37,7 @@ public class InvLinear implements ConversionMethod{
 
     @Override
     public String getAlgebra() {
-        return String.format("(i-%.06f)/%.06f",b,a);
+        return String.format(Locale.ROOT,"(i-%.06f)/%.06f",b,a);
     }
     
     @Override
@@ -51,6 +54,11 @@ public class InvLinear implements ConversionMethod{
     public boolean equals(Object other){
         if( !(other instanceof InvLinear)) return false;
         return getAlgebra().equals(((InvLinear)other).getAlgebra());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAlgebra());
     }
 
     @Override

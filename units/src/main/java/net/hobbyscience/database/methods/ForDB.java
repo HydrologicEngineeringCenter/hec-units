@@ -5,6 +5,8 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Objects;
+
 import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.exceptions.NotImplemented;
 import net.hobbyscience.math.EquationInverter;
@@ -36,6 +38,11 @@ public class ForDB implements ConversionMethod{
 	public boolean equals(Object other) {
 		if( !( other instanceof ForDB )) return false;
 		return this.postfix.equals( ((ForDB)other).postfix );
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(postfix);
 	}
 
 	@Override

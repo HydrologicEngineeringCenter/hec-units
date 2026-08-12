@@ -5,6 +5,7 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import net.hobbyscience.database.ConversionMethod;
@@ -36,7 +37,7 @@ public class Linear implements ConversionMethod{
 
     @Override
     public String getAlgebra() {
-        return String.format("i*%.06f+%.06f",a,b);
+        return String.format(Locale.ROOT,"i*%.06f+%.06f",a,b);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class Linear implements ConversionMethod{
 
     @Override
     public int hashCode() {
-        return Objects.hash(a, b);
+        return Objects.hash(getAlgebra());
     }
 
     @Override

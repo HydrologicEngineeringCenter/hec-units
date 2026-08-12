@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -30,6 +29,18 @@ import net.hobbyscience.math.Equations;
 
 public class ConversionGraph {
     private static Logger log = Logger.getLogger(ConversionGraph.class.getName());
+
+    // Establish a consistent order, comparing first by number of hops, then alphabetically by chain string
+    private static final Comparator<Queue<Conversion>> ROUTE_ORDER =
+        Comparator.<Queue<Conversion>>comparingInt(Queue::size)
+                  .thenComparing(ConversionGraph::chainKey);
+
+    // Compare equal routes alphabetically, so no routes can be "equal"
+    private static String chainKey(Queue<Conversion> route) {
+        return route.stream()
+                    .map(c -> c.getFrom().getAbbreviation() + ">" + c.getTo().getAbbreviation())
+                    .collect(Collectors.joining("|"));
+    }
 
     private Set<Conversion> initialConversions;
 
@@ -168,12 +179,8 @@ public class ConversionGraph {
                         queues.add(q2.get());
                     }
                 });
-                // return the shortest path
-                return Optional.ofNullable(queues.stream().sorted( (l,r) -> {
-                    if( l.size() < r.size() ) return -1;
-                    else if ( l.size() == r.size() ) return 0;
-                    else return 1;
-                }).findFirst().orElseGet( () -> null ));
+                // return the shortest path, ties broken by ROUTE_ORDER
+                return queues.stream().min(ROUTE_ORDER);
 
             }
         }
@@ -206,25 +213,10 @@ public class ConversionGraph {
             }
         });
         if( queues.isEmpty() ) throw new NoConversionFound("No conversion found from " + from + " to " + to );
-        // got through each path and select the shortest.
-        final AtomicInteger shortestLength = new AtomicInteger(-1);
-        Comparator<Queue<Conversion>> sorter = (var l, var r) -> {
-            if( l.size() < r.size() ) return -1;
-            else if ( l.size() == r.size() ) return 0;
-            else return 1;
-        };
+        // Select the shortest route, ties broken by ROUTE_ORDER.
+
         return queues.stream()
-                     .sorted(sorter)
-                     // prep for future work to also filter by weight of
-                     // size, in-same-unit-family, other?
-                     // maybe that should be part of the sorting somehow?
-                     .takeWhile(q -> {
-                        if (shortestLength.get() == -1) {
-                            shortestLength.set(q.size());
-                        }
-                        return q.size() == shortestLength.get();
-                      })
-                     .findFirst()
+                     .min(ROUTE_ORDER)
                      .orElse(new ArrayDeque<>());
     }
 

@@ -5,6 +5,7 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import net.hobbyscience.database.ConversionMethod;
@@ -42,7 +43,7 @@ public class USGS implements ConversionMethod {
 
     @Override
     public String getAlgebra() {        
-        return String.format("%0.6f * (%0.6f + i)^%0.6f + %0.6f",a,b,c,d);
+        return String.format(Locale.ROOT,"%.6f * (%.6f + i)^%.6f + %.6f",a,b,c,d);
     }
 
     @Override
@@ -56,13 +57,13 @@ public class USGS implements ConversionMethod {
 
     @Override
     public boolean equals(Object other){
-        if( !(other instanceof InvLinear)) return false;
-        return getAlgebra().equals(((InvLinear)other).getAlgebra());
+        if( !(other instanceof USGS)) return false;
+        return getAlgebra().equals(((USGS)other).getAlgebra());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(a, b, c, d);
+        return Objects.hash(getAlgebra());
     }
 
     @Override
