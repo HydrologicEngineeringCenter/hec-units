@@ -2,6 +2,7 @@ package cwms.units;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -61,9 +62,19 @@ public class Unit {
 
     @Override
     public boolean equals(Object other) {
+        if( this == other ) return true;
         if( !(other instanceof Unit)) return false;
-        else {
-            return this.toString().equals(other.toString());
-        }
+        Unit o = (Unit)other;
+        return Objects.equals(abstractParameter, o.abstractParameter)
+            && Objects.equals(abbreviation, o.abbreviation)
+            && Objects.equals(system, o.system)
+            && Objects.equals(name, o.name)
+            && Objects.equals(description, o.description)
+            && Objects.equals(aliases, o.aliases);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(abstractParameter, abbreviation, system, name, description, aliases);
     }
 }

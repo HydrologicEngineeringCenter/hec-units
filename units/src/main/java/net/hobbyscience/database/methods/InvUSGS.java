@@ -5,6 +5,9 @@
 
 package net.hobbyscience.database.methods;
 
+import java.util.Locale;
+import java.util.Objects;
+
 import net.hobbyscience.database.ConversionMethod;
 import net.hobbyscience.database.exceptions.BadMathExpression;
 import net.hobbyscience.database.exceptions.BadMethodData;
@@ -44,7 +47,7 @@ public class InvUSGS implements ConversionMethod {
      */
     @Override
     public String getAlgebra() {        
-        return String.format("( (i-%0.6f)/%0.6f)^(1.0/%0.6f) - %0.6f",d,a,c,b);
+        return String.format(Locale.ROOT,"( (i-%.6f)/%.6f)^(1.0/%.6f) - %.6f",d,a,c,b);
     }
 
     @Override
@@ -61,6 +64,11 @@ public class InvUSGS implements ConversionMethod {
     public boolean equals(Object other){
         if( !(other instanceof InvUSGS)) return false;
         return getAlgebra().equals(((InvUSGS)other).getAlgebra());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAlgebra());
     }
     
     @Override

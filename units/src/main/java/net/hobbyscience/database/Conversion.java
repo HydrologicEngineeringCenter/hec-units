@@ -47,8 +47,8 @@ public class Conversion {
     public boolean equals(Object other ){
         if( !(other instanceof Conversion ) ) return false;
         Conversion o = (Conversion)other;
-        if( this.from != o.from ) return false;
-        if( this.to != o.to ) return false;
+        if( !this.from.equals(o.from) ) return false;
+        if( !this.to.equals(o.to) ) return false;
         return this.method.equals(o.method);
     }
 
