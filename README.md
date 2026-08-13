@@ -10,11 +10,11 @@ This library contains our defined Unit definitions and conversion values.
 
 ## CONTRIBUTING
 
-Formal contributing documents to be created soon. For the moment, open pull request, wait for review.
+See [contributing](CONTRIBUTING.md) for additional information.
 
 Please observe that the project is primarily a Gradle java project. If you are contributing for a language that isn't java, that's Okay, however expect the generated output from the units project and put
 the library in an appropriate folder (e.g. javascript/hec-units-ts, or golang/hec-units, etc) and setup the require build tools. If you understand how to integrate those within gradle please do so, otherwise just
-let us know you don't and we'll assist - just to be clear your non-java project, expected for depending on some output files *should* be able to run standalone.
+let us know you don't and we'll assist - just to be clear your non-java project, except for depending on some output files *should* be able to run standalone.
 
 ## WARNINGS
 
