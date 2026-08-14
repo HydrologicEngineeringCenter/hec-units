@@ -77,10 +77,10 @@
       if (to === from || exUnits[to].d !== dim) {
         return;
       }
-      var found = routes(from, to);
-      if (found.length) {
-        out.push({to: to, value: found[0].m * value + found[0].b,
-                  hops: found[0].path.length - 1});
+      var best = usableRoute(routes(from, to));
+      if (best) {
+        out.push({to: to, value: best.m * value + best.b,
+                  hops: best.path.length - 1});
       }
     });
     return out.sort(function (a, b) { return a.hops - b.hops || a.to.localeCompare(b.to); });
@@ -90,8 +90,8 @@
     if (!exUnits[from] || !exUnits[to] || typeof routes !== 'function') {
       return null;
     }
-    var found = routes(from, to);
-    return found.length ? found[0].m * value + found[0].b : null;
+    var best = usableRoute(routes(from, to));
+    return best ? best.m * value + best.b : null;
   }
 
   function exU(id) {
@@ -163,7 +163,10 @@
     if (!found.length && !chosen) {
       return '<div class="empty">No route connects these units.</div>';
     }
-    var route = chosen || found[0];
+    var route = chosen || usableRoute(found) || found[0];
+    if (!route) {
+      return '<div class="empty">No route connects these units.</div>';
+    }
     var path = route.path;
 
     var steps = [];

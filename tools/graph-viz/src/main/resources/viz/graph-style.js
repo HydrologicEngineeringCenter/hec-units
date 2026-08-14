@@ -11,6 +11,11 @@
 
 // Setting up the Cytoscape style
   function cyStyle(enlarged) {
+    // One computed-style read for the whole sheet, not one per token
+    var styles = getComputedStyle(document.documentElement);
+    function tk(name) {
+      return styles.getPropertyValue(name).trim();
+    }
     var mono = fontStack('--mono', 'monospace');
     function pillWidth(ele) { return 26 + 13 * String(ele.data('label')).length; }
     return [
@@ -58,19 +63,19 @@
       {selector: '.dim', style: {'opacity': 0.12}},
 
       {selector: '.entering', style: {'opacity': 0}},
-      {selector: 'edge.hot', style: {'line-color': token('--edge-pick'), 'width': 4}},
+      {selector: 'edge.hot', style: {'line-color': tk('--edge-pick'), 'width': 4}},
 
       {selector: 'edge.cycle', style: {
-        'line-color': token('--glow'), 'width': 4.5, 'opacity': 1, 'z-index': 12,
-        'overlay-color': token('--glow'), 'overlay-opacity': 0.18,
+        'line-color': tk('--glow'), 'width': 4.5, 'opacity': 1, 'z-index': 12,
+        'overlay-color': tk('--glow'), 'overlay-opacity': 0.18,
         'overlay-padding': 7,
         'transition-property': 'line-color, width, overlay-opacity, overlay-padding',
         'transition-duration': '0.4s',
         'transition-timing-function': 'ease-out'}},
 
       {selector: 'node.cycle', style: {
-        'border-color': token('--glow'), 'border-width': 3.5,
-        'overlay-color': token('--glow'), 'overlay-opacity': 0.18,
+        'border-color': tk('--glow'), 'border-width': 3.5,
+        'overlay-color': tk('--glow'), 'overlay-opacity': 0.18,
         'overlay-padding': 7, 'overlay-corner-radius': 999,
         'transition-property':
           'border-color, border-width, overlay-opacity, overlay-padding',
@@ -78,14 +83,14 @@
         'transition-timing-function': 'ease-out'}},
 
       {selector: 'edge.sel', style: {
-        'line-color': token('--edge-pick'), 'width': 4.5, 'opacity': 1}},
+        'line-color': tk('--edge-pick'), 'width': 4.5, 'opacity': 1}},
 
       {selector: 'edge.on-route', style: {'opacity': 1}},
 
       {selector: 'node.pick-a', style: {
-        'border-color': token('--pick-1'), 'border-width': 4, 'opacity': 1}},
+        'border-color': tk('--pick-1'), 'border-width': 4, 'opacity': 1}},
       {selector: 'node.pick-b', style: {
-        'border-color': token('--pick-2'), 'border-width': 4, 'opacity': 1}},
+        'border-color': tk('--pick-2'), 'border-width': 4, 'opacity': 1}},
 
       {selector: 'node.bdg', style: {
         'shape': 'ellipse', 'width': 26, 'height': 26,
@@ -95,19 +100,19 @@
         'font-size': 15, 'font-weight': 700,
         'text-valign': 'center', 'text-halign': 'center',
         'events': 'no', 'z-index': 9}},
-      {selector: 'node.bdg.p1', style: {'background-color': token('--pick-1')}},
-      {selector: 'node.bdg.p2', style: {'background-color': token('--pick-2')}},
+      {selector: 'node.bdg.p1', style: {'background-color': tk('--pick-1')}},
+      {selector: 'node.bdg.p2', style: {'background-color': tk('--pick-2')}},
 
       {selector: 'node.hover', style: {
         'border-width': 3.5,
-        'overlay-color': token('--hover-plain'),
-        'overlay-opacity': parseFloat(token('--hover-veil')) || 0.16,
+        'overlay-color': tk('--hover-plain'),
+        'overlay-opacity': parseFloat(tk('--hover-veil')) || 0.16,
         'overlay-padding': 7,
         'overlay-corner-radius': 999}},
-      {selector: 'node.t-si.hover', style: {'overlay-color': token('--hover-si')}},
-      {selector: 'node.t-english.hover', style: {'overlay-color': token('--hover-english')}},
+      {selector: 'node.t-si.hover', style: {'overlay-color': tk('--hover-si')}},
+      {selector: 'node.t-english.hover', style: {'overlay-color': tk('--hover-english')}},
       {selector: 'node.preview', style: {
-        'border-color': token('--pick-2'), 'border-width': 3.5}}
+        'border-color': tk('--pick-2'), 'border-width': 3.5}}
     ];
   }
   var PRESET = {name: 'preset', fit: false, animate: false};

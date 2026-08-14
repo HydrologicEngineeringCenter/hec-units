@@ -46,6 +46,10 @@
     var target = parseFloat(parts[2]);
     var places = (parts[2].split('.')[1] || '').length;
     var began = null;
+    if (stillPreferred()) {
+      el.textContent = parts[1] + target.toFixed(places) + parts[3];
+      return;
+    }
 
     requestAnimationFrame(function frame(now) {
       began = began === null ? now : began;
@@ -238,9 +242,7 @@
       if (sweeping) {
         return;
       }
-      var still = window.matchMedia
-               && matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!document.startViewTransition || still) {
+      if (!document.startViewTransition || stillPreferred()) {
         sweeping = true;
         flip();
         save();
@@ -257,6 +259,8 @@
 
       sweeping = true;
       root.classList.add('theming');
+      // Priced before the snapshot rather than on the animation's frames
+      vizStore('viz-theme', goingDark ? 'dark' : 'light');
 
       var sweep = document.startViewTransition(flip);
       sweep.ready.then(function () {
@@ -264,10 +268,16 @@
                                  'polygon(' + edge.join(',') + ')']},
                      {duration: 560, easing: 'cubic-bezier(.22,.7,.28,1)',
                       pseudoElement: '::view-transition-new(root)'});
-        save();
-        restyleGraphs();
       });
-      sweep.finished.then(settle, settle);
+      // Restyling a live graph rebuilds its whole canvas; it can have the
+      // frames the sweep is done with.
+      sweep.finished.then(function () {
+        restyleGraphs();
+        settle();
+      }, function () {
+        restyleGraphs();
+        settle();
+      });
     });
     paint();
   })();

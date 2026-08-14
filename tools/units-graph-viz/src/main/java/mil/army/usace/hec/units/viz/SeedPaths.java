@@ -27,12 +27,11 @@ final class SeedPaths {
                 continue;
             }
             AffineForm form = FormulaRenderer.affineOf(x -> SimplePostfixCalculator.calculate(postfix, x));
-            if (form == null || form.m() == 0.0) {
-                continue;   // cannot be composed into a route factor
-            }
+            boolean composable = form != null && form.m() != 0.0;
             rows.add("[" + quote(conversion.getFrom().getAbbreviation())
                    + "," + quote(conversion.getTo().getAbbreviation())
-                   + "," + number(form.m()) + "," + number(form.b()) + "]");
+                   + "," + (composable ? number(form.m()) : "null")
+                   + "," + (composable ? number(form.b()) : "0") + "]");
         }
         rows.sort(Comparator.naturalOrder());   // stable output between runs
         return "var SEED=[" + String.join(",", rows) + "];\n";
