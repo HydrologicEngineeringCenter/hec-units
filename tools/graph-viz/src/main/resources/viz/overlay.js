@@ -69,8 +69,13 @@
     return null;
   }
 
-  var MAX_ROUTES = 60;
-  var MAX_HOPS = 7;
+  var ROUTE_CAP = 4000;
+  var ROUTE_HOPS = 14;
+
+  function stillPreferred() {
+    return !!(window.matchMedia
+              && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
 
   var pinned = null;
 
@@ -173,9 +178,13 @@
       return adjacency;
     }
     SEED.forEach(function (edge) {
-      link(edge[0], edge[1], edge[2], edge[3]);
-      if (edge[2] !== 0) {
-        link(edge[1], edge[0], 1 / edge[2], -edge[3] / edge[2]);
+      var m = edge[2];
+      link(edge[0], edge[1], m, edge[3]);
+      // Walkable in reverse either way; only an invertible one gets numbers.
+      if (m === null || m === 0) {
+        link(edge[1], edge[0], null, 0);
+      } else {
+        link(edge[1], edge[0], 1 / m, -edge[3] / m);
       }
     });
     return adjacency;
@@ -185,14 +194,13 @@
     (adjacency[from] = adjacency[from] || []).push({to: to, m: m, b: b});
   }
 
-  // Finding paths from every node
   function routes(from, to) {
     var edges = graph();
     var found = [];
     var onPath = {};
 
     function walk(node, path, m, b) {
-      if (found.length >= MAX_ROUTES || path.length > MAX_HOPS + 1) {
+      if (found.length >= ROUTE_CAP || path.length > ROUTE_HOPS + 1) {
         return;
       }
       if (node === to && path.length > 1) {
@@ -205,7 +213,9 @@
         }
         onPath[edge.to] = true;
         path.push(edge.to);
-        walk(edge.to, path, m * edge.m, edge.m * b + edge.b);
+        var dead = m === null || edge.m === null;
+        walk(edge.to, path, dead ? null : m * edge.m,
+             dead ? null : edge.m * b + edge.b);
         path.pop();
         onPath[edge.to] = false;
       });
@@ -217,6 +227,16 @@
       return a.path.length - b2.path.length;
     });
     return found;
+  }
+
+  // The shortest route that actually composes to a number, if any does.
+  function usableRoute(found) {
+    for (var i = 0; i < found.length; i++) {
+      if (found[i].m !== null) {
+        return found[i];
+      }
+    }
+    return null;
   }
 
   // turn the routes into a panel
@@ -243,14 +263,16 @@
       return;
     }
 
-    var reference = found[0].m;
+    var usable = usableRoute(found);
+    var reference = usable ? usable.m : null;
     var html = '';
 
     found.forEach(function (route, index) {
       var hops = route.path.length - 1;
       var chosen = hops === chosenHops;
-      var off = reference !== 0 ? Math.abs(route.m - reference) / Math.abs(reference) : 0;
-      var disagrees = off > 1e-9;
+      var composable = route.m !== null;
+      var off = composable && reference ? Math.abs(route.m - reference) / Math.abs(reference) : 0;
+      var disagrees = composable && off > 1e-9;
 
       html += '<button type="button" class="rt' + (chosen ? ' chosen' : '')
             + '" style="--i:' + index + '" data-route="' + index
@@ -259,14 +281,17 @@
             + '<span class="via">'
             + route.path.map(function (id) { return sup(escText(id)); }).join(ARROW)
             + '</span>'
-            + '<span class="fac' + (disagrees ? ' disagree' : '') + '">× ' + num(route.m)
-            + (route.b !== 0 ? (route.b > 0 ? ' + ' : ' − ') + num(Math.abs(route.b)) : '')
-            + (disagrees ? '   — disagrees with the shortest route' : '')
+            + '<span class="fac' + (disagrees ? ' disagree' : '') + '">'
+            + (composable
+               ? '× ' + num(route.m)
+                 + (route.b !== 0 ? (route.b > 0 ? ' + ' : ' − ') + num(Math.abs(route.b)) : '')
+                 + (disagrees ? '   — disagrees with the shortest route' : '')
+               : 'not a simple scale and offset, so it cannot be composed')
             + '</span></button>';
     });
 
-    if (found.length >= MAX_ROUTES) {
-      html += '<div class="more">Showing the first ' + MAX_ROUTES + ' routes.</div>';
+    if (found.length >= ROUTE_CAP) {
+      html += '<div class="more">Showing the first ' + ROUTE_CAP + ' routes.</div>';
     }
     container.innerHTML = html;
   }

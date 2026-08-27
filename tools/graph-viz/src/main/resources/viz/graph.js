@@ -24,10 +24,8 @@
                 + 'drag the background to pan, scroll to zoom.</div>';
 
   var GROUP_COLORS = ['#38bdf8', '#f87171', '#fbbf24', '#a78bfa', '#34d399', '#fb923c'];
-  var MAX_PATHS = 4000;
-  // Named apart from the cap in overlay.js: the five files share one
-  // closure, so two identically named vars would be a single variable.
-  var SEED_MAX_HOPS = 14;
+  var MAX_PATHS = ROUTE_CAP;
+  var SEED_MAX_HOPS = ROUTE_HOPS;
 
   function escText(value) {
     return String(value).replace(/[&<>"]/g, function (c) {
@@ -151,6 +149,12 @@
     var flowInk = token('--accent-deep');
     var phase = 0;
     var FLOW_STEPS = 22;              // segments a bowed hop is flattened into
+    var FLOW_POINT = {x: 0, y: 0, angle: 0};
+    var geomEpoch = 0;
+    var flowInkA = '';
+    var flowInkB = '';
+    var flowRingA = 0;
+    var flowRingB = 0;
     var enterTimers = [];
 
     // Above the graph and ignoring the mouse, so it never blocks a click.
@@ -167,44 +171,54 @@
 
     // add some physics simulating for graph
     function tick() {
-      N.forEach(function (n) { n.fx2 = 0; n.fy2 = 0; });
-      for (var a = 0; a < N.length; a++) {
-        for (var b = a + 1; b < N.length; b++) {
-          var dx = N[b].x - N[a].x;
-          var dy = N[b].y - N[a].y;
+      var tree = data.tree;
+      var repel = tree ? 6000 : 16000;
+      var count = N.length;
+      var i;
+      var n;
+      var dx;
+      var dy;
+      var d;
+      var f;
+      for (i = 0; i < count; i++) { n = N[i]; n.fx2 = 0; n.fy2 = 0; }
+      for (var a = 0; a < count; a++) {
+        for (var b = a + 1; b < count; b++) {
+          dx = N[b].x - N[a].x;
+          dy = N[b].y - N[a].y;
           var d2 = Math.max(dx * dx + dy * dy, 25);
-          var d = Math.sqrt(d2);
-          var f = (data.tree ? 6000 : 16000) / d2;
+          d = Math.sqrt(d2);
+          f = repel / d2;
           N[a].fx2 -= f * dx / d; N[a].fy2 -= f * dy / d;
           N[b].fx2 += f * dx / d; N[b].fy2 += f * dy / d;
         }
       }
-      if (!data.tree) {
-        E.forEach(function (edge) {
-          var na = N[edge.s];
-          var nb = N[edge.t];
-          var dx = nb.x - na.x;
-          var dy = nb.y - na.y;
-          var d = Math.hypot(dx, dy) || 1;
-          var f = 0.05 * (d - LEN);
+      if (!tree) {
+        for (i = 0; i < E.length; i++) {
+          var na = N[E[i].s];
+          var nb = N[E[i].t];
+          dx = nb.x - na.x;
+          dy = nb.y - na.y;
+          d = Math.sqrt(dx * dx + dy * dy) || 1;
+          f = 0.05 * (d - LEN);
           na.fx2 += f * dx / d; na.fy2 += f * dy / d;
           nb.fx2 -= f * dx / d; nb.fy2 -= f * dy / d;
-        });
+        }
       }
-      N.forEach(function (n) {
-        if (data.tree) {
+      for (i = 0; i < count; i++) {
+        n = N[i];
+        if (tree) {
           n.fx2 += (n.hx - n.x) * 0.08;
           n.fy2 += (n.hy - n.y) * 0.08;
         } else {
           n.fx2 += (W / 2 - n.x) * 0.010;
           n.fy2 += (H / 2 - n.y) * 0.010;
         }
-        if (n.fixed) { n.vx = n.vy = 0; return; }
+        if (n.fixed) { n.vx = n.vy = 0; continue; }
         n.vx = (n.vx + n.fx2) * 0.62;
         n.vy = (n.vy + n.fy2) * 0.62;
         n.x = Math.max(70, Math.min(W - 70, n.x + n.vx * alpha));
         n.y = Math.max(45, Math.min(H - 45, n.y + n.vy * alpha));
-      });
+      }
     }
 
     // apply physics to cytoscape
@@ -226,8 +240,18 @@
       return most;
     }
 
+    function settleNow() {
+      for (var i = 0; i < 400 && alpha >= 0.002; i++) {
+        tick();
+        if (dragNode === null) { alpha *= 0.962; }
+      }
+      draw();
+      sim = null;
+    }
+
     // run physics one tick per frame
     function step() {
+      if (stillPreferred()) { settleNow(); return; }
       tick();
       draw();
       if (dragNode === null) { alpha *= 0.962; }
@@ -238,6 +262,7 @@
     // restart physics when mouse dragging
     function reheat() {
       alpha = Math.max(alpha, 0.22);
+      if (stillPreferred()) { tick(); draw(); return; }
       if (!sim) { sim = requestAnimationFrame(step); }
     }
 
@@ -245,6 +270,7 @@
     function clearMarks() {
       stopFlow();
       stopCycle();
+      geomEpoch++;
       cy.elements().removeClass('dim sel on-route pick-a pick-b hot');
     }
 
@@ -258,8 +284,12 @@
         if (e.s === i) { near[e.t] = true; }
         if (e.t === i) { near[e.s] = true; }
       });
-      N.forEach(function (node, j) { node.ele.toggleClass('dim', !near[j]); });
-      E.forEach(function (edge, j) { edge.ele.toggleClass('dim', edge.s !== i && edge.t !== i); });
+      cy.batch(function () {
+        N.forEach(function (node, j) { node.ele.toggleClass('dim', !near[j]); });
+        E.forEach(function (edge, j) {
+          edge.ele.toggleClass('dim', edge.s !== i && edge.t !== i);
+        });
+      });
     }
 
     var pulseSeq = {};
@@ -301,12 +331,14 @@
       paths = [];
       selEdge = j;
       clearMarks();
+      cy.batch(function () {
       E.forEach(function (edge, k) {
         edge.ele.toggleClass('sel', k === j);
         edge.ele.toggleClass('dim', k !== j);
       });
       N.forEach(function (node, k) {
         node.ele.toggleClass('dim', k !== E[j].s && k !== E[j].t);
+      });
       });
       syncBadges();
       panelShow(clearButton()
@@ -370,6 +402,7 @@
     }
 
     function markPicks() {
+      geomEpoch++;
       if (pickA !== null) { N[pickA].ele.addClass('pick-a'); }
       if (pickB !== null) { N[pickB].ele.addClass('pick-b'); }
       syncBadges();
@@ -635,12 +668,21 @@
               c: {x: 2 * mid.x - (a.x + b.x) / 2, y: 2 * mid.y - (a.y + b.y) / 2}};
     }
 
-    function polyOf(hop) {
+
+    function polyOf(hop, segments) {
+      var na = N[hop.from];
+      var nb = N[hop.to];
+      var cached = hop.poly;
+      if (cached && cached.segments === segments && cached.epoch === geomEpoch
+          && cached.ax === na.x && cached.ay === na.y
+          && cached.bx === nb.x && cached.by === nb.y) {
+        return cached;
+      }
       var curve = curveOf(hop);
       var points = [];
       var runs = [0];
-      for (var i = 0; i <= FLOW_STEPS; i++) {
-        var t = i / FLOW_STEPS;
+      for (var i = 0; i <= segments; i++) {
+        var t = i / segments;
         var u = 1 - t;
         points.push({x: u * u * curve.a.x + 2 * u * t * curve.c.x + t * t * curve.b.x,
                      y: u * u * curve.a.y + 2 * u * t * curve.c.y + t * t * curve.b.y});
@@ -650,10 +692,13 @@
           runs.push(runs[i - 1] + Math.sqrt(dx * dx + dy * dy));
         }
       }
-      return {points: points, runs: runs, length: runs[runs.length - 1]};
+      hop.poly = {points: points, runs: runs, length: runs[runs.length - 1],
+                  segments: segments, epoch: geomEpoch,
+                  ax: na.x, ay: na.y, bx: nb.x, by: nb.y};
+      return hop.poly;
     }
 
-    function alongPoly(poly, distance) {
+    function alongPoly(poly, distance, out) {
       var i = 1;
       while (i < poly.runs.length && poly.runs[i] < distance) { i++; }
       if (i >= poly.runs.length) { return null; }
@@ -661,17 +706,21 @@
       var b = poly.points[i];
       var span = poly.runs[i] - poly.runs[i - 1] || 1;
       var t = (distance - poly.runs[i - 1]) / span;
-      return {x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t,
-              angle: Math.atan2(b.y - a.y, b.x - a.x)};
+      out.x = a.x + (b.x - a.x) * t;
+      out.y = a.y + (b.y - a.y) * t;
+      out.angle = Math.atan2(b.y - a.y, b.x - a.x);
+      return out;
     }
 
+    var flowRatio = 1;
+
     function sizeFlow() {
-      var ratio = window.devicePixelRatio || 1;
-      flowCanvas.width = Math.max(1, Math.round(host.clientWidth * ratio));
-      flowCanvas.height = Math.max(1, Math.round(host.clientHeight * ratio));
+      flowRatio = window.devicePixelRatio || 1;
+      flowCanvas.width = Math.max(1, Math.round(host.clientWidth * flowRatio));
+      flowCanvas.height = Math.max(1, Math.round(host.clientHeight * flowRatio));
       flowCanvas.style.width = host.clientWidth + 'px';
       flowCanvas.style.height = host.clientHeight + 'px';
-      flowCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      flowCtx.setTransform(flowRatio, 0, 0, flowRatio, 0, 0);
     }
 
     function drawFlow() {
@@ -690,16 +739,21 @@
       flowCtx.lineJoin = 'round';
       flowCtx.strokeStyle = flowInk;
 
+      var segments = (dragNode !== null || sim !== null) ? 8 : FLOW_STEPS;
+      var arrow = FLOW_POINT;
       var carry = phase % gap;
-      flowPath.forEach(function (hop) {
-        var poly = polyOf(hop);
+      for (var h = 0; h < flowPath.length; h++) {
+        var poly = polyOf(flowPath[h], segments);
         var span = poly.length * zoom;
         for (var d = carry; d < span; d += gap) {
-          var at = alongPoly(poly, d / zoom);
+          var at = alongPoly(poly, d / zoom, arrow);
           if (!at) { break; }
-          flowCtx.save();
-          flowCtx.translate(at.x * zoom + pan.x, at.y * zoom + pan.y);
-          flowCtx.rotate(at.angle);
+          var cos = Math.cos(at.angle);
+          var sin = Math.sin(at.angle);
+          flowCtx.setTransform(flowRatio * cos, flowRatio * sin,
+                               -flowRatio * sin, flowRatio * cos,
+                               flowRatio * (at.x * zoom + pan.x),
+                               flowRatio * (at.y * zoom + pan.y));
           flowCtx.beginPath();
           flowCtx.moveTo(-size, -size * 0.7);
           flowCtx.lineTo(0, 0);
@@ -710,25 +764,24 @@
           flowCtx.lineWidth = thin;
           flowCtx.globalAlpha = alpha;
           flowCtx.stroke();
-          flowCtx.restore();
         }
         carry = Math.max(0, carry + Math.ceil((span - carry) / gap) * gap - span);
-      });
+      }
+      flowCtx.setTransform(flowRatio, 0, 0, flowRatio, 0, 0);
 
       if (!flowHint) {
-        ring(pickA, token('--pick-1'), zoom, pan);
-        ring(pickB, token('--pick-2'), zoom, pan);
+        ring(pickA, flowInkA, zoom, pan, flowRingA);
+        ring(pickB, flowInkB, zoom, pan, flowRingB);
       }
       flowCtx.globalAlpha = 1;
     }
 
-    function ring(index, color, zoom, pan) {
-      if (index === null || !N[index]) { return; }
-      var node = N[index].ele;
+    function ring(index, color, zoom, pan, base) {
+      if (index === null || !base || !N[index]) { return; }
       var beat = (Math.sin(phase / 16) + 1) / 2;            // 0..1, slow
-      var radius = (Math.max(node.outerWidth(), node.outerHeight()) / 2 + 7 + beat * 7) * zoom;
+      var radius = (base + beat * 7) * zoom;
       flowCtx.beginPath();
-      flowCtx.arc(node.position('x') * zoom + pan.x, node.position('y') * zoom + pan.y,
+      flowCtx.arc(N[index].x * zoom + pan.x, N[index].y * zoom + pan.y,
                   radius, 0, Math.PI * 2);
       flowCtx.strokeStyle = color;
       flowCtx.lineWidth = 2 * zoom;
@@ -737,12 +790,31 @@
       flowCtx.strokeStyle = flowInk;
     }
 
+    function ringBase(index) {
+      if (index === null || !N[index]) { return 0; }
+      var ele = N[index].ele;
+      return Math.max(ele.outerWidth(), ele.outerHeight()) / 2 + 7;
+    }
+
+    /* Everything the draw loop needs per frame is priced here, once: the
+       colors come from getComputedStyle and the ring sizes from cytoscape,
+       and neither belongs inside a frame. */
     function startFlow(path, extra) {
       stopFlow();
       if (!path || !path.length) { return; }
       flowPath = path;
       flowHint = extra === 'hint';
       flowInk = token('--accent-deep');
+      if (!flowHint) {
+        flowInkA = token('--pick-1');
+        flowInkB = token('--pick-2');
+        flowRingA = ringBase(pickA);
+        flowRingB = ringBase(pickB);
+      }
+      if (stillPreferred()) {
+        drawFlow();                       // the route, marked but not travelling
+        return;
+      }
       (function tickFlow() {
         phase += flowHint ? 0.5 : 0.85;
         drawFlow();
@@ -787,6 +859,7 @@
       });
       delete onNode[pickB];           // the picks keep their own colors
 
+      geomEpoch++;
       cy.batch(function () {
         E.forEach(function (edge, j) { edge.ele.toggleClass('cycle', !!onEdge[j]); });
         N.forEach(function (node, j) { node.ele.toggleClass('cycle', !!onNode[j]); });
@@ -803,6 +876,10 @@
         return;
       }
       cycleAt = 0;
+      if (stillPreferred()) {
+        litPath(paths[0]);                // one route lit, no walk through them
+        return;
+      }
       lead = setTimeout(function () {
         lead = null;
         litPath(paths[0]);
@@ -831,11 +908,13 @@
       var onN = {};
       onN[pickA] = true;
       p.forEach(function (h) { onE[h.ei] = true; onN[h.to] = true; });
-      E.forEach(function (edge, j) {
-        edge.ele.toggleClass('on-route', !!onE[j]);
-        edge.ele.toggleClass('dim', !onE[j]);
+      cy.batch(function () {
+        E.forEach(function (edge, j) {
+          edge.ele.toggleClass('on-route', !!onE[j]);
+          edge.ele.toggleClass('dim', !onE[j]);
+        });
+        N.forEach(function (node, j) { node.ele.toggleClass('dim', !onN[j]); });
       });
-      N.forEach(function (node, j) { node.ele.toggleClass('dim', !onN[j]); });
       markPicks();
       startFlow(p);
     }
@@ -875,6 +954,7 @@
       if (i === pickA || i === pickB || selEdge !== null) {
         return;                       // already marked; leave its ring alone
       }
+      geomEpoch++;
       if (pickA !== null) {
         event.target.addClass('preview');
         return;
@@ -890,6 +970,7 @@
     });
 
     cy.on('mouseout', 'node', function (event) {
+      geomEpoch++;
       event.target.removeClass('hover preview');
       if (!busy()) {
         clearMarks();
@@ -943,15 +1024,17 @@
 
     // The graph assembles itself: units land one after another, then the
     // conversions between them draw in.
-    cy.elements().addClass('entering');
-    N.forEach(function (node, i) {
+    if (!stillPreferred()) {
+      cy.elements().addClass('entering');
+      N.forEach(function (node, i) {
+        enterTimers.push(setTimeout(function () {
+          node.ele.removeClass('entering');
+        }, 30 + i * 15));
+      });
       enterTimers.push(setTimeout(function () {
-        node.ele.removeClass('entering');
-      }, 30 + i * 15));
-    });
-    enterTimers.push(setTimeout(function () {
-      cy.edges().removeClass('entering');
-    }, 60 + N.length * 15));
+        cy.edges().removeClass('entering');
+      }, 60 + N.length * 15));
+    }
 
     return {
       busy: busy,

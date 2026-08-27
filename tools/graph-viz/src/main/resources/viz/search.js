@@ -281,10 +281,15 @@
                 + 'appear here.</div>';
 
   var shownRows = [];
+  var CONST_HINT = '<div class="empty"><b>Pick a constant</b>'
+                 + 'Every conversion the library computes is built from these. Where '
+                 + 'routes disagree, the value they imply appears here.</div>';
+
   var mode = 'conv';
   var qFrom = '';
   var qTo = '';
   var qUnit = '';
+  var qConst = '';
   var picked = {};
   var systems = {};
   var dimension = '';
@@ -546,6 +551,10 @@
     if (!wlist || !hasIndex) {
       return;
     }
+    if (mode === 'const') {
+      drawConstants();
+      return;
+    }
     readFilters();
     if (mode === 'unit') {
       drawUnits();
@@ -555,6 +564,278 @@
   }
 
   // Any change to the question starts over at the first page
+
+  //Constants tab for search bar
+  var AGREE = 1e-9;                       // wider than rounding, far under a typo
+  var LINEAR = /^linear:\s*(\S+)\s+(\S+)\s*$/;
+  var constState = null;
+
+  function apart(a, b) {
+    return Math.abs(a - b) / Math.abs(b) > AGREE;
+  }
+
+  function edgeKey(a, b) {
+    return a < b ? a + ' ' + b : b + ' ' + a;
+  }
+
+  function constValue(token, spec) {
+    return parseFloat(spec.w && spec.w[token] !== undefined ? spec.w[token] : token);
+  }
+
+  function directFactor(from, to) {
+    for (var i = 0; i < SEED.length; i++) {
+      if (SEED[i][0] === from && SEED[i][1] === to) {
+        return SEED[i];
+      }
+    }
+    return null;
+  }
+
+  /* What the rest of the graph makes of a hand-written conversion. Routes that
+     walk the conversion itself are left out - they would only be repeating the
+     written value back. */
+  function secondOpinion(from, to) {
+    var written = directFactor(from, to);
+    if (!written || written[2] === null || written[3] !== 0) {
+      return null;
+    }
+    var key = edgeKey(from, to);
+    var others = routes(from, to).filter(function (route) {
+      if (route.m === null) {
+        return false;
+      }
+      for (var i = 0; i < route.path.length - 1; i++) {
+        if (edgeKey(route.path[i], route.path[i + 1]) === key) {
+          return false;
+        }
+      }
+      return true;
+    });
+    if (!others.length) {
+      return null;
+    }
+    var agreed = others[0].m;
+    for (var j = 1; j < others.length; j++) {
+      if (apart(others[j].m, agreed)) {
+        return null;                      // no consensus worth quoting
+      }
+    }
+    return {written: written[2], implied: agreed, routes: others.length,
+            off: apart(agreed, written[2])};
+  }
+
+  // Six decimal places is all a linear conversion carries into the arithmetic.
+  function clipping(spec) {
+    var parts = LINEAR.exec(spec.r || '');
+    if (!parts) {
+      return null;
+    }
+    var a = constValue(parts[1], spec);
+    var b = constValue(parts[2], spec);
+    if (!isFinite(a) || !isFinite(b)) {
+      return null;
+    }
+    var kept = Number(a.toFixed(6));
+    if (kept === a && Number(b.toFixed(6)) === b) {
+      return null;
+    }
+    return {given: a, kept: kept};
+  }
+
+  function constIndex() {
+    if (constState) {
+      return constState;
+    }
+    var byName = {};
+    var entries = [];
+
+    function entryFor(name, value, literal) {
+      if (!byName[name]) {
+        byName[name] = {name: name, value: value, literal: literal, uses: [],
+                        implied: null, clipped: null, second: null,
+                        checked: 0, disagreeing: 0};
+        entries.push(byName[name]);
+      }
+      return byName[name];
+    }
+
+    if (typeof FORMULA !== 'undefined' && typeof SEED !== 'undefined') {
+      Object.keys(FORMULA).forEach(function (from) {
+        Object.keys(FORMULA[from]).forEach(function (to) {
+          var spec = FORMULA[from][to] || {};
+          var names = Object.keys(spec.w || {});
+          var parts = LINEAR.exec(spec.r || '');
+          var scale = parts && parseFloat(parts[2]) === 0;
+          var use = {from: from, to: to, method: spec.r,
+                     second: secondOpinion(from, to), clipped: clipping(spec)};
+
+          // A number nobody named is still a constant, so long as it only scales
+          var targets = names.length
+            ? names.map(function (n) { return entryFor(n, spec.w[n], false); })
+            : scale ? [entryFor(from + ' → ' + to, parts[1], true)] : [];
+
+          targets.forEach(function (entry) {
+            entry.uses.push(use);
+            if (use.clipped && !entry.clipped) {
+              entry.clipped = use.clipped;
+            }
+            if (!use.second) {
+              return;
+            }
+            entry.checked++;
+            if (!use.second.off) {
+              return;
+            }
+            entry.disagreeing++;
+            entry.second = use.second;
+            // When the conversion only scales by this one constant, the value
+            // the other routes computed is the value the constant should hold.
+            if (targets.length === 1 && scale) {
+              entry.implied = use.second.implied;
+            }
+          });
+        });
+      });
+    }
+    constState = entries.sort(function (a, b) {
+      return a.name.localeCompare(b.name);
+    });
+    return constState;
+  }
+
+  function constTone(entry) {
+    if (entry.disagreeing || entry.clipped) {
+      return 'failed';
+    }
+    return entry.checked ? 'passed' : 'untested';
+  }
+
+  function constKeeps(entry, list) {
+    if (!list.length) {
+      return true;
+    }
+    return hasAll(norm(entry.name + ' ' + entry.value + ' '
+      + entry.uses.map(function (u) { return u.from + ' ' + u.to; }).join(' ')), list);
+  }
+
+  function drawConstants() {
+    var all = constIndex();
+    var list = terms(qConst);
+    var hits = all.filter(function (entry) {
+      return constKeeps(entry, list);
+    });
+    hits.sort(function (a, b) {
+      return (constTone(b) === 'failed') - (constTone(a) === 'failed')
+          || b.uses.length - a.uses.length
+          || a.name.localeCompare(b.name);
+    });
+
+    wlist.innerHTML = pageSlice(hits).map(function (entry, n) {
+      return '<div class="res" data-const="' + escText(entry.name) + '" style="--i:' + n + '">'
+           + '<span class="dot ' + constTone(entry) + '"></span>'
+           + '<span class="pairs">' + markTerms(entry.name, list)
+           + '<span class="sub">' + markTerms(entry.value, list) + '</span></span>'
+           + '<span class="dim">' + entry.uses.length + ' use'
+           + (entry.uses.length === 1 ? '' : 's') + '</span></div>';
+    }).join('') || NOTHING;
+
+    tally(hits.length, all.length, 'constants');
+    showPager(hits.length);
+    wlist.querySelectorAll('.res').forEach(function (el) {
+      el.addEventListener('click', function () {
+        selectResult(el, function () { showConstant(el.dataset.const); });
+      });
+    });
+  }
+
+  function showConstant(name) {
+    var entry = null;
+    constIndex().forEach(function (c) {
+      if (c.name === name) {
+        entry = c;
+      }
+    });
+    if (!entry) {
+      return;
+    }
+
+    winfo.innerHTML = '<div class="fx">'
+      + '<div class="fx-head"><span class="u">' + escText(entry.name) + '</span>'
+      + '<span class="chip kind">' + (entry.literal ? 'written in place' : 'named')
+      + '</span></div>'
+      + '<div class="fx-eq"><span class="u">' + escText(entry.name) + '</span>'
+      + '<span class="eq">=</span>' + sci(escText(entry.value)) + '</div>'
+      + clippedNote(entry) + routeNote(entry)
+      + '<div class="info-sec"><div class="lbl">facts</div>'
+      + factsList([
+          ['written as', entry.value],
+          ['reaches the arithmetic as',
+           entry.clipped ? num(entry.clipped.kept) : 'unchanged'],
+          ['conversions using it', entry.uses.length],
+          ['of those, cross-checked', entry.checked],
+          ['of those, disagreeing', entry.disagreeing],
+          ['suggested value',
+           entry.implied !== null ? num(entry.implied) : 'no change indicated']
+        ])
+      + '</div>'
+      + '<div class="info-sec"><div class="lbl">written into these conversions</div>'
+      + '<div class="nbs">' + entry.uses.map(function (u) {
+          return '<button type="button" class="nb" data-from="' + escText(u.from)
+               + '" data-to="' + escText(u.to) + '">'
+               + sup(escText(u.from)) + ARROW + sup(escText(u.to)) + '</button>';
+        }).join('') + '</div>'
+      + '<div class="info-note">' + escText(entry.uses[0].method) + '</div></div>'
+      + '</div>';
+    winfo.scrollTop = 0;
+
+    winfo.querySelectorAll('.nb').forEach(function (button) {
+      button.addEventListener('click', function () {
+        openFind({from: button.dataset.from, to: button.dataset.to});
+      });
+    });
+  }
+
+  function clippedNote(entry) {
+    if (!entry.clipped) {
+      return '';
+    }
+    return '<div class="pth-warn"><b>Written more precisely than it is kept.</b> '
+      + 'A linear conversion is rebuilt from six decimal places, so this reaches '
+      + 'the arithmetic as <b>' + escText(num(entry.clipped.kept)) + '</b> rather '
+      + 'than <b>' + escText(num(entry.clipped.given)) + '</b>. Every digit past '
+      + 'the sixth decimal is dropped.</div>';
+  }
+
+  function routeNote(entry) {
+    var second = entry.second;
+    if (second) {
+      return '<div class="pth-warn"><b>Other routes disagree.</b> '
+        + second.routes + ' route' + (second.routes === 1 ? '' : 's')
+        + ' between these units compute <b>' + escText(num(second.implied))
+        + '</b> where this conversion gives <b>' + escText(num(second.written))
+        + '</b>, a gap of ' + escText(offBy(second)) + '.'
+        + (entry.implied !== null
+            ? ' Taking them at their word, this should read <b>'
+              + escText(num(entry.implied)) + '</b>.'
+            : '')
+        + '</div>';
+    }
+    if (entry.checked) {
+      return '<div class="pth-ok">✓ cross-checked against other routes in '
+        + entry.checked + ' of its ' + entry.uses.length + ' conversion'
+        + (entry.uses.length === 1 ? '' : 's') + ', which agree</div>';
+    }
+    return '<div class="pth-sub">No other route joins these units, so nothing '
+      + 'here can second-guess this value.</div>';
+  }
+
+  function offBy(second) {
+    var rel = Math.abs(second.implied - second.written) / Math.abs(second.written);
+    return rel < 1e-4
+      ? num(Number(rel.toPrecision(2))) + ' relative'
+      : num(Number((rel * 100).toPrecision(3))) + '%';
+  }
+
   function draw() {
     page = 0;
     redraw();
@@ -717,8 +998,14 @@
     wmenu.menu.querySelectorAll('.fpart').forEach(function (part) {
       part.hidden = part.dataset.mode !== next;
     });
+    var filter = document.querySelector('#tab-find .filter');
+    if (filter) {
+      if (next === 'const') { wmenu.close(); }
+      filter.hidden = next === 'const';
+    }
     if (changed) {
-      winfo.innerHTML = next === 'unit' ? UNIT_HINT : CONV_HINT;
+      winfo.innerHTML = next === 'unit' ? UNIT_HINT
+                      : next === 'const' ? CONST_HINT : CONV_HINT;
     }
   }
 
@@ -744,9 +1031,11 @@
     qFrom = opts.from || '';
     qTo = opts.to || '';
     qUnit = opts.unit || '';
+    qConst = opts.constant || '';
     setFind('wfrom', qFrom);
     setFind('wto', qTo);
     setFind('wunit', qUnit);
+    setFind('wconst', qConst);
     [opts.status, opts.kind, opts.system && 'sys:' + opts.system].forEach(function (test) {
       if (!test) { return; }
       var box = wmenu.menu.querySelector('[data-test="' + cssValue(test) + '"]');
@@ -990,7 +1279,8 @@
       exResetConverter();
     }
     if (winfo && hasIndex) {
-      winfo.innerHTML = mode === 'unit' ? UNIT_HINT : CONV_HINT;
+      winfo.innerHTML = mode === 'unit' ? UNIT_HINT
+                      : mode === 'const' ? CONST_HINT : CONV_HINT;
     }
   }
 
@@ -1045,6 +1335,10 @@
     });
     wireFind(document.getElementById('wunit').closest('.find'), function (value) {
       qUnit = value;
+      draw();
+    });
+    wireFind(document.getElementById('wconst').closest('.find'), function (value) {
+      qConst = value;
       draw();
     });
     document.getElementById('whopn').addEventListener('input', draw);

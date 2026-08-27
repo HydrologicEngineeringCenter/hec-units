@@ -56,11 +56,13 @@ public final class SearchView {
         <div class="modes">
         <button type="button" class="mode active" data-mode="conv">Conversions</button>
         <button type="button" class="mode" data-mode="unit">Units</button>
+        <button type="button" class="mode" data-mode="const">Constants</button>
         </div>
         <div class="findbar" data-mode="conv">
         {{from}}<span class="arrow findsep">&rarr;</span>{{to}}
         </div>
         <div class="findbar" data-mode="unit" hidden>{{unit}}</div>
+        <div class="findbar" data-mode="const" hidden>{{constant}}</div>
         <div class="findtools">{{filter}}<span class="count" id="wcount"></span></div>
         <div class="wikibody">
         <div class="resultcol">
@@ -120,6 +122,8 @@ public final class SearchView {
             .raw("from", find("wfrom", "From unit - blank for any", " big"))
             .raw("to", find("wto", "To unit - blank for any", " big"))
             .raw("unit", find("wunit", "Search units - try foot, Length, or acre", " big"))
+            .raw("constant", find("wconst",
+                 "Search constants - try per, acre, or the value itself", " big"))
             .raw("filter", filter("wfilter", Html.fill(FIND_FILTER)
                 .raw("status", group(new Group("test result", List.of(
                     new Option("passed", "passed"),
