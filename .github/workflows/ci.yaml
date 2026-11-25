@@ -82,7 +82,18 @@ jobs:
           status: ${{ steps.unit-coverage.outputs.coverage }}
           file: unit_coverage
           run_id: ${{ github.run_id }}
-
+      - name: save PR number
+        env:
+          PR: ${{ github.event.number }}
+        run: |
+          echo $PR > pr.txt
+      - name: Upload PR number
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: pr_${{ github.run_id }}
+          path: |
+            pr.txt
+          overwrite: true
 
   badges:
     needs: build
