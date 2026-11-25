@@ -8,14 +8,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Unit {
-    private String abstractParameter;
+    private String dimension;
     private String abbreviation;
     private String system;
     private String name;
     private String description;
     private List<String> aliases;
 
-    public String getAbstractParameter() { return abstractParameter; }
+    public String getDimension() { return dimension; }
     public String getAbbreviation() { return abbreviation; }
     public String getSystem() { return system; }
     public String getName() { return name; }
@@ -23,14 +23,14 @@ public class Unit {
     public List<String> getAliases() { return aliases; }
 
     @JsonCreator(mode=JsonCreator.Mode.PROPERTIES)
-    public Unit(@JsonProperty(value="abstract-parameter",required = true) String abstractParameter,
+    public Unit(@JsonProperty(value="dimension",required = true) String abstractParameter,
                           @JsonProperty(value="abbr", required = true) String abbreviation,
                           @JsonProperty(value="system", required = true) String system,
                           @JsonProperty(value="name", required = true) String name,
                           @JsonProperty(value="description", required = true) String description,
                           @JsonProperty(value="aliases", required = false) List<String> aliases
                     ) throws UnitException {
-        this.abstractParameter = abstractParameter;
+        this.dimension = abstractParameter;
         this.abbreviation = abbreviation;
 
         this.name = name;
@@ -51,7 +51,7 @@ public class Unit {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name)
-          .append("{param=").append(abstractParameter).append(",")
+          .append("{dimension=").append(dimension).append(",")
           .append("unit=").append(abbreviation).append(",")
           .append("system=").append(system).append(",")
           .append("description=").append(description)
@@ -65,7 +65,7 @@ public class Unit {
         if( this == other ) return true;
         if( !(other instanceof Unit)) return false;
         Unit o = (Unit)other;
-        return Objects.equals(abstractParameter, o.abstractParameter)
+        return Objects.equals(dimension, o.dimension)
             && Objects.equals(abbreviation, o.abbreviation)
             && Objects.equals(system, o.system)
             && Objects.equals(name, o.name)
@@ -75,6 +75,6 @@ public class Unit {
 
     @Override
     public int hashCode() {
-        return Objects.hash(abstractParameter, abbreviation, system, name, description, aliases);
+        return Objects.hash(dimension, abbreviation, system, name, description, aliases);
     }
 }

@@ -223,12 +223,12 @@ public class ConversionGraph {
 
     public HashSet<Conversion> generateConversions(){
         HashSet<Conversion> retVal = new HashSet<>();
-        Set<String> unitClasses = initialConversions.stream().map( c -> c.getFrom().getAbstractParameter() ).distinct().collect(Collectors.toSet());
+        Set<String> unitClasses = initialConversions.stream().map( c -> c.getFrom().getDimension() ).distinct().collect(Collectors.toSet());
         for( String unitClass: unitClasses){
             log.fine(() -> "Expanding unit conversions for unit class " + unitClass);
             Set<Conversion> _conversions =
                 initialConversions.stream()
-                            .filter( c -> c.getFrom().getAbstractParameter().equalsIgnoreCase(unitClass) == true )
+                            .filter( c -> c.getFrom().getDimension().equalsIgnoreCase(unitClass) == true )
                             .collect( Collectors.toSet() );
             retVal.addAll( expandConversions(unitClasses, _conversions));
         }

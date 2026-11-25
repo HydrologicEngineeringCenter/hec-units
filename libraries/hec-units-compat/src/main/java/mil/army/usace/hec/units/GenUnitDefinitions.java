@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.army.usace.hec.units.Parameter;
-import mil.army.usace.hec.units.Parameters;
+import mil.army.usace.hec.units.Quantity;
+import mil.army.usace.hec.units.Quantities;
 import net.hobbyscience.database.Conversion;
 import net.hobbyscience.database.methods.Linear;
 
@@ -21,7 +21,7 @@ public final class GenUnitDefinitions {
         try {
             outputDir.mkdirs();
             final var loader = new Loader();
-            final var parameters = Parameters.load();
+            final var parameters = Quantities.load();
 
             generateParameters(outputDir, parameters);
             generateUnitConversions(outputDir, parameters, loader);
@@ -32,7 +32,7 @@ public final class GenUnitDefinitions {
 
     }
 
-    private static void generateParameters(File outputDir, List<Parameter> parameters) throws IOException {
+    private static void generateParameters(File outputDir, List<Quantity> parameters) throws IOException {
         try (PrintWriter writer = new PrintWriter(new File(outputDir, "parameters_units.def"))) {
             writer.println();
             writer.println("=PARAMETER/UNIT");
@@ -62,7 +62,7 @@ public final class GenUnitDefinitions {
     }
 
 
-    private static void generateUnitConversions(File outputDir, List<Parameter> parameters, Loader loader) throws IOException {
+    private static void generateUnitConversions(File outputDir, List<Quantity> parameters, Loader loader) throws IOException {
         try(var writer = new PrintWriter(new File(outputDir, "unitConversions.def"))) {
             writer.println("// Generated from hec-units" );
             writer.println("// UNIT DEFINITIONS");
@@ -76,7 +76,7 @@ writer.println("// ';'-delimited; '//' and blank lines ignored.");
 
 
             final var units = loader.getUnits().values();
-            final var abstractParameters = loader.getAbstractParameters();
+            final var dimensions = loader.getDimensions();
             final var conversions = loader.getConversions();
 
             var systems = units.stream()
@@ -90,14 +90,14 @@ writer.println("// ';'-delimited; '//' and blank lines ignored.");
                                     .toList();
 
 
-            for (var abstractParameter: abstractParameters) {
+            for (var dimension: dimensions) {
                 writer.println();
 
-                writer.println("//" + abstractParameter);
+                writer.println("//" + dimension);
 
 
                 final var currentUnits = units.stream()
-                                        .filter(u -> u.getAbstractParameter().equals(abstractParameter))
+                                        .filter(u -> u.getDimension().equals(dimension))
                                         .toList();
 
                 final Map<String, List<Unit>> unitsToRender = new HashMap<>();
@@ -124,7 +124,7 @@ writer.println("// ';'-delimited; '//' and blank lines ignored.");
                 });
 
                 writer.println();
-                writer.println("//" + abstractParameter + " Conversions");
+                writer.println("//" + dimension + " Conversions");
 
                 unitsToRender.forEach((system, fromUnitsList) -> {
                     final var currentConversions = conversions.stream()

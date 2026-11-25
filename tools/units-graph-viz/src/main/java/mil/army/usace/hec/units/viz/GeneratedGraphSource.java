@@ -43,7 +43,7 @@ public final class GeneratedGraphSource {
         var known = new HashSet<String>();
         var names = new HashMap<String, String>();
         loader.getUnits().forEach((abbreviation, unit) -> {
-            nodes.add(new Node(abbreviation, unit.getName(), unit.getAbstractParameter()));
+            nodes.add(new Node(abbreviation, unit.getName(), unit.getDimension()));
             known.add(abbreviation);
             names.put(abbreviation, unit.getName());
         });

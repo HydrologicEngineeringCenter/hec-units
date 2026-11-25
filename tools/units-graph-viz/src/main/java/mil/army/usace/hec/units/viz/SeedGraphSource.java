@@ -63,7 +63,7 @@ public final class SeedGraphSource {
         var nodes = new ArrayList<Node>();
         for (String id : nodeIds) {
             var unit = units.get(id);
-            nodes.add(new Node(id, unit.getName(), unit.getAbstractParameter(), unit.getSystem()));
+            nodes.add(new Node(id, unit.getName(), unit.getDimension(), unit.getSystem()));
         }
         return new Graph(nodes, edges);
     }
