@@ -1,4 +1,4 @@
-package cwms.units;
+package mil.army.usace.hec.units;
 
 public class UnitException extends RuntimeException {
     

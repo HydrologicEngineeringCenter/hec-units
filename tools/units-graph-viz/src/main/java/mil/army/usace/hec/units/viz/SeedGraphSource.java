@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 
-import cwms.units.Loader;
 import mil.army.usace.hec.graph.viz.formula.AffineForm;
 import mil.army.usace.hec.graph.viz.formula.FormulaRenderer;
 import mil.army.usace.hec.graph.viz.model.Edge;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.model.Node;
+import mil.army.usace.hec.units.Loader;
 
 /**
  * The pre-algorithm graph: the hand-written conversions exactly as authored,
