@@ -40,12 +40,12 @@ public class Loader {
         mapper.enable(Feature.ALLOW_COMMENTS);
 
         dimensions = mapper.readValue(
-            getData("db/custom/units_and_parameters/dimensions.json"),
+            getData("hec/units/units_and_parameters/dimensions.json"),
             new TypeReference<ArrayList<String>>(){});
 
 
         unitDefinitions = mapper.readValue(
-            getData("db/custom/units_and_parameters/unit_definitions.json"),
+            getData("hec/units/units_and_parameters/unit_definitions.json"),
             new TypeReference<ArrayList<Unit>>(){})
             .stream()
             .collect(
@@ -57,11 +57,11 @@ public class Loader {
             ));
 
         constants = mapper.readValue(
-            getData("db/custom/units_and_parameters/conversion_constants.json"),
+            getData("hec/units/units_and_parameters/conversion_constants.json"),
             new TypeReference<HashMap<String,String>>(){});
 
         JsonNode tmpConversions = mapper.readTree(
-            getData("db/custom/units_and_parameters/conversions.json"));
+            getData("hec/units/units_and_parameters/conversions.json"));
         HashSet<String> existing = new HashSet<>();
         tmpConversions.forEach(conversion -> {
             log.fine(() -> conversion.toPrettyString());

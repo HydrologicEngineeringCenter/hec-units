@@ -22,8 +22,8 @@ public final class Quantities {
      * @throws IOException if unable to load or process the parameters data
      */
     public static List<Quantity> load() throws IOException {
-        try (var quantityStream = Quantities.class.getResourceAsStream("/db/custom/parameters/base_quantities.json");
-             var subQuantityStream = Quantities.class.getResourceAsStream("/db/custom/parameters/sub-quantities.json")) {
+        try (var quantityStream = Quantities.class.getResourceAsStream("/hec/units/parameters/base_quantities.json");
+             var subQuantityStream = Quantities.class.getResourceAsStream("/hec/units/parameters/sub-quantities.json")) {
             return load(quantityStream, subQuantityStream);
         }
     }

@@ -37,7 +37,7 @@ let us know you don't and we'll assist - just to be clear your non-java project,
 ### Short term.
 
 1. Setup as a proper working library
-2. Fill out the units/src/main/resources/db/custom/units_and_parameters/conversions.json file
+2. Fill out the units/src/main/resources/hec/units/units_and_parameters/conversions.json file
     a. And the corrisponding conversions_to_test.csv test file
 3. Generate a jar containing the db_parameters_units.def and unitConversions.def files for existing tools to reference
 4. Better organize and name things. package name will be changed to mil.usace.army.hec
