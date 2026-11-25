@@ -1,6 +1,6 @@
 package net.hobbyscience.database;
 
-import cwms.units.Unit;
+import mil.army.usace.hec.units.Unit;
 import net.hobbyscience.database.methods.Linear;
 
 public class ConversionFactory {

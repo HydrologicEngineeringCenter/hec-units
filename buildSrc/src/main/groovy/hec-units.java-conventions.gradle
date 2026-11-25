@@ -6,7 +6,9 @@ plugins {
 }
 
 java {
-    // pin the JDK
+    // pin the JDK *intentionally to Java 17.
+    // This is a low level library used by multiple tools that are on disparate cycles and targets.
+    // Java 17 is a reasonable balance of features and cross compatibility
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
@@ -16,6 +18,10 @@ java {
 
 compileJava {
     options.compilerArgs << '-parameters'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 tasks.withType(JavaCompile) {

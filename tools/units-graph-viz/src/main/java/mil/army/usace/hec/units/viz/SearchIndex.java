@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import cwms.units.Unit;
 import mil.army.usace.hec.graph.viz.model.Edge;
 import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.view.Json;
+import mil.army.usace.hec.units.Unit;
 
 /**
  * The two datasets the search tab runs on: every conversion, and every unit.
