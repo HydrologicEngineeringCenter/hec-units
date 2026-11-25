@@ -45,6 +45,15 @@ jobs:
           merge-multiple: true
           name: "badges_${{ github.event.workflow_run.id }}_unit_conversions"
           path: change
+      - name: Retrieve PR Number
+        uses: actions/download-artifact@v8.0.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: "pr_${{ github.event.workflow_run.id }}"
+      - name: Set PR Number
+        run: |
+          echo "PR=`cat pr.txt" >> "$GITHUB_OUTPUT"
       - name: Generate Report on current
         uses: actions/github-script@v9.0.0
         with:
@@ -55,11 +64,12 @@ jobs:
 
             const currentExpected = fs.readFileSync('badges/unit-conversions-expected.txt', 'utf8');
             const currentActual = fs.readFileSync('badges/unit-conversions-actual.txt', 'utf8');
+            const pr = process.env.PR;
 
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: pr,
               body: `### Unit Conversions
 
               ${newActual} out of ${newExpected} unit conversions were tested in this change.
