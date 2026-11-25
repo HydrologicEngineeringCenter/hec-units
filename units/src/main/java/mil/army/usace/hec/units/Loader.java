@@ -1,6 +1,4 @@
-
-
-package cwms.units;
+package mil.army.usace.hec.units;
 
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 public class Loader {
     private static final Logger log = Logger.getLogger(Loader.class.getName());
 
-    private ArrayList<String> abstractParameters = new ArrayList<>();
+    private ArrayList<String> dimensions = new ArrayList<>();
     private Map<String,Unit> unitDefinitions = null;
     private HashSet<Conversion> conversions = new HashSet<>();
     private Map<String,String> constants = null;
@@ -41,13 +39,13 @@ public class Loader {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(Feature.ALLOW_COMMENTS);
 
-        abstractParameters = mapper.readValue(
-            getData("db/custom/units_and_parameters/abstract_parameters.json"),
+        dimensions = mapper.readValue(
+            getData("hec/units/units_and_parameters/dimensions.json"),
             new TypeReference<ArrayList<String>>(){});
 
 
         unitDefinitions = mapper.readValue(
-            getData("db/custom/units_and_parameters/unit_definitions.json"),
+            getData("hec/units/units_and_parameters/unit_definitions.json"),
             new TypeReference<ArrayList<Unit>>(){})
             .stream()
             .collect(
@@ -59,11 +57,11 @@ public class Loader {
             ));
 
         constants = mapper.readValue(
-            getData("db/custom/units_and_parameters/conversion_constants.json"),
+            getData("hec/units/units_and_parameters/conversion_constants.json"),
             new TypeReference<HashMap<String,String>>(){});
 
         JsonNode tmpConversions = mapper.readTree(
-            getData("db/custom/units_and_parameters/conversions.json"));
+            getData("hec/units/units_and_parameters/conversions.json"));
         HashSet<String> existing = new HashSet<>();
         tmpConversions.forEach(conversion -> {
             log.fine(() -> conversion.toPrettyString());
@@ -111,8 +109,8 @@ public class Loader {
         return tmp;
     }
 
-    public List<String> getAbstractParameters() {
-        return Collections.unmodifiableList(abstractParameters);
+    public List<String> getDimensions() {
+        return Collections.unmodifiableList(dimensions);
     }
 
     public Set<Conversion> getConversions() {

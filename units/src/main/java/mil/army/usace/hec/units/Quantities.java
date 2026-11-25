@@ -2,14 +2,13 @@ package mil.army.usace.hec.units;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public final class Parameters {
+public final class Quantities {
     
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -22,10 +21,10 @@ public final class Parameters {
      * @return
      * @throws IOException if unable to load or process the parameters data
      */
-    public static List<Parameter> load() throws IOException {
-        try (var paramStream = Parameters.class.getResourceAsStream("/db/custom/parameters/base_parameters.json");
-             var subParamStream = Parameters.class.getResourceAsStream("/db/custom/parameters/initial_sub-parameters.json")) {
-            return load(paramStream, subParamStream);
+    public static List<Quantity> load() throws IOException {
+        try (var quantityStream = Quantities.class.getResourceAsStream("/hec/units/parameters/base_quantities.json");
+             var subQuantityStream = Quantities.class.getResourceAsStream("/hec/units/parameters/sub-quantities.json")) {
+            return load(quantityStream, subQuantityStream);
         }
     }
 
@@ -34,8 +33,8 @@ public final class Parameters {
      * @param parameterStream
      * @return
      */
-    public static List<Parameter> load(InputStream parameterStream, InputStream subParametersStream) throws IOException {
-        final var map = new HashMap<String, Parameter>();
+    public static List<Quantity> load(InputStream parameterStream, InputStream subParametersStream) throws IOException {
+        final var map = new HashMap<String, Quantity>();
 
         
         final var data = mapper.readTree(parameterStream);
@@ -44,7 +43,7 @@ public final class Parameters {
             final var param = node.get(1).asText();
             final var paramId = node.get(2).asText();
             map.put(paramId,
-                    new Parameter(
+                    new Quantity(
                         dbCode,
                         param, // parameter
                         paramId, // id
@@ -69,7 +68,7 @@ public final class Parameters {
 
             final var name = baseParamName + "-" + subParamName;
             map.put(name,
-                new Parameter(
+                new Quantity(
                     node.get(0).asLong(),
                     name,
                     name,

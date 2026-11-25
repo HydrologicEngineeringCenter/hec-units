@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import cwms.units.Unit;
 import mil.army.usace.hec.graph.viz.model.Edge;
 import mil.army.usace.hec.graph.viz.model.EdgeStatus;
 import mil.army.usace.hec.graph.viz.model.Graph;
 import mil.army.usace.hec.graph.viz.view.Json;
+import mil.army.usace.hec.units.Unit;
 
 /**
  * The two datasets the search tab runs on: every conversion, and every unit.
@@ -63,7 +63,7 @@ final class SearchIndex {
              + ",\"t\":" + Json.str(to.getAbbreviation())
              + ",\"fn\":" + Json.str(from.getName())
              + ",\"tn\":" + Json.str(to.getName())
-             + ",\"d\":" + Json.str(from.getAbstractParameter())
+             + ",\"d\":" + Json.str(from.getDimension())
              + ",\"s\":" + Json.str(status(edge.status()))
              + ",\"h\":" + (edge.label() == null ? "null" : edge.label())
              + ",\"k\":" + Json.str(kind)
@@ -85,7 +85,7 @@ final class SearchIndex {
 
     private static String unitJson(Unit unit, Collection<String> neighbors, int[] tally) {
         return "{\"n\":" + Json.str(unit.getName())
-             + ",\"d\":" + Json.str(unit.getAbstractParameter())
+             + ",\"d\":" + Json.str(unit.getDimension())
              + ",\"y\":" + Json.str(unit.getSystem())
              + ",\"x\":" + Json.str(unit.getDescription())
              + ",\"a\":" + array(unit.getAliases())

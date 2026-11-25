@@ -60,7 +60,7 @@ final class RawSeedData {
     }
 
     private static JsonNode read(ObjectMapper mapper, String name) throws IOException {
-        String path = "db/custom/units_and_parameters/" + name;
+        String path = "hec/units/units_and_parameters/" + name;
         try (InputStream in = RawSeedData.class.getClassLoader().getResourceAsStream(path)) {
             if (in == null) {
                 throw new IOException(path + " is not on the classpath - is :units a dependency?");

@@ -7,7 +7,7 @@ package net.hobbyscience.database;
 
 import java.util.Objects;
 
-import cwms.units.Unit;
+import mil.army.usace.hec.units.Unit;
 
 public class Conversion {
     private Unit from;
