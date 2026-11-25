@@ -53,7 +53,7 @@ jobs:
           name: "pr_${{ github.event.workflow_run.id }}"
       - name: Set PR Number
         run: |
-          echo "PR=`cat pr_${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+          echo "PR=`cat pr.txt" >> "$GITHUB_OUTPUT"
       - name: Generate Report on current
         uses: actions/github-script@v9.0.0
         with:
