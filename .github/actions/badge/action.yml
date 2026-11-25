@@ -44,14 +44,14 @@ runs:
         esac
         echo "safe_file=${UNSAFE//\//_}" >> $GITHUB_OUTPUT
     - name: Build Badge
-      uses: emibcn/badge-action@v2.0.2
+      uses: emibcn/badge-action@v2.0.4
       with:
         label: ${{inputs.label}}
         status: ${{inputs.status}}
         color: ${{ steps.vars.outputs.color }}
         path: badges/${{inputs.file}}.svg
     - name: Upload badge
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: badges_${{ inputs.run_id }}_${{ steps.vars.outputs.safe_file }}
         path: |
