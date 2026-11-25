@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.army.usace.hec.units.Quantity;
-import mil.army.usace.hec.units.Quantities;
 import net.hobbyscience.database.Conversion;
 import net.hobbyscience.database.methods.Linear;
 
